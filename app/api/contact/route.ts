@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     // Send email using Resend
     if (process.env.RESEND_API_KEY) {
       await resend.emails.send({
-        from: 'IE Global <contact@ieglobal.com>',
+        from: 'IE Global Website <onboarding@resend.dev>',
         to: 'hello@ie-global.net',
         replyTo: email,
         subject: `New Contact: ${name}${company ? ` from ${company}` : ''}`,
