@@ -1,0 +1,310 @@
+'use client';
+
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import HeroCarousel from '@/components/ui/HeroCarousel';
+import HowWeCanHelp from '@/components/ui/HowWeCanHelp';
+import CaseStudyCard from '@/components/ui/CaseStudyCard';
+import MetricCounter from '@/components/ui/MetricCounter';
+import Newsletter from '@/components/ui/Newsletter';
+import Link from 'next/link';
+
+const heroSlides = [
+  {
+    eyebrow: 'Strategy & Direction',
+    title: 'Build the right thing. Not just anything.',
+    subtitle: 'We align technology with your business goals, clarify what matters, and design a roadmap you can trust.',
+    primaryCTA: {
+      text: 'Explore How We Work',
+      href: '/about',
+    },
+    backgroundImage: '/hero-1.png',
+    isDark: true,
+  },
+  {
+    eyebrow: 'Websites & Platforms',
+    title: 'High-performance digital experiences, built to last.',
+    subtitle: 'We design and develop websites, platforms, and internal systems that feel fast, intuitive, and reliable.',
+    primaryCTA: {
+      text: 'See Our Work',
+      href: '/case-studies',
+    },
+    backgroundImage: '/hero-2.png',
+    isDark: true,
+  },
+  {
+    eyebrow: 'Data, AI & Integration',
+    title: 'Your systems, finally connected.',
+    subtitle: 'We integrate your tools, automate workflows, and apply practical AI - so your business moves smarter, not harder.',
+    primaryCTA: {
+      text: 'View Services',
+      href: '/services/data-ai-automation',
+    },
+    backgroundImage: '/hero-3.png',
+    isDark: true,
+  },
+  {
+    eyebrow: 'Long-Term Partnership',
+    title: "We don't just build. We stay.",
+    subtitle: 'Ongoing performance reviews, improvements, scaling support, security - a relationship that grows with your business.',
+    primaryCTA: {
+      text: 'Start a Project',
+      href: '/contact',
+    },
+    backgroundPattern: 'gradient' as const,
+    isDark: true,
+  },
+];
+
+export default function HomePage() {
+  const [heroIsDark, setHeroIsDark] = useState(true);
+
+  return (
+    <>
+      {/* Hero Carousel */}
+      <HeroCarousel slides={heroSlides} autoPlayInterval={6500} onSlideChange={setHeroIsDark} />
+
+
+      {/* What We Do - Built for Performance */}
+      <section className="section bg-white">
+        <div className="container-wide">
+          <div className="text-center max-w-4xl mx-auto mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Built for Performance
+            </h2>
+            <p className="text-xl text-slate-700 leading-relaxed">
+              We design, build, and operate high-performance digital systems—websites, apps, and platforms—engineered to scale smoothly and evolve with your business.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto">
+            {/* Build Fast */}
+            <div className="group">
+              <div className="mb-6">
+                <svg className="w-12 h-12 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-navy-900">Build Fast</h3>
+              <p className="text-slate-700 leading-relaxed mb-4">
+                We ship modern, intuitive, high-performance experiences that feel fast everywhere—mobile, web, and internal tools included.
+              </p>
+              <Link href="/services" className="inline-flex items-center text-sm font-semibold text-signal-red hover:gap-2 gap-1 transition-all duration-200">
+                <span>Learn more</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+
+            {/* Scale Smoothly */}
+            <div className="group">
+              <div className="mb-6">
+                <svg className="w-12 h-12 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-navy-900">Scale Smoothly</h3>
+              <p className="text-slate-700 leading-relaxed mb-4">
+                We architect systems that integrate cleanly and grow with your needs, from APIs and workflows to cloud environments and deployment pipelines.
+              </p>
+              <Link href="/services" className="inline-flex items-center text-sm font-semibold text-signal-red hover:gap-2 gap-1 transition-all duration-200">
+                <span>Learn more</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+
+            {/* Operate Reliably */}
+            <div className="group">
+              <div className="mb-6">
+                <svg className="w-12 h-12 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-navy-900">Operate Reliably</h3>
+              <p className="text-slate-700 leading-relaxed mb-4">
+                We stay with you after launch, continuously improving performance, security, and functionality as your business evolves.
+              </p>
+              <Link href="/services" className="inline-flex items-center text-sm font-semibold text-signal-red hover:gap-2 gap-1 transition-all duration-200">
+                <span>Learn more</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+
+          <div className="text-center mt-16">
+            <Link href="/case-studies" className="inline-flex items-center text-base font-semibold text-signal-red hover:gap-3 gap-2 transition-all duration-200">
+              <span>Explore Our Work</span>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* How We Can Help - Interactive Sidebar Design */}
+      <HowWeCanHelp />
+
+      {/* Measurable Outcomes */}
+      <section className="section bg-navy-900 text-white">
+        <div className="container-wide">
+          <div className="text-center max-w-4xl mx-auto mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Measurable Outcomes
+            </h2>
+            <p className="text-xl text-gray-200 mb-4">
+              Engineering isn't just about shipping—it's about impact.
+            </p>
+            <p className="text-lg text-gray-300 italic">
+              Your digital systems should create momentum—not friction.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto space-y-6">
+            {/* Metric 1 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.5, delay: 0 }}
+              className="flex items-baseline gap-4 pb-4 border-b border-white/20"
+            >
+              <span className="text-4xl md:text-5xl font-bold font-mono text-signal-red">43%</span>
+              <span className="text-lg md:text-xl text-gray-200">faster load times across modernized platforms</span>
+            </motion.div>
+
+            {/* Metric 2 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="flex items-baseline gap-4 pb-4 border-b border-white/20"
+            >
+              <span className="text-4xl md:text-5xl font-bold font-mono text-signal-red">27%</span>
+              <span className="text-lg md:text-xl text-gray-200">increase in conversion efficiency on average</span>
+            </motion.div>
+
+            {/* Metric 3 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="flex items-baseline gap-4 pb-4 border-b border-white/20"
+            >
+              <span className="text-4xl md:text-5xl font-bold font-mono text-signal-red">99.9%</span>
+              <span className="text-lg md:text-xl text-gray-200">uptime across supported deployments</span>
+            </motion.div>
+
+            {/* Metric 4 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex items-baseline gap-4 pb-4"
+            >
+              <span className="text-4xl md:text-5xl font-bold font-mono text-signal-red">34%</span>
+              <span className="text-lg md:text-xl text-gray-200">reduction in operational overhead for teams we support</span>
+            </motion.div>
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-gray-300 italic">
+              Performance gains you can feel—and measure.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Case Study */}
+      <section className="section bg-off-white">
+        <div className="container-wide">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Bold steps forward
+            </h2>
+            <p className="text-xl text-slate-700">
+              See how we've helped ambitious clients achieve extraordinary outcomes.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <CaseStudyCard
+              title="Utility | Data-driven CX transformation"
+              summary="Fragmented data, generic outreach, and flat retention. We built an AI Next Best Action engine with 25+ sources and 500 metrics."
+              client="Major Utility Provider"
+              industry="Energy & Utilities"
+              outcome="4× success rate for targeted customers"
+              href="/case-studies/utility-cx-transformation"
+              metrics={[
+                '4× success rate for targeted customers',
+                '+10% active customers',
+                '30+ prioritized actions',
+              ]}
+              index={0}
+            />
+
+            <CaseStudyCard
+              title="Telecom | Hyper-personalization at scale"
+              summary="4 coarse segments and poor ecommerce conversion. We created 60 micro-segments with ML-driven campaigns and UX refresh."
+              client="Global Telecom"
+              industry="Telecommunications"
+              outcome="$20M+ annual value identified"
+              href="/case-studies/telecom-personalization"
+              metrics={[
+                '$20M+ annual value at stake',
+                '2× conversion rate',
+                '6× CTR uplift',
+              ]}
+              index={1}
+            />
+          </div>
+
+          <div className="text-center mt-12">
+            <Link href="/case-studies" className="btn-secondary">
+              See all client results
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Band */}
+      <section className="section-sm bg-signal-red text-white">
+        <div className="container-wide text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Let's map your 90-day value plan
+          </h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
+            Have a complex stack or ambitious growth target? We turn it into a fast, connected, intelligent system.
+          </p>
+          <Link href="/contact" className="btn-secondary border-white text-white hover:bg-white hover:text-signal-red">
+            Start a conversation
+          </Link>
+        </div>
+      </section>
+
+      {/* Newsletter */}
+      <section className="section-sm bg-white">
+        <div className="container-narrow">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">
+              Monthly insights on AI, CX, and growth
+            </h3>
+            <p className="text-lg text-slate-700">
+              Stay ahead with our latest thinking on customer experience, AI strategy, and pricing innovation.
+            </p>
+          </div>
+          <Newsletter />
+        </div>
+      </section>
+    </>
+  );
+}
+

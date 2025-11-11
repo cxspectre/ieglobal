@@ -1,0 +1,222 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-outfit: 'Outfit', system-ui, sans-serif;
+    --font-manrope: 'Manrope', system-ui, sans-serif;
+    --font-jetbrains-mono: 'JetBrains Mono', Consolas, monospace;
+  }
+
+  * {
+    @apply border-slate-200;
+  }
+
+  body {
+    @apply bg-off-white text-navy-900 font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-bold;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl leading-tight tracking-tight;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl lg:text-4xl leading-snug;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl lg:text-3xl leading-snug;
+  }
+
+  h5 {
+    @apply text-lg md:text-xl lg:text-2xl leading-normal;
+  }
+
+  h6 {
+    @apply text-base md:text-lg lg:text-xl leading-normal;
+  }
+
+  p {
+    @apply text-base md:text-lg leading-relaxed;
+  }
+
+  a {
+    @apply transition-colors duration-200;
+  }
+}
+
+@layer components {
+  /* Skip link for accessibility */
+  .skip-link {
+    @apply absolute -top-40 left-0 bg-navy-900 text-white px-4 py-2 z-50;
+    @apply focus:top-0 focus:outline-none focus:ring-4 focus:ring-signal-red;
+  }
+
+  /* Focus visible styles for keyboard navigation */
+  :focus-visible {
+    @apply outline-none ring-4 ring-signal-red ring-offset-2;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-off-white;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-700 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-navy-800;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-signal-red text-white;
+  }
+
+  /* Button styles */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-base font-semibold;
+    @apply bg-signal-red text-white rounded-none;
+    @apply transition-all duration-200;
+    @apply hover:scale-105 hover:shadow-lg hover:shadow-signal-red/30;
+    @apply focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-signal-red focus-visible:ring-offset-2;
+    @apply active:scale-95;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-6 py-3 text-base font-semibold;
+    @apply bg-transparent text-navy-900 border-2 border-navy-900 rounded-none;
+    @apply transition-all duration-200;
+    @apply hover:bg-navy-900 hover:text-white hover:scale-105;
+    @apply focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-navy-900 focus-visible:ring-offset-2;
+    @apply active:scale-95;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-4 py-2 text-base font-medium;
+    @apply text-navy-900 hover:text-signal-red;
+    @apply transition-colors duration-200;
+    @apply relative;
+  }
+
+  .btn-ghost::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-signal-red;
+    @apply transition-all duration-200;
+  }
+
+  .btn-ghost:hover::after {
+    @apply w-full;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-white rounded-none shadow-sm;
+    @apply transition-all duration-300;
+    @apply hover:shadow-lg hover:-translate-y-1;
+  }
+
+  .card-glow {
+    @apply relative overflow-hidden;
+  }
+
+  .card-glow::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-signal-red/0 to-signal-red/0;
+    @apply transition-all duration-300;
+    @apply opacity-0;
+  }
+
+  .card-glow:hover::before {
+    @apply from-signal-red/10 to-transparent opacity-100;
+  }
+
+  /* Container utilities */
+  .container-wide {
+    @apply max-w-8xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-narrow {
+    @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Section spacing */
+  .section {
+    @apply py-16 md:py-24 lg:py-32;
+  }
+
+  .section-sm {
+    @apply py-12 md:py-16 lg:py-20;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-navy-900 to-signal-red bg-clip-text text-transparent;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+}
+
+@layer utilities {
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Print styles */
+  @media print {
+    .no-print {
+      @apply hidden;
+    }
+
+    body {
+      @apply bg-white text-black;
+    }
+
+    a[href]::after {
+      content: " (" attr(href) ")";
+      @apply text-sm;
+    }
+  }
+
+  /* Custom utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-on-scroll {
+    @apply opacity-0 translate-y-8;
+    @apply transition-all duration-700 ease-out;
+  }
+
+  .animate-on-scroll.is-visible {
+    @apply opacity-100 translate-y-0;
+  }
+}
+

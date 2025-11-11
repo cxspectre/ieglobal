@@ -1,0 +1,79 @@
+
+> ie-global-website@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.33
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1196ms
+ ○ Compiling /insights ...
+ ✓ Compiled /insights in 3.4s (1324 modules)
+ GET /insights 200 in 3778ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.5s (1286 modules)
+ GET /grid-pattern.svg 404 in 2308ms
+ GET /site.webmanifest 404 in 15ms
+ GET /insights 200 in 59ms
+ GET /grid-pattern.svg 404 in 16ms
+ GET /site.webmanifest 404 in 15ms
+ ✓ Compiled / in 330ms (1333 modules)
+ GET /site.webmanifest 404 in 69ms
+ ✓ Compiled /about in 138ms (1335 modules)
+ GET /site.webmanifest 404 in 46ms
+ ✓ Compiled in 719ms (1346 modules)
+ ⨯ ./components/layout/Navigation.tsx
+Error: 
+  [31mx[0m Unexpected token `nav`. Expected jsx identifier
+    ,-[[36;1;4m/Users/cassiandrefke/Desktop/Redo IE/components/layout/Navigation.tsx[0m:66:1]
+ [2m66[0m |   const logoColor = useLightText ? 'text-white' : 'text-navy-900';
+ [2m67[0m | 
+ [2m68[0m |   return (
+ [2m69[0m |     <nav
+    : [31;1m     ^^^[0m
+ [2m70[0m |       className={cn(
+ [2m71[0m |         'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
+ [2m72[0m |         isScrolled
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/layout/Navigation.tsx
+./components/layout/ClientLayout.tsx
+ ○ Compiling /_not-found ...
+ ⨯ ./components/layout/Navigation.tsx
+Error: 
+  [31mx[0m Unexpected token `nav`. Expected jsx identifier
+    ,-[[36;1;4m/Users/cassiandrefke/Desktop/Redo IE/components/layout/Navigation.tsx[0m:66:1]
+ [2m66[0m |   const logoColor = useLightText ? 'text-white' : 'text-navy-900';
+ [2m67[0m | 
+ [2m68[0m |   return (
+ [2m69[0m |     <nav
+    : [31;1m     ^^^[0m
+ [2m70[0m |       className={cn(
+ [2m71[0m |         'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
+ [2m72[0m |         isScrolled
+    `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./components/layout/Navigation.tsx
+./components/layout/ClientLayout.tsx
+ GET /grid-pattern.svg 500 in 1703ms
+ GET /about 500 in 8ms
+ ✓ Compiled /_error in 570ms (1561 modules)
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /about 200 in 111ms
+ GET /_next/static/webpack/022609f40bef3ee7.webpack.hot-update.json 404 in 467ms
+ GET /about 200 in 28ms
+ GET /grid-pattern.svg 404 in 12ms
+ GET /site.webmanifest 404 in 15ms
+ ✓ Compiled in 313ms (1575 modules)
+ GET /site.webmanifest 404 in 88ms
+ ✓ Compiled in 362ms (1575 modules)
+ ✓ Compiled in 275ms (1575 modules)
+[?25h
