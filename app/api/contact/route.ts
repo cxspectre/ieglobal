@@ -38,9 +38,9 @@ export async function POST(request: Request) {
 
     try {
       const emailResult = await resend.emails.send({
-        from: 'IE Global Website <onboarding@resend.dev>',
+        from: 'IE Global <contact@ie-global.net>',
         to: 'hello@ie-global.net',
-        replyTo: email,
+        replyTo: email, // User's email - so you can hit "Reply"
         subject: `New Contact: ${name}${company ? ` from ${company}` : ''}`,
         html: `
           <!DOCTYPE html>
