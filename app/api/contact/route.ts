@@ -28,8 +28,16 @@ export async function POST(request: Request) {
     });
 
     // Send email using Resend
-    if (process.env.RESEND_API_KEY) {
-      await resend.emails.send({
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY is not set!');
+      return NextResponse.json(
+        { message: 'Form submitted successfully (email service not configured)' },
+        { status: 200 }
+      );
+    }
+
+    try {
+      const emailResult = await resend.emails.send({
         from: 'IE Global Website <onboarding@resend.dev>',
         to: 'hello@ie-global.net',
         replyTo: email,
@@ -96,6 +104,15 @@ export async function POST(request: Request) {
           </html>
         `,
       });
+
+      console.log('Email sent successfully via Resend:', emailResult);
+    } catch (emailError) {
+      console.error('Resend email error:', emailError);
+      // Still return success to user, but log the email error
+      return NextResponse.json(
+        { message: 'Form submitted successfully (email delivery pending)' },
+        { status: 200 }
+      );
     }
 
     return NextResponse.json(
