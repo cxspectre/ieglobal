@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import Hero from '@/components/ui/Hero';
-import ContactForm from '@/components/ui/ContactForm';
+import ContactFormPremium from '@/components/ui/ContactFormPremium';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
-  description: 'Let us build something great. Tell us about your goals, timeline, and constraints.',
+  description: 'Engineering partnerships that move your business forward. Tell us what you are building.',
 };
 
 export default function ContactPage() {
@@ -12,101 +12,88 @@ export default function ContactPage() {
     <>
       <Hero
         eyebrow="Contact"
-        title="Let's build something great"
-        subtitle="Tell us about your goals, timeline, and constraints. We'll respond within 1 business day with a clear next step."
+        title="Let's Work Together"
+        subtitle="Engineering partnerships that move your business forward. Tell us what you're building—we'll help you get there."
         backgroundPattern="gradient"
       />
 
       <section className="section bg-white">
         <div className="container-wide">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            {/* Contact Form */}
-            <div>
-              <h2 className="text-3xl font-bold mb-8">Send us a message</h2>
-              <ContactForm />
-            </div>
-
-            {/* Contact Info */}
-            <div className="space-y-12">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-16">
+            {/* Left: Content */}
+            <div className="lg:col-span-2 space-y-10">
               <div>
-                <h3 className="text-2xl font-bold mb-6">Get in touch</h3>
-                <div className="space-y-6">
-                  <div className="flex items-start space-x-4">
-                    <svg className="w-6 h-6 text-signal-red flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <div>
-                      <div className="font-semibold text-navy-900">Email</div>
-                      <a href="mailto:hello@ieglobal.com" className="text-signal-red hover:underline">
-                        hello@ieglobal.com
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <svg className="w-6 h-6 text-signal-red flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <div>
-                      <div className="font-semibold text-navy-900">Location</div>
-                      <div className="text-slate-700">Global delivery with hubs in North America and Europe</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <svg className="w-6 h-6 text-signal-red flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                      <div className="font-semibold text-navy-900">Response Time</div>
-                      <div className="text-slate-700">Within 1 business day</div>
-                    </div>
-                  </div>
-                </div>
+                <h2 className="text-3xl font-bold mb-6 text-navy-900">
+                  Let's build something exceptional.
+                </h2>
+                <p className="text-lg text-slate-700 leading-relaxed mb-6">
+                  We partner with companies who value performance, reliability, and long-term growth. Whether you're starting something new or improving what exists, we'll help you do it right.
+                </p>
+                <p className="text-base text-slate-700">
+                  → We typically respond within 1 business day.
+                </p>
               </div>
 
               <div>
-                <h3 className="text-2xl font-bold mb-6">What to expect</h3>
+                <h3 className="text-xl font-bold mb-6 text-navy-900">Why teams work with us</h3>
                 <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <svg className="w-5 h-5 text-signal-red flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <div className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-signal-red flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <p className="text-slate-700">
-                      <strong className="text-navy-900">Quick response:</strong> We'll reply within one business day
+                      <strong className="text-navy-900">100% in-house engineering</strong>
                     </p>
                   </div>
-                  <div className="flex items-start space-x-3">
-                    <svg className="w-5 h-5 text-signal-red flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <div className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-signal-red flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <p className="text-slate-700">
-                      <strong className="text-navy-900">Discovery call:</strong> 30-minute conversation to understand your needs
+                      <strong className="text-navy-900">Clear estimates and timelines</strong>
                     </p>
                   </div>
-                  <div className="flex items-start space-x-3">
-                    <svg className="w-5 h-5 text-signal-red flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <div className="flex items-start gap-3">
+                    <svg className="w-5 h-5 text-signal-red flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <p className="text-slate-700">
-                      <strong className="text-navy-900">Tailored proposal:</strong> Scoped approach with timeline and outcomes
-                    </p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <svg className="w-5 h-5 text-signal-red flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="text-slate-700">
-                      <strong className="text-navy-900">Fast start:</strong> Kick off within 2 weeks if aligned
+                      <strong className="text-navy-900">Embedded collaboration with your team</strong>
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-off-white p-8">
-                <h4 className="font-bold text-lg mb-3">Prefer email?</h4>
-                <p className="text-slate-700 mb-4">
+              <div>
+                <h3 className="text-xl font-bold mb-6 text-navy-900">What happens next</h3>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 bg-signal-red text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
+                    <p className="text-slate-700 pt-1">
+                      We review your goals and current systems.
+                    </p>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 bg-signal-red text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
+                    <p className="text-slate-700 pt-1">
+                      We schedule a short, focused discovery call.
+                    </p>
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 bg-signal-red text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
+                    <p className="text-slate-700 pt-1">
+                      You receive a roadmap, scope, and timeline.
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-700 italic mt-6">
+                  No sales pressure. Just clarity and expertise.
+                </p>
+              </div>
+
+              <div className="bg-off-white p-6 border-l-4 border-signal-red">
+                <h4 className="font-bold text-base mb-2 text-navy-900">Prefer email?</h4>
+                <p className="text-slate-700 mb-3">
                   Reach out directly at{' '}
                   <a href="mailto:hello@ieglobal.com" className="text-signal-red hover:underline font-semibold">
                     hello@ieglobal.com
@@ -117,7 +104,21 @@ export default function ContactPage() {
                 </p>
               </div>
             </div>
+
+            {/* Right: Form */}
+            <div className="lg:col-span-3">
+              <ContactFormPremium />
+            </div>
           </div>
+        </div>
+      </section>
+
+      {/* Final Confidence Line */}
+      <section className="py-16 bg-white">
+        <div className="container-wide text-center">
+          <p className="text-xl font-semibold text-navy-900">
+            Your systems should create momentum—not friction.
+          </p>
         </div>
       </section>
     </>
