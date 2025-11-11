@@ -4,142 +4,183 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'About IE Global',
-  description: 'IE Global is a boutique partner built by operators and consultants. We pair rigorous strategy with sleeves-up delivery so value shows up in your KPIs, not just your slides.',
+  description: 'We design and build high-performance digital systems that are fast, scalable, and built to last. Technology should accelerate growth—not slow it down.',
 };
 
 export default function AboutPage() {
   return (
     <>
       <Hero
-        eyebrow="About Us"
-        title="We champion the bold to achieve the extraordinary."
-        subtitle="IE Global is a boutique partner built by operators and consultants. We pair rigorous strategy with sleeves-up delivery."
-        backgroundPattern="gradient"
+        eyebrow="About"
+        title="We Build Digital Systems That Create Momentum"
+        subtitle="Technology should accelerate growth—not slow it down."
+        backgroundPattern="mesh"
       />
 
-      {/* Positioning */}
+      {/* Positioning Paragraph */}
       <section className="section bg-white">
         <div className="container-narrow">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">
-            Strategy that ships
-          </h2>
-          <div className="prose prose-lg max-w-none">
-            <p className="text-xl text-slate-700 leading-relaxed mb-6">
-              IE Global is a boutique partner built by operators and consultants. We pair rigorous strategy with sleeves-up delivery so value shows up in your KPIs, not just your slides.
-            </p>
-            <p className="text-lg text-slate-700 leading-relaxed mb-6">
-              Too many transformation programs produce beautiful PowerPoints and underwhelming results. We're different. Our teams combine Bain-style strategy rigor with hands-on execution—building the dashboards, training the teams, and proving the value in 90-day sprints.
-            </p>
-            <p className="text-lg text-slate-700 leading-relaxed">
-              Whether you're launching an AI program, redesigning customer experience, or optimizing your go-to-market strategy, we deliver outcomes you can measure.
-            </p>
+          <p className="text-xl text-slate-700 leading-relaxed text-center max-w-4xl mx-auto">
+            IE Global is a digital engineering and performance firm. We work with companies who need systems that can scale—not just launch. Our work bridges strategy, design, and engineering to build digital products that are fast, reliable, and ready for growth. We believe in clarity, technical excellence, and long-term partnership.
+          </p>
+        </div>
+      </section>
+
+      {/* Our Principles */}
+      <section className="section bg-off-white">
+        <div className="container-wide">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Our Core Principles
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Principle 1 */}
+            <div className="bg-white p-8 shadow-sm border-l-4 border-signal-red">
+              <h3 className="text-2xl font-bold mb-4 text-navy-900">
+                Clarity Before Code
+              </h3>
+              <p className="text-slate-700 leading-relaxed mb-3">
+                We make decisions with purpose—not assumptions.
+              </p>
+              <p className="text-sm text-slate-700 italic">
+                Right decisions early save months later.
+              </p>
+            </div>
+
+            {/* Principle 2 */}
+            <div className="bg-white p-8 shadow-sm border-l-4 border-signal-red">
+              <h3 className="text-2xl font-bold mb-4 text-navy-900">
+                Performance Is a Feature
+              </h3>
+              <p className="text-slate-700 leading-relaxed mb-3">
+                Speed, reliability, and efficiency drive real business outcomes.
+              </p>
+              <p className="text-sm text-slate-700 italic">
+                Faster systems convert better and scale smoother.
+              </p>
+            </div>
+
+            {/* Principle 3 */}
+            <div className="bg-white p-8 shadow-sm border-l-4 border-signal-red">
+              <h3 className="text-2xl font-bold mb-4 text-navy-900">
+                Design for Longevity
+              </h3>
+              <p className="text-slate-700 leading-relaxed mb-3">
+                Systems should evolve, not expire.
+              </p>
+              <p className="text-sm text-slate-700 italic">
+                We build with maintainability in mind.
+              </p>
+            </div>
+
+            {/* Principle 4 */}
+            <div className="bg-white p-8 shadow-sm border-l-4 border-signal-red">
+              <h3 className="text-2xl font-bold mb-4 text-navy-900">
+                Partnership Over Handoffs
+              </h3>
+              <p className="text-slate-700 leading-relaxed mb-3">
+                We don't just build and leave. We improve and grow with you.
+              </p>
+              <p className="text-sm text-slate-700 italic">
+                We stay involved after launch.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* How We Work */}
-      <section className="section bg-off-white">
+      <section className="section bg-white">
         <div className="container-wide">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              How we work
+              How We Work
             </h2>
+            <p className="text-lg text-slate-700">
+              We combine deep technical expertise with structured collaboration.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-signal-red/10 flex items-center justify-center rounded-full">
-                <svg className="w-10 h-10 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+          <div className="max-w-3xl mx-auto space-y-6 mb-12">
+            <div className="flex gap-4">
+              <span className="flex-shrink-0 w-10 h-10 bg-signal-red text-white rounded-full flex items-center justify-center font-bold">1</span>
+              <div className="pt-1">
+                <h3 className="text-xl font-bold mb-2 text-navy-900">Understand the business needs</h3>
+                <p className="text-slate-700">We start with your goals, not technology.</p>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Co-create</h3>
-              <p className="text-slate-700 leading-relaxed">
-                Embedded with your teams. We don't hand off and disappear—we roll up our sleeves and build alongside you.
-              </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-signal-red/10 flex items-center justify-center rounded-full">
-                <svg className="w-10 h-10 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+            <div className="flex gap-4">
+              <span className="flex-shrink-0 w-10 h-10 bg-signal-red text-white rounded-full flex items-center justify-center font-bold">2</span>
+              <div className="pt-1">
+                <h3 className="text-xl font-bold mb-2 text-navy-900">Architect and plan with long-term clarity</h3>
+                <p className="text-slate-700">Design systems that scale and integrate cleanly.</p>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Prove value fast</h3>
-              <p className="text-slate-700 leading-relaxed">
-                Test-and-learn sprints. We favor rapid pilots that prove value in weeks over multi-year transformations.
-              </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-6 bg-signal-red/10 flex items-center justify-center rounded-full">
-                <svg className="w-10 h-10 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
+            <div className="flex gap-4">
+              <span className="flex-shrink-0 w-10 h-10 bg-signal-red text-white rounded-full flex items-center justify-center font-bold">3</span>
+              <div className="pt-1">
+                <h3 className="text-xl font-bold mb-2 text-navy-900">Build fast, refine continuously</h3>
+                <p className="text-slate-700">Ship quality code with testing and documentation.</p>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Build capability</h3>
-              <p className="text-slate-700 leading-relaxed">
-                Toolkits, training, and handover. We leave you self-sufficient with the skills and assets to sustain momentum.
-              </p>
             </div>
+
+            <div className="flex gap-4">
+              <span className="flex-shrink-0 w-10 h-10 bg-signal-red text-white rounded-full flex items-center justify-center font-bold">4</span>
+              <div className="pt-1">
+                <h3 className="text-xl font-bold mb-2 text-navy-900">Support and scale with you</h3>
+                <p className="text-slate-700">Ongoing optimization, features, and partnership.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <Link href="/services" className="inline-flex items-center gap-2 text-sm font-semibold text-signal-red hover:gap-3 transition-all duration-200">
+              <span>Learn More About Our Approach</span>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Values */}
-      <section className="section bg-white">
-        <div className="container-narrow">
-          <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
-            Our values
+      {/* Global Mindset */}
+      <section className="section bg-navy-900 text-white">
+        <div className="container-wide text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-8">
+            Built for a Global World
           </h2>
-
-          <div className="space-y-8">
-            <div className="border-l-4 border-signal-red pl-6">
-              <h3 className="text-2xl font-bold mb-3">Client impact</h3>
-              <p className="text-slate-700 leading-relaxed">
-                We measure success by your results, not our deliverables. If value doesn't show up in your P&L, we haven't succeeded.
-              </p>
-            </div>
-
-            <div className="border-l-4 border-signal-red pl-6">
-              <h3 className="text-2xl font-bold mb-3">Integrity</h3>
-              <p className="text-slate-700 leading-relaxed">
-                We tell you what you need to hear, not what you want to hear. If a project isn't working, we'll say so—and pivot.
-              </p>
-            </div>
-
-            <div className="border-l-4 border-signal-red pl-6">
-              <h3 className="text-2xl font-bold mb-3">Craft</h3>
-              <p className="text-slate-700 leading-relaxed">
-                We care about quality—in our analysis, our code, our design, and our communication. Details matter.
-              </p>
-            </div>
-
-            <div className="border-l-4 border-signal-red pl-6">
-              <h3 className="text-2xl font-bold mb-3">Inclusivity</h3>
-              <p className="text-slate-700 leading-relaxed">
-                Diverse teams produce better outcomes. We actively build inclusive teams and help clients do the same.
-              </p>
-            </div>
+          <p className="text-xl text-gray-200 max-w-3xl mx-auto mb-12">
+            Our team works across time zones and industries—with engineering workflows designed for clarity, async collaboration, and sustainable delivery.
+          </p>
+          <div className="flex flex-wrap justify-center gap-6 text-gray-300 text-sm">
+            <span>North America</span>
+            <span>•</span>
+            <span>Europe</span>
+            <span>•</span>
+            <span>Asia Pacific</span>
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="section-sm bg-navy-900 text-white">
+      <section className="section-sm bg-white">
         <div className="container-wide text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Work with ambitious leaders who want to define the future
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-navy-900">
+            Ready to build something that lasts?
           </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto text-gray-200">
-            Together, we achieve extraordinary outcomes.
-          </p>
-          <Link href="/contact" className="btn-secondary border-white text-white hover:bg-white hover:text-navy-900">
-            Let's talk
+          <Link href="/contact" className="inline-flex items-center gap-2 px-8 py-4 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 group">
+            <span>Start a Conversation</span>
+            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
           </Link>
         </div>
       </section>
     </>
   );
 }
-
