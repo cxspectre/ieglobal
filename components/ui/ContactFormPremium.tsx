@@ -51,7 +51,7 @@ export default function ContactFormPremium() {
       setIsSuccess(true);
       reset();
     } catch (err) {
-      setError('Something went wrong. Please try again or email us directly at hello@ieglobal.com');
+      setError('Something went wrong. Please try again or email us directly at hello@ie-global.net');
       console.error('Contact form error:', err);
     } finally {
       setIsSubmitting(false);

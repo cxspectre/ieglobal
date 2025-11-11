@@ -75,7 +75,7 @@ After adding the environment variable:
 1. Go to your live site: `https://ieglobal.vercel.app/contact`
 2. Fill out the contact form
 3. Submit
-4. Check your inbox at `hello@ieglobal.com`
+4. Check your inbox at `hello@ie-global.net`
 5. You should receive a formatted email!
 
 ---

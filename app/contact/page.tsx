@@ -95,8 +95,8 @@ export default function ContactPage() {
                 <h4 className="font-bold text-base mb-2 text-navy-900">Prefer email?</h4>
                 <p className="text-slate-700 mb-3">
                   Reach out directly at{' '}
-                  <a href="mailto:hello@ieglobal.com" className="text-signal-red hover:underline font-semibold">
-                    hello@ieglobal.com
+                  <a href="mailto:hello@ie-global.net" className="text-signal-red hover:underline font-semibold">
+                    hello@ie-global.net
                   </a>
                 </p>
                 <p className="text-sm text-slate-700">
