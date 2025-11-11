@@ -273,7 +273,7 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
               </div>
 
               <Link
-                href="/about"
+                href="/approach"
                 className={cn("text-sm font-medium transition-all duration-200", textColor)}
               >
                 Approach
@@ -387,7 +387,7 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
                 </div>
 
                 <Link
-                  href="/about"
+                  href="/approach"
                   className="block py-3 text-navy-900 hover:text-signal-red font-medium text-lg border-b border-gray-100"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
