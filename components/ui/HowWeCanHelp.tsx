@@ -5,110 +5,118 @@ import Link from 'next/link';
 
 const scenarios = [
   {
-    number: '01',
-    title: 'You need to build something new',
-    tagline: 'From concept to launch',
-    description: 'Website, platform, or app—designed for speed, clarity, and long-term scalability. We bring product thinking and modern engineering from day one.',
-    cta: {
-      text: 'Websites & Platforms',
-      href: '/services/websites-and-platforms',
-    },
+    title: 'Build',
+    subtitle: 'Starting from scratch',
+    description: 'Create high-performance websites, platforms, and apps designed for clarity and growth.',
+    href: '/services/websites-and-platforms',
+    icon: (
+      <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+    ),
   },
   {
-    number: '02',
-    title: 'Your systems need to run faster',
-    tagline: 'Performance optimization',
-    description: 'Slow pages, bottlenecks, confusing workflows. We diagnose, optimize, and rebuild where needed—without disrupting the business.',
-    cta: {
-      text: 'Performance & Reliability',
-      href: '/services/cloud-and-security',
-    },
+    title: 'Optimize',
+    subtitle: 'Improve what exists',
+    description: 'Diagnose bottlenecks, increase speed, and rebuild for scale—without disrupting operations.',
+    href: '/services/cloud-and-security',
+    icon: (
+      <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
   },
   {
-    number: '03',
-    title: 'Your tools need to work together',
-    tagline: 'Integration & automation',
-    description: 'Disconnected platforms, manual exports, unclear data paths. We integrate your systems and automate your workflows.',
-    cta: {
-      text: 'Data, AI & Automation',
-      href: '/services/data-ai-automation',
-    },
+    title: 'Integrate',
+    subtitle: 'Connect your systems',
+    description: 'Unify platforms, automate workflows, and enable data-driven decisions across tools.',
+    href: '/services/data-ai-automation',
+    icon: (
+      <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
   },
   {
-    number: '04',
-    title: 'You need a long-term partner',
-    tagline: 'Ongoing support',
-    description: 'Not short-term freelancers or one-off agencies. A strategic partner who maintains, improves, and evolves your systems as you grow.',
-    cta: {
-      text: 'Ongoing Support',
-      href: '/services/ongoing-support',
-    },
+    title: 'Sustain',
+    subtitle: 'Long-term partnership',
+    description: 'Ongoing optimization, feature development, and strategic support as you scale.',
+    href: '/services/ongoing-support',
+    icon: (
+      <svg className="w-16 h-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+    ),
   },
 ];
 
 export default function HowWeCanHelp() {
   return (
-    <section className="section bg-white">
+    <section className="py-24 bg-off-white">
       <div className="container-wide">
         {/* Header */}
-        <div className="max-w-4xl mb-20">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-navy-900">
+        <div className="text-center max-w-3xl mx-auto mb-20">
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-navy-900">
             How We Can Help
           </h2>
           <p className="text-xl text-slate-700">
-            We support companies at all stages—from first build to global scale.
+            Four ways we support your growth
           </p>
         </div>
 
-        {/* Scenarios - Stacked with alternating emphasis */}
-        <div className="max-w-5xl mx-auto space-y-0">
+        {/* Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1 max-w-7xl mx-auto">
           {scenarios.map((scenario, index) => (
             <motion.div
-              key={scenario.number}
-              initial={{ opacity: 0, y: 20 }}
+              key={index}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group py-12 border-b border-gray-100 last:border-b-0"
+              transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              <div className="grid grid-cols-12 gap-8 items-start">
-                {/* Number */}
-                <div className="col-span-2">
-                  <span className="text-6xl font-bold font-mono text-signal-red/30 group-hover:text-signal-red transition-colors duration-300">
-                    {scenario.number}
-                  </span>
+              <Link
+                href={scenario.href}
+                className="group block bg-white h-full p-10 hover:bg-navy-900 transition-all duration-500 relative overflow-hidden"
+              >
+                {/* Icon */}
+                <div className="mb-8 text-signal-red group-hover:text-white transition-colors duration-500">
+                  {scenario.icon}
                 </div>
 
-                {/* Content */}
-                <div className="col-span-10">
-                  <span className="inline-block text-xs font-semibold text-signal-red uppercase tracking-wide mb-3">
-                    {scenario.tagline}
-                  </span>
-                  <h3 className="text-3xl font-bold mb-4 text-navy-900">
-                    {scenario.title}
-                  </h3>
-                  <p className="text-lg text-slate-700 leading-relaxed mb-6 max-w-3xl">
-                    {scenario.description}
-                  </p>
-                  <Link
-                    href={scenario.cta.href}
-                    className="inline-flex items-center gap-2 text-base font-semibold text-signal-red hover:gap-3 transition-all duration-200 group/link"
-                  >
-                    <span>{scenario.cta.text}</span>
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                  </Link>
+                {/* Title */}
+                <h3 className="text-3xl font-bold mb-2 text-navy-900 group-hover:text-white transition-colors duration-500">
+                  {scenario.title}
+                </h3>
+
+                {/* Subtitle */}
+                <p className="text-sm text-slate-700 group-hover:text-gray-300 mb-4 transition-colors duration-500">
+                  {scenario.subtitle}
+                </p>
+
+                {/* Description */}
+                <p className="text-base text-slate-700 group-hover:text-gray-200 leading-relaxed mb-6 transition-colors duration-500">
+                  {scenario.description}
+                </p>
+
+                {/* Arrow */}
+                <div className="flex items-center gap-2 text-signal-red group-hover:text-white transition-all duration-300">
+                  <span className="text-sm font-semibold">Learn more</span>
+                  <svg className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
                 </div>
-              </div>
+
+                {/* Hover gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-signal-red/0 to-signal-red/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              </Link>
             </motion.div>
           ))}
         </div>
 
         {/* Proof Metric */}
-        <div className="text-center mt-20 pt-12 border-t border-gray-200 max-w-4xl mx-auto">
+        <div className="text-center mt-20">
           <p className="text-xl font-semibold text-navy-900">
-            98% of our projects become ongoing partnerships.
+            98% of our projects become ongoing partnerships
           </p>
         </div>
       </div>
