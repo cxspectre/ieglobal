@@ -151,72 +151,103 @@ export default function HomePage() {
       <HowWeCanHelp />
 
       {/* Measurable Outcomes */}
-      <section className="section bg-navy-900 text-white">
+      <section className="section bg-white">
         <div className="container-wide">
-          <div className="text-center max-w-4xl mx-auto mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Measurable Outcomes
-            </h2>
-            <p className="text-xl text-gray-200 mb-4">
-              Engineering isn't just about shipping—it's about impact.
-            </p>
-            <p className="text-lg text-gray-300 italic">
-              Your digital systems should create momentum—not friction.
-            </p>
+          {/* Split Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center max-w-7xl mx-auto">
+            {/* Left: Content */}
+            <div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-navy-900">
+                Measurable Outcomes
+              </h2>
+              <p className="text-2xl text-navy-900 mb-6 leading-tight">
+                Engineering isn't just about shipping—it's about impact.
+              </p>
+              <p className="text-lg text-slate-700 leading-relaxed mb-8">
+                Your digital systems should create momentum—not friction. We measure success in business outcomes, not just technical metrics.
+              </p>
+              <Link 
+                href="/case-studies" 
+                className="inline-flex items-center gap-2 text-base font-semibold text-signal-red hover:gap-3 transition-all duration-200"
+              >
+                <span>View Case Studies</span>
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+
+            {/* Right: Metrics Grid */}
+            <div className="grid grid-cols-2 gap-8">
+              {/* Metric 1 */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 0.5, delay: 0 }}
+                className="bg-off-white p-8 text-center group hover:bg-navy-900 transition-all duration-300"
+              >
+                <div className="text-5xl font-bold font-mono text-signal-red mb-3">
+                  43%
+                </div>
+                <div className="text-sm text-slate-700 group-hover:text-gray-300 transition-colors duration-300">
+                  Faster load times
+                </div>
+              </motion.div>
+
+              {/* Metric 2 */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="bg-off-white p-8 text-center group hover:bg-navy-900 transition-all duration-300"
+              >
+                <div className="text-5xl font-bold font-mono text-signal-red mb-3">
+                  27%
+                </div>
+                <div className="text-sm text-slate-700 group-hover:text-gray-300 transition-colors duration-300">
+                  Conversion increase
+                </div>
+              </motion.div>
+
+              {/* Metric 3 */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="bg-off-white p-8 text-center group hover:bg-navy-900 transition-all duration-300"
+              >
+                <div className="text-5xl font-bold font-mono text-signal-red mb-3">
+                  99.9%
+                </div>
+                <div className="text-sm text-slate-700 group-hover:text-gray-300 transition-colors duration-300">
+                  Uptime achieved
+                </div>
+              </motion.div>
+
+              {/* Metric 4 */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="bg-off-white p-8 text-center group hover:bg-navy-900 transition-all duration-300"
+              >
+                <div className="text-5xl font-bold font-mono text-signal-red mb-3">
+                  34%
+                </div>
+                <div className="text-sm text-slate-700 group-hover:text-gray-300 transition-colors duration-300">
+                  Cost reduction
+                </div>
+              </motion.div>
+            </div>
           </div>
 
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Metric 1 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.5, delay: 0 }}
-              className="flex items-baseline gap-4 pb-4 border-b border-white/20"
-            >
-              <span className="text-4xl md:text-5xl font-bold font-mono text-signal-red">43%</span>
-              <span className="text-lg md:text-xl text-gray-200">faster load times across modernized platforms</span>
-            </motion.div>
-
-            {/* Metric 2 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="flex items-baseline gap-4 pb-4 border-b border-white/20"
-            >
-              <span className="text-4xl md:text-5xl font-bold font-mono text-signal-red">27%</span>
-              <span className="text-lg md:text-xl text-gray-200">increase in conversion efficiency on average</span>
-            </motion.div>
-
-            {/* Metric 3 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex items-baseline gap-4 pb-4 border-b border-white/20"
-            >
-              <span className="text-4xl md:text-5xl font-bold font-mono text-signal-red">99.9%</span>
-              <span className="text-lg md:text-xl text-gray-200">uptime across supported deployments</span>
-            </motion.div>
-
-            {/* Metric 4 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex items-baseline gap-4 pb-4"
-            >
-              <span className="text-4xl md:text-5xl font-bold font-mono text-signal-red">34%</span>
-              <span className="text-lg md:text-xl text-gray-200">reduction in operational overhead for teams we support</span>
-            </motion.div>
-          </div>
-
-          <div className="text-center mt-12">
-            <p className="text-gray-300 italic">
+          {/* Bottom tagline */}
+          <div className="text-center mt-20 max-w-2xl mx-auto">
+            <p className="text-xl font-semibold text-navy-900">
               Performance gains you can feel—and measure.
             </p>
           </div>

@@ -56,7 +56,7 @@ export default function HowWeCanHelp() {
       <div className="container-wide">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-20">
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 text-navy-900">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-navy-900">
             How We Can Help
           </h2>
           <p className="text-xl text-slate-700">
