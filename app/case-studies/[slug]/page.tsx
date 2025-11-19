@@ -39,77 +39,91 @@ export default function CaseStudyPage({ params }: Props) {
 
   return (
     <>
-      {/* Hero */}
-      <section className="pt-32 pb-16 bg-navy-900 text-white">
-        <div className="container-narrow">
+      {/* Breadcrumb & Back */}
+      <section className="pt-32 pb-8 bg-white border-b border-gray-100">
+        <div className="container-wide">
           <Link 
             href="/case-studies"
-            className="inline-flex items-center gap-2 text-sm text-gray-300 hover:text-white mb-8 transition-colors duration-200"
+            className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Back to Case Studies
+            Back to Work
           </Link>
+        </div>
+      </section>
 
-          <div className="mb-6">
-            <span className="inline-block px-4 py-1 bg-signal-red text-white text-xs font-semibold uppercase tracking-wide">
+      {/* Hero - Clean & Spacious */}
+      <section className="py-20 bg-white">
+        <div className="container-wide max-w-5xl">
+          <div className="mb-8">
+            <span className="inline-block px-4 py-2 bg-signal-red/10 text-signal-red text-xs font-bold uppercase tracking-wider">
               {caseStudy.industry}
             </span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight text-navy-900">
             {caseStudy.title}
           </h1>
 
-          <p className="text-xl text-gray-200 mb-8 leading-relaxed">
+          <p className="text-2xl text-slate-700 leading-relaxed mb-12">
             {caseStudy.summary}
           </p>
 
-          <div className="flex flex-wrap gap-6 text-sm">
+          {/* Meta Info */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-8 border-t border-gray-200">
             <div>
-              <span className="text-gray-400">Client:</span>
-              <span className="ml-2 text-white font-semibold">{caseStudy.client}</span>
+              <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Client</div>
+              <div className="text-base font-semibold text-navy-900">{caseStudy.client}</div>
             </div>
             <div>
-              <span className="text-gray-400">Date:</span>
-              <span className="ml-2 text-white font-semibold">{formatDate(caseStudy.date)}</span>
+              <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Industry</div>
+              <div className="text-base font-semibold text-navy-900">{caseStudy.industry}</div>
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Date</div>
+              <div className="text-base font-semibold text-navy-900">{formatDate(caseStudy.date)}</div>
             </div>
             {caseStudy.services && caseStudy.services.length > 0 && (
               <div>
-                <span className="text-gray-400">Services:</span>
-                <span className="ml-2 text-white font-semibold">{caseStudy.services.join(', ')}</span>
+                <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Services</div>
+                <div className="text-base font-semibold text-navy-900">{caseStudy.services.join(', ')}</div>
               </div>
             )}
           </div>
         </div>
       </section>
 
-      {/* Outcome Highlight */}
+      {/* Outcome Callout - Full Width */}
       {caseStudy.outcome && (
-        <section className="py-12 bg-signal-red text-white">
-          <div className="container-narrow text-center">
-            <p className="text-xs font-semibold uppercase tracking-wide mb-3">
-              Outcome
-            </p>
-            <p className="text-2xl md:text-3xl font-bold">
-              {caseStudy.outcome}
-            </p>
+        <section className="py-16 bg-signal-red">
+          <div className="container-wide max-w-5xl">
+            <div className="text-center">
+              <p className="text-sm font-semibold text-white/80 uppercase tracking-wider mb-4">
+                The Outcome
+              </p>
+              <p className="text-3xl md:text-4xl font-bold text-white leading-tight">
+                {caseStudy.outcome}
+              </p>
+            </div>
           </div>
         </section>
       )}
 
-      {/* Metrics */}
+      {/* Key Metrics - Clean Grid */}
       {caseStudy.metrics && caseStudy.metrics.length > 0 && (
-        <section className="py-12 bg-off-white border-b border-gray-200">
-          <div className="container-narrow">
+        <section className="py-16 bg-off-white">
+          <div className="container-wide max-w-5xl">
+            <h3 className="text-xs font-bold text-navy-900 uppercase tracking-wider mb-8 text-center">
+              Key Results
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {caseStudy.metrics.map((metric, i) => (
-                <div key={i} className="text-center">
-                  <div className="text-sm font-semibold text-signal-red mb-2">✓</div>
-                  <div className="text-base text-navy-900 font-semibold">
+                <div key={i} className="text-center p-6 bg-white border-l-4 border-signal-red">
+                  <p className="text-base font-semibold text-navy-900">
                     {metric}
-                  </div>
+                  </p>
                 </div>
               ))}
             </div>
@@ -117,21 +131,32 @@ export default function CaseStudyPage({ params }: Props) {
         </section>
       )}
 
-      {/* Content */}
-      <section className="section bg-white">
-        <div className="container-narrow">
-          <article className="prose prose-lg max-w-none">
-            <div dangerouslySetInnerHTML={{ __html: caseStudy.content }} />
-          </article>
+      {/* Content - Spacious Article Format */}
+      <section className="py-20 bg-white">
+        <div className="container-wide max-w-4xl">
+          <article 
+            className="prose prose-lg prose-slate max-w-none
+              prose-headings:font-bold prose-headings:text-navy-900 prose-headings:mb-6
+              prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-6
+              prose-h3:text-2xl prose-h3:mt-8
+              prose-p:text-slate-700 prose-p:leading-relaxed prose-p:mb-6
+              prose-ul:my-6 prose-li:text-slate-700 prose-li:mb-3
+              prose-strong:text-navy-900 prose-strong:font-bold
+              prose-a:text-signal-red prose-a:no-underline hover:prose-a:underline"
+            dangerouslySetInnerHTML={{ __html: caseStudy.content }}
+          />
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="section-sm bg-navy-900 text-white">
-        <div className="container-wide text-center">
+      {/* CTA - Confident Close */}
+      <section className="py-20 bg-navy-900 text-white">
+        <div className="container-wide text-center max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to create your success story?
+            Want results like this?
           </h2>
+          <p className="text-xl text-gray-200 mb-10">
+            Let's build something that creates momentum for your business.
+          </p>
           <Link href="/contact" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-navy-900 font-semibold hover:bg-gray-100 transition-all duration-200 group">
             <span>Start a Conversation</span>
             <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -143,4 +168,3 @@ export default function CaseStudyPage({ params }: Props) {
     </>
   );
 }
-
