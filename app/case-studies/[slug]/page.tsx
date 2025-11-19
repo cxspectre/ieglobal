@@ -151,33 +151,23 @@ export default function CaseStudyPage({ params }: Props) {
         </section>
       )}
 
-      {/* The Story - Visual Presentation Deck Style */}
-      <section className="bg-white">
-        <div 
-          className="case-study-story
-            [&>section]:py-20
-            [&>section:nth-child(odd)]:bg-white
-            [&>section:nth-child(even)]:bg-off-white
-            
-            [&_h2]:text-xs [&_h2]:font-bold [&_h2]:text-signal-red [&_h2]:uppercase [&_h2]:tracking-[0.2em] [&_h2]:mb-12 [&_h2]:text-center
-            
-            [&_h3]:grid [&_h3]:grid-cols-12 [&_h3]:gap-12 [&_h3]:items-start [&_h3]:mb-12 [&_h3]:pb-8 [&_h3]:border-b [&_h3]:border-gray-200
-            [&_h3]:before:content-[attr(data-number)] [&_h3]:before:col-span-2 [&_h3]:before:text-6xl [&_h3]:before:font-bold [&_h3]:before:text-signal-red/30
-            [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:text-navy-900 [&_h3]:col-span-10
-            
-            [&_h4]:text-base [&_h4]:font-bold [&_h4]:text-navy-900 [&_h4]:mb-4 [&_h4]:mt-0
-            
-            [&_p]:text-base [&_p]:text-slate-700 [&_p]:leading-relaxed [&_p]:mb-6 [&_p]:max-w-4xl
-            
-            [&_ul]:grid [&_ul]:grid-cols-1 [&_ul]:md:grid-cols-2 [&_ul]:gap-4 [&_ul]:my-8 [&_ul]:max-w-4xl
-            [&_li]:flex [&_li]:items-start [&_li]:gap-3 [&_li]:text-slate-700 [&_li]:text-base [&_li]:bg-white [&_li]:p-4 [&_li]:border-l-2 [&_li]:border-signal-red/30
-            [&_li]:before:content-['→'] [&_li]:before:text-signal-red [&_li]:before:font-bold [&_li]:before:flex-shrink-0
-            
-            [&_strong]:text-navy-900 [&_strong]:font-bold
-            [&_a]:text-signal-red [&_a]:font-semibold [&_a]:no-underline hover:[&_a]:underline
-            [&_hr]:my-0"
-        >
-          <div dangerouslySetInnerHTML={{ __html: caseStudy.content }} />
+      {/* The Story - Clean Article Style */}
+      <section className="py-20 bg-white">
+        <div className="container-wide max-w-4xl">
+          <article 
+            className="prose prose-lg prose-slate max-w-none
+              prose-headings:font-bold prose-headings:text-navy-900
+              prose-h2:text-sm prose-h2:font-bold prose-h2:text-signal-red prose-h2:uppercase prose-h2:tracking-wider prose-h2:mb-8 prose-h2:mt-16 first:prose-h2:mt-0 prose-h2:text-center
+              prose-h3:text-2xl prose-h3:font-bold prose-h3:text-navy-900 prose-h3:mb-6 prose-h3:mt-12
+              prose-h4:text-lg prose-h4:font-bold prose-h4:text-navy-900 prose-h4:mb-4 prose-h4:mt-6
+              prose-p:text-base prose-p:text-slate-700 prose-p:leading-relaxed prose-p:mb-6
+              prose-ul:my-6 prose-ul:space-y-3
+              prose-li:text-slate-700 prose-li:text-base prose-li:leading-relaxed prose-li:pl-2
+              prose-li:before:content-['•'] prose-li:before:text-signal-red prose-li:before:font-bold prose-li:before:mr-3
+              prose-strong:text-navy-900 prose-strong:font-bold
+              prose-a:text-signal-red prose-a:font-semibold prose-a:no-underline hover:prose-a:underline"
+            dangerouslySetInnerHTML={{ __html: caseStudy.content }}
+          />
         </div>
       </section>
 
