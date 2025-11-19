@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getCaseStudy, getCaseStudies } from '@/lib/mdx';
 import { formatDate } from '@/lib/utils';
+import PresentationContent from '@/components/case-studies/PresentationContent';
 
 type Props = {
   params: { slug: string };
@@ -151,25 +152,8 @@ export default function CaseStudyPage({ params }: Props) {
         </section>
       )}
 
-      {/* The Story - Clean Article Style */}
-      <section className="py-20 bg-white">
-        <div className="container-wide max-w-4xl">
-          <article 
-            className="prose prose-lg prose-slate max-w-none
-              prose-headings:font-bold prose-headings:text-navy-900
-              prose-h2:text-sm prose-h2:font-bold prose-h2:text-signal-red prose-h2:uppercase prose-h2:tracking-wider prose-h2:mb-8 prose-h2:mt-16 first:prose-h2:mt-0 prose-h2:text-center
-              prose-h3:text-2xl prose-h3:font-bold prose-h3:text-navy-900 prose-h3:mb-6 prose-h3:mt-12
-              prose-h4:text-lg prose-h4:font-bold prose-h4:text-navy-900 prose-h4:mb-4 prose-h4:mt-6
-              prose-p:text-base prose-p:text-slate-700 prose-p:leading-relaxed prose-p:mb-6
-              prose-ul:my-6 prose-ul:space-y-3
-              prose-li:text-slate-700 prose-li:text-base prose-li:leading-relaxed prose-li:pl-2
-              prose-li:before:content-['•'] prose-li:before:text-signal-red prose-li:before:font-bold prose-li:before:mr-3
-              prose-strong:text-navy-900 prose-strong:font-bold
-              prose-a:text-signal-red prose-a:font-semibold prose-a:no-underline hover:prose-a:underline"
-            dangerouslySetInnerHTML={{ __html: caseStudy.content }}
-          />
-        </div>
-      </section>
+      {/* The Story - Presentation Deck Style */}
+      <PresentationContent content={caseStudy.content} />
 
       {/* CTA - Strong Close */}
       <section className="py-24 bg-navy-900 text-white relative overflow-hidden">
