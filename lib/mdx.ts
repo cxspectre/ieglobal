@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import { marked } from 'marked';
 
 const contentDirectory = path.join(process.cwd(), 'content');
 
@@ -76,6 +77,9 @@ export function getCaseStudy(slug: string): CaseStudy | null {
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
 
+    // Convert markdown to HTML
+    const htmlContent = marked(content);
+
     return {
       slug,
       title: data.title,
@@ -89,7 +93,7 @@ export function getCaseStudy(slug: string): CaseStudy | null {
       coverImage: data.coverImage,
       date: data.date,
       featured: data.featured || false,
-      content,
+      content: htmlContent as string,
     };
   } catch {
     return null;
@@ -136,6 +140,9 @@ export function getInsight(slug: string): Insight | null {
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
 
+    // Convert markdown to HTML
+    const htmlContent = marked(content);
+
     return {
       slug,
       title: data.title,
@@ -147,7 +154,7 @@ export function getInsight(slug: string): Insight | null {
       readingTime: data.readingTime,
       coverImage: data.coverImage,
       featured: data.featured || false,
-      content,
+      content: htmlContent as string,
     };
   } catch {
     return null;
