@@ -151,23 +151,33 @@ export default function CaseStudyPage({ params }: Props) {
         </section>
       )}
 
-      {/* The Story - Presentation Style */}
-      <section className="py-20 bg-white">
-        <div className="container-wide max-w-5xl">
-          <article 
-            className="case-study-content
-              [&>h2]:text-sm [&>h2]:font-bold [&>h2]:text-signal-red [&>h2]:uppercase [&>h2]:tracking-wider [&>h2]:mb-8 [&>h2]:mt-20 first:[&>h2]:mt-0
-              [&>h3]:text-3xl [&>h3]:font-bold [&>h3]:text-navy-900 [&>h3]:mb-6 [&>h3]:mt-12
-              [&>h4]:text-xl [&>h4]:font-bold [&>h4]:text-navy-900 [&>h4]:mb-4 [&>h4]:mt-8
-              [&>p]:text-lg [&>p]:text-slate-700 [&>p]:leading-relaxed [&>p]:mb-6
-              [&>ul]:my-6 [&>ul]:space-y-4 [&>ul]:ml-0
-              [&>li]:text-slate-700 [&>li]:text-base [&>li]:leading-relaxed [&>li]:pl-8 [&>li]:relative
-              [&>li]:before:content-['•'] [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:text-signal-red [&>li]:before:font-bold [&>li]:before:text-xl
-              [&>strong]:text-navy-900 [&>strong]:font-bold
-              [&>a]:text-signal-red [&>a]:font-semibold [&>a]:no-underline hover:[&>a]:underline
-              [&>hr]:my-16 [&>hr]:border-gray-200"
-            dangerouslySetInnerHTML={{ __html: caseStudy.content }}
-          />
+      {/* The Story - Visual Presentation Deck Style */}
+      <section className="bg-white">
+        <div 
+          className="case-study-story
+            [&>section]:py-20
+            [&>section:nth-child(odd)]:bg-white
+            [&>section:nth-child(even)]:bg-off-white
+            
+            [&_h2]:text-xs [&_h2]:font-bold [&_h2]:text-signal-red [&_h2]:uppercase [&_h2]:tracking-[0.2em] [&_h2]:mb-12 [&_h2]:text-center
+            
+            [&_h3]:grid [&_h3]:grid-cols-12 [&_h3]:gap-12 [&_h3]:items-start [&_h3]:mb-12 [&_h3]:pb-8 [&_h3]:border-b [&_h3]:border-gray-200
+            [&_h3]:before:content-[attr(data-number)] [&_h3]:before:col-span-2 [&_h3]:before:text-6xl [&_h3]:before:font-bold [&_h3]:before:text-signal-red/30
+            [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:text-navy-900 [&_h3]:col-span-10
+            
+            [&_h4]:text-base [&_h4]:font-bold [&_h4]:text-navy-900 [&_h4]:mb-4 [&_h4]:mt-0
+            
+            [&_p]:text-base [&_p]:text-slate-700 [&_p]:leading-relaxed [&_p]:mb-6 [&_p]:max-w-4xl
+            
+            [&_ul]:grid [&_ul]:grid-cols-1 [&_ul]:md:grid-cols-2 [&_ul]:gap-4 [&_ul]:my-8 [&_ul]:max-w-4xl
+            [&_li]:flex [&_li]:items-start [&_li]:gap-3 [&_li]:text-slate-700 [&_li]:text-base [&_li]:bg-white [&_li]:p-4 [&_li]:border-l-2 [&_li]:border-signal-red/30
+            [&_li]:before:content-['→'] [&_li]:before:text-signal-red [&_li]:before:font-bold [&_li]:before:flex-shrink-0
+            
+            [&_strong]:text-navy-900 [&_strong]:font-bold
+            [&_a]:text-signal-red [&_a]:font-semibold [&_a]:no-underline hover:[&_a]:underline
+            [&_hr]:my-0"
+        >
+          <div dangerouslySetInnerHTML={{ __html: caseStudy.content }} />
         </div>
       </section>
 
