@@ -75,10 +75,10 @@ export default function PresentationContent({ content }: PresentationContentProp
         // H2 - Section Header (Full Width, Red, Centered)
         if (section.type === 'h2') {
           return (
-            <section key={index} className="py-24 bg-white">
+            <section key={index} className="pt-16 pb-8 bg-white">
               <div className="container-wide max-w-6xl">
                 <h2 
-                  className="text-xs font-bold text-signal-red uppercase tracking-[0.2em] mb-8 text-center"
+                  className="text-xs font-bold text-signal-red uppercase tracking-[0.2em] mb-0 text-center"
                   dangerouslySetInnerHTML={{ __html: section.content }}
                 />
               </div>
@@ -89,7 +89,7 @@ export default function PresentationContent({ content }: PresentationContentProp
         // H3 - Step/Phase Header (Large Number + Title)
         if (section.type === 'h3') {
           return (
-            <section key={index} className="py-20 bg-off-white">
+            <section key={index} className="pt-12 pb-6 bg-off-white">
               <div className="container-wide max-w-6xl">
                 <div className="grid grid-cols-12 gap-12 items-start">
                   <div className="col-span-2">
@@ -120,7 +120,7 @@ export default function PresentationContent({ content }: PresentationContentProp
 
           if (isContext || isOutcome) {
             return (
-              <section key={index} className="py-16 bg-white">
+              <section key={index} className="pt-6 pb-8 bg-white">
                 <div className="container-wide max-w-4xl">
                   <p 
                     className="text-xl md:text-2xl text-slate-700 leading-relaxed"
@@ -133,7 +133,7 @@ export default function PresentationContent({ content }: PresentationContentProp
 
           if (isTechStack) {
             return (
-              <section key={index} className="py-16 bg-off-white">
+              <section key={index} className="pt-6 pb-8 bg-off-white">
                 <div className="container-wide max-w-4xl">
                   <p 
                     className="text-lg text-slate-700 text-center font-medium"
@@ -145,7 +145,7 @@ export default function PresentationContent({ content }: PresentationContentProp
           }
 
           return (
-            <section key={index} className="py-8 bg-white">
+            <section key={index} className="pt-4 pb-4 bg-white">
               <div className="container-wide max-w-4xl">
                 <p 
                   className="text-base text-slate-700 leading-relaxed"
@@ -168,7 +168,7 @@ export default function PresentationContent({ content }: PresentationContentProp
           if (isWhatWeDid) {
             // Grid layout for What We Did items
             return (
-              <section key={index} className="py-12 bg-off-white">
+              <section key={index} className="pt-4 pb-8 bg-off-white">
                 <div className="container-wide max-w-6xl">
                   <ul 
                     className="grid grid-cols-1 md:grid-cols-2 gap-6 presentation-list"
@@ -182,7 +182,7 @@ export default function PresentationContent({ content }: PresentationContentProp
           if (isExpectedOutcome) {
             // Card grid for Expected Outcome
             return (
-              <section key={index} className="py-16 bg-white">
+              <section key={index} className="pt-4 pb-8 bg-white">
                 <div className="container-wide max-w-6xl">
                   <ul 
                     className="grid grid-cols-1 md:grid-cols-2 gap-6 presentation-list"
@@ -196,7 +196,7 @@ export default function PresentationContent({ content }: PresentationContentProp
           if (isChallenge) {
             // Challenge list - full width with emphasis
             return (
-              <section key={index} className="py-12 bg-white">
+              <section key={index} className="pt-4 pb-8 bg-white">
                 <div className="container-wide max-w-4xl">
                   <ul 
                     className="space-y-4 presentation-list"
@@ -209,7 +209,7 @@ export default function PresentationContent({ content }: PresentationContentProp
 
           // Default list styling
           return (
-            <section key={index} className="py-12 bg-white">
+            <section key={index} className="pt-4 pb-8 bg-white">
               <div className="container-wide max-w-4xl">
                 <ul 
                   className="space-y-4 presentation-list"
@@ -222,7 +222,7 @@ export default function PresentationContent({ content }: PresentationContentProp
 
         // Other - Render as-is
         return (
-          <section key={index} className="py-8 bg-white">
+          <section key={index} className="pt-4 pb-4 bg-white">
             <div className="container-wide max-w-4xl">
               <div dangerouslySetInnerHTML={{ __html: section.content }} />
             </div>
