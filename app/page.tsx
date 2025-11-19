@@ -254,53 +254,103 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Case Study */}
-      <section className="section bg-off-white">
+      {/* Featured Work */}
+      <section className="section bg-navy-900 text-white">
         <div className="container-wide">
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="max-w-4xl mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Bold steps forward
+              Recent Work
             </h2>
-            <p className="text-xl text-slate-700">
-              See how we've helped ambitious clients achieve extraordinary outcomes.
+            <p className="text-xl text-gray-200">
+              Real projects. Real outcomes. Real impact.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <CaseStudyCard
-              title="Utility | Data-driven CX transformation"
-              summary="Fragmented data, generic outreach, and flat retention. We built an AI Next Best Action engine with 25+ sources and 500 metrics."
-              client="Major Utility Provider"
-              industry="Energy & Utilities"
-              outcome="4× success rate for targeted customers"
-              href="/case-studies/utility-cx-transformation"
-              metrics={[
-                '4× success rate for targeted customers',
-                '+10% active customers',
-                '30+ prioritized actions',
-              ]}
-              index={0}
-            />
+          {/* Case Study Grid - Minimal Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-1 max-w-6xl mx-auto">
+            {/* Case 1 */}
+            <Link href="/case-studies" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300 border-r border-b border-white/10">
+              <span className="text-xs font-semibold text-signal-red uppercase tracking-wide mb-4 block">
+                Professional Services
+              </span>
+              <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-signal-red transition-colors duration-300">
+                Digital transformation for consulting firm
+              </h3>
+              <p className="text-gray-300 leading-relaxed mb-6">
+                Modern, high-performance website that elevated trust and improved lead quality.
+              </p>
+              <div className="inline-flex items-center gap-2 text-sm font-semibold text-signal-red group-hover:gap-3 transition-all duration-200">
+                <span>View project</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </div>
+            </Link>
 
-            <CaseStudyCard
-              title="Telecom | Hyper-personalization at scale"
-              summary="4 coarse segments and poor ecommerce conversion. We created 60 micro-segments with ML-driven campaigns and UX refresh."
-              client="Global Telecom"
-              industry="Telecommunications"
-              outcome="$20M+ annual value identified"
-              href="/case-studies/telecom-personalization"
-              metrics={[
-                '$20M+ annual value at stake',
-                '2× conversion rate',
-                '6× CTR uplift',
-              ]}
-              index={1}
-            />
+            {/* Case 2 */}
+            <Link href="/case-studies" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300 border-b border-white/10">
+              <span className="text-xs font-semibold text-signal-red uppercase tracking-wide mb-4 block">
+                Construction & Real Estate
+              </span>
+              <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-signal-red transition-colors duration-300">
+                Website rebuild for family construction business
+              </h3>
+              <p className="text-gray-300 leading-relaxed mb-6">
+                Fast, mobile-friendly platform that modernized brand presence and improved customer contact flow.
+              </p>
+              <div className="inline-flex items-center gap-2 text-sm font-semibold text-signal-red group-hover:gap-3 transition-all duration-200">
+                <span>View project</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </div>
+            </Link>
+
+            {/* Case 3 */}
+            <Link href="/case-studies" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300 border-r border-white/10">
+              <span className="text-xs font-semibold text-signal-red uppercase tracking-wide mb-4 block">
+                Content & Growth
+              </span>
+              <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-signal-red transition-colors duration-300">
+                YouTube content system for B2B brand
+              </h3>
+              <p className="text-gray-300 leading-relaxed mb-6">
+                Complete video production pipeline, editing workflows, and channel strategy for consistent publishing.
+              </p>
+              <div className="inline-flex items-center gap-2 text-sm font-semibold text-signal-red group-hover:gap-3 transition-all duration-200">
+                <span>View project</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </div>
+            </Link>
+
+            {/* Case 4 */}
+            <Link href="/case-studies" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300">
+              <span className="text-xs font-semibold text-signal-red uppercase tracking-wide mb-4 block">
+                Education Tech
+              </span>
+              <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-signal-red transition-colors duration-300">
+                School communication mobile app (In Development)
+              </h3>
+              <p className="text-gray-300 leading-relaxed mb-6">
+                React Native platform for attendance, alerts, and parent communication—engineered for scale.
+              </p>
+              <div className="inline-flex items-center gap-2 text-sm font-semibold text-signal-red group-hover:gap-3 transition-all duration-200">
+                <span>View project</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </div>
+            </Link>
           </div>
 
-          <div className="text-center mt-12">
-            <Link href="/case-studies" className="btn-secondary">
-              See all client results
+          <div className="text-center mt-16">
+            <Link href="/case-studies" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-navy-900 font-semibold hover:bg-gray-100 transition-all duration-200 group">
+              <span>View All Work</span>
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
             </Link>
           </div>
         </div>
