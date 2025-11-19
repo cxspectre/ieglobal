@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { getCaseStudy, getCaseStudies } from '@/lib/mdx';
 import { formatDate } from '@/lib/utils';
 import ReadingProgress from '@/components/case-studies/ReadingProgress';
-import { motion } from 'framer-motion';
+import AnimatedChallenge from '@/components/case-studies/AnimatedChallenge';
+import AnimatedOutcome from '@/components/case-studies/AnimatedOutcome';
+import AnimatedMetrics from '@/components/case-studies/AnimatedMetrics';
+import AnimatedContent from '@/components/case-studies/AnimatedContent';
+import AnimatedCTA from '@/components/case-studies/AnimatedCTA';
 
 type Props = {
   params: { slug: string };
@@ -116,15 +120,7 @@ export default function CaseStudyPage({ params }: Props) {
               </div>
             </div>
             <div className="col-span-9">
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 0.6 }}
-                className="text-3xl text-navy-900 font-bold leading-tight"
-              >
-                {caseStudy.challenge}
-              </motion.p>
+              <AnimatedChallenge challenge={caseStudy.challenge} />
             </div>
           </div>
         </div>
@@ -135,24 +131,7 @@ export default function CaseStudyPage({ params }: Props) {
         <section className="py-24 bg-signal-red relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-signal-red via-signal-red to-red-600 opacity-90"></div>
           <div className="container-wide max-w-5xl relative z-10 text-center">
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.6 }}
-              className="text-sm font-bold text-white/80 uppercase tracking-wider mb-6"
-            >
-              The Outcome
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-100px' }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="text-3xl md:text-5xl font-bold text-white leading-tight"
-            >
-              {caseStudy.outcome}
-            </motion.p>
+            <AnimatedOutcome outcome={caseStudy.outcome} />
           </div>
         </section>
       )}
@@ -164,23 +143,7 @@ export default function CaseStudyPage({ params }: Props) {
             <h3 className="text-xs font-bold text-navy-900 uppercase tracking-wider mb-12 text-center">
               Key Results
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {caseStudy.metrics.map((metric, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-100px' }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className="bg-white p-8 text-center border-l-4 border-signal-red shadow-sm hover:shadow-md transition-shadow duration-200"
-                >
-                  <div className="text-4xl font-bold text-signal-red mb-3">✓</div>
-                  <p className="text-base font-semibold text-navy-900 leading-snug">
-                    {metric}
-                  </p>
-                </motion.div>
-              ))}
-            </div>
+            <AnimatedMetrics metrics={caseStudy.metrics} />
           </div>
         </section>
       )}
@@ -188,24 +151,7 @@ export default function CaseStudyPage({ params }: Props) {
       {/* The Story - Presentation Style */}
       <section className="py-20 bg-white">
         <div className="container-wide max-w-5xl">
-          <motion.article
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-            className="case-study-content
-              [&>h2]:text-sm [&>h2]:font-bold [&>h2]:text-signal-red [&>h2]:uppercase [&>h2]:tracking-wider [&>h2]:mb-8 [&>h2]:mt-20 first:[&>h2]:mt-0
-              [&>h3]:text-3xl [&>h3]:font-bold [&>h3]:text-navy-900 [&>h3]:mb-6 [&>h3]:mt-12
-              [&>h4]:text-xl [&>h4]:font-bold [&>h4]:text-navy-900 [&>h4]:mb-4 [&>h4]:mt-8
-              [&>p]:text-lg [&>p]:text-slate-700 [&>p]:leading-relaxed [&>p]:mb-6
-              [&>ul]:my-6 [&>ul]:space-y-4 [&>ul]:ml-0
-              [&>li]:text-slate-700 [&>li]:text-base [&>li]:leading-relaxed [&>li]:pl-8 [&>li]:relative
-              [&>li]:before:content-['•'] [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:text-signal-red [&>li]:before:font-bold [&>li]:before:text-xl
-              [&>strong]:text-navy-900 [&>strong]:font-bold
-              [&>a]:text-signal-red [&>a]:font-semibold [&>a]:no-underline hover:[&>a]:underline
-              [&>hr]:my-16 [&>hr]:border-gray-200"
-            dangerouslySetInnerHTML={{ __html: caseStudy.content }}
-          />
+          <AnimatedContent content={caseStudy.content} />
         </div>
       </section>
 
@@ -248,37 +194,7 @@ export default function CaseStudyPage({ params }: Props) {
       <section className="py-24 bg-navy-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900"></div>
         <div className="container-wide text-center max-w-3xl mx-auto relative z-10">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl font-bold mb-8"
-          >
-            Want results like this?
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-xl text-gray-200 mb-12 leading-relaxed"
-          >
-            Let's build something that creates momentum for your business.
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <Link href="/contact" className="inline-flex items-center gap-3 px-10 py-5 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 group text-lg">
-              <span>Start a Conversation</span>
-              <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </Link>
-          </motion.div>
+          <AnimatedCTA />
         </div>
       </section>
     </>
