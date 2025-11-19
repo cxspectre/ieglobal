@@ -269,7 +269,7 @@ export default function HomePage() {
           {/* Case Study Grid - Minimal Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-1 max-w-6xl mx-auto">
             {/* Case 1 */}
-            <Link href="/case-studies" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300 border-r border-b border-white/10">
+            <Link href="/case-studies/consulting-firm-transformation" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300 border-r border-b border-white/10">
               <span className="text-xs font-semibold text-signal-red uppercase tracking-wide mb-4 block">
                 Professional Services
               </span>
@@ -288,7 +288,7 @@ export default function HomePage() {
             </Link>
 
             {/* Case 2 */}
-            <Link href="/case-studies" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300 border-b border-white/10">
+            <Link href="/case-studies/construction-website-rebuild" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300 border-b border-white/10">
               <span className="text-xs font-semibold text-signal-red uppercase tracking-wide mb-4 block">
                 Construction & Real Estate
               </span>
@@ -307,7 +307,7 @@ export default function HomePage() {
             </Link>
 
             {/* Case 3 */}
-            <Link href="/case-studies" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300 border-r border-white/10">
+            <Link href="/case-studies/youtube-content-system" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300 border-r border-white/10">
               <span className="text-xs font-semibold text-signal-red uppercase tracking-wide mb-4 block">
                 Content & Growth
               </span>
@@ -326,7 +326,7 @@ export default function HomePage() {
             </Link>
 
             {/* Case 4 */}
-            <Link href="/case-studies" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300">
+            <Link href="/case-studies/school-communication-app" className="group block bg-white/5 backdrop-blur-sm p-12 hover:bg-white/10 transition-all duration-300">
               <span className="text-xs font-semibold text-signal-red uppercase tracking-wide mb-4 block">
                 Education Tech
               </span>
