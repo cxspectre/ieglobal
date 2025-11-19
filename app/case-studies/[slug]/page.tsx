@@ -39,56 +39,54 @@ export default function CaseStudyPage({ params }: Props) {
 
   return (
     <>
-      {/* Breadcrumb & Back */}
-      <section className="pt-32 pb-8 bg-white border-b border-gray-100">
-        <div className="container-wide">
+      {/* Hero - Dark & Dramatic */}
+      <section className="relative pt-32 pb-24 bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 text-white overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5" />
+        
+        <div className="container-wide max-w-5xl relative z-10">
           <Link 
             href="/case-studies"
-            className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
+            className="inline-flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors duration-200 mb-12"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Back to Work
           </Link>
-        </div>
-      </section>
 
-      {/* Hero - Clean & Spacious */}
-      <section className="py-20 bg-white">
-        <div className="container-wide max-w-5xl">
           <div className="mb-8">
-            <span className="inline-block px-4 py-2 bg-signal-red/10 text-signal-red text-xs font-bold uppercase tracking-wider">
+            <span className="inline-block px-4 py-2 bg-white/10 text-white text-xs font-bold uppercase tracking-wider">
               {caseStudy.industry}
             </span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight text-navy-900">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight">
             {caseStudy.title}
           </h1>
 
-          <p className="text-2xl text-slate-700 leading-relaxed mb-12">
+          <p className="text-xl md:text-2xl text-gray-200 leading-relaxed mb-12 max-w-3xl">
             {caseStudy.summary}
           </p>
 
           {/* Meta Info */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-8 border-t border-gray-200">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-8 border-t border-white/20">
             <div>
-              <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Client</div>
-              <div className="text-base font-semibold text-navy-900">{caseStudy.client}</div>
+              <div className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Client</div>
+              <div className="text-base font-semibold text-white">{caseStudy.client}</div>
             </div>
             <div>
-              <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Industry</div>
-              <div className="text-base font-semibold text-navy-900">{caseStudy.industry}</div>
+              <div className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Industry</div>
+              <div className="text-base font-semibold text-white">{caseStudy.industry}</div>
             </div>
             <div>
-              <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Date</div>
-              <div className="text-base font-semibold text-navy-900">{formatDate(caseStudy.date)}</div>
+              <div className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Date</div>
+              <div className="text-base font-semibold text-white">{formatDate(caseStudy.date)}</div>
             </div>
             {caseStudy.services && caseStudy.services.length > 0 && (
               <div>
-                <div className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Services</div>
-                <div className="text-base font-semibold text-navy-900">{caseStudy.services.join(', ')}</div>
+                <div className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Services</div>
+                <div className="text-base font-semibold text-white">{caseStudy.services.join(', ')}</div>
               </div>
             )}
           </div>
