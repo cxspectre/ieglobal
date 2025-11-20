@@ -67,51 +67,31 @@ export default function ServicesPage() {
         eyebrow="Services"
         title="What We Build"
         subtitle="From strategy to scale. Seven capabilities that work together."
-        backgroundPattern="mesh"
+        backgroundPattern="gradient"
       />
 
-      {/* Introduction + Overview */}
-      <section className="section bg-white">
+      {/* Introduction */}
+      <section className="py-20 bg-white">
         <div className="container-wide max-w-5xl">
-          <div className="text-center mb-16">
-            <p className="text-2xl md:text-3xl text-navy-900 font-bold leading-relaxed mb-8">
-              Engineering systems that are fast, reliable, and built to last.
-            </p>
-            <p className="text-lg text-slate-700 max-w-3xl mx-auto">
-              We combine technical excellence with strategic thinking. From initial concept to ongoing optimization, we build digital systems that create momentum for your business.
-            </p>
-          </div>
-
-          {/* Three Core Pillars */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-signal-red/10 flex items-center justify-center">
-                <svg className="w-8 h-8 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-navy-900 mb-2">Build Fast</h3>
-              <p className="text-sm text-slate-700">Modern tech, rapid delivery</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-navy-900 mb-6 leading-tight">
+                Seven Services. One Integrated Approach.
+              </h2>
+              <p className="text-lg text-slate-700 leading-relaxed mb-6">
+                We don't just build features—we engineer complete systems. From strategic planning to ongoing support, every service is designed to work together.
+              </p>
+              <p className="text-base text-slate-700 leading-relaxed">
+                Whether you need a single service or end-to-end support, we bring clarity, technical excellence, and long-term thinking to every engagement.
+              </p>
             </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-signal-red/10 flex items-center justify-center">
-                <svg className="w-8 h-8 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-navy-900 mb-2">Scale Smoothly</h3>
-              <p className="text-sm text-slate-700">Architecture that grows</p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-signal-red/10 flex items-center justify-center">
-                <svg className="w-8 h-8 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-bold text-navy-900 mb-2">Operate Reliably</h3>
-              <p className="text-sm text-slate-700">Support beyond launch</p>
+            <div className="bg-off-white p-10 border-l-4 border-signal-red">
+              <p className="text-lg text-navy-900 font-semibold mb-4">
+                Our Philosophy
+              </p>
+              <p className="text-base text-slate-700 leading-relaxed">
+                Technology should accelerate growth—not slow it down. We build systems that are fast, maintainable, and ready to evolve with your business.
+              </p>
             </div>
           </div>
         </div>
