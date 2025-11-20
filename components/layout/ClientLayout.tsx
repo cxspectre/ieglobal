@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import Navigation from './Navigation';
 import Footer from './Footer';
 
@@ -9,8 +10,13 @@ type ClientLayoutProps = {
 };
 
 export default function ClientLayout({ children }: ClientLayoutProps) {
+  const pathname = usePathname();
   const [isHeroVisible, setIsHeroVisible] = useState(true);
   const [heroIsDark, setHeroIsDark] = useState(true);
+
+  // Pages without dark heroes (always use white navbar)
+  const whiteBackgroundPages = ['/privacy', '/terms', '/imprint'];
+  const isWhiteBackgroundPage = whiteBackgroundPages.includes(pathname);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,7 +44,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       <a href="#main-content" className="skip-link">
         Skip to main content
       </a>
-      <Navigation isHeroVisible={isHeroVisible} heroIsDark={heroIsDark} />
+      <Navigation 
+        isHeroVisible={!isWhiteBackgroundPage && isHeroVisible} 
+        heroIsDark={heroIsDark} 
+      />
       <main id="main-content">{children}</main>
       <Footer />
     </>
