@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import Newsletter from '@/components/ui/Newsletter';
 
 const footerLinks = {
   company: [
@@ -22,21 +21,6 @@ const footerLinks = {
 export default function Footer() {
   return (
     <footer className="bg-navy-900 text-white no-print" role="contentinfo">
-      {/* Newsletter Section */}
-      <div className="border-b border-white/10">
-        <div className="container-wide py-16">
-          <div className="max-w-2xl">
-            <h3 className="text-3xl font-bold mb-4">
-              Stay Connected
-            </h3>
-            <p className="text-gray-300 mb-8 text-lg">
-              Subscribe for updates on new projects, insights, and engineering perspectives.
-            </p>
-            <Newsletter />
-          </div>
-        </div>
-      </div>
-
       {/* Main Footer Content */}
       <div className="container-wide py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">

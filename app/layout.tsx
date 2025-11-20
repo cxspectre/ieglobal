@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Outfit, Manrope, JetBrains_Mono } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import ClientLayout from '@/components/layout/ClientLayout';
 
@@ -85,6 +86,7 @@ export default function RootLayout({
       </head>
       <body>
         <ClientLayout>{children}</ClientLayout>
+        <Analytics />
       </body>
     </html>
   );

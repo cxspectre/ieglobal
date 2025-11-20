@@ -4,9 +4,6 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import HeroCarousel from '@/components/ui/HeroCarousel';
 import HowWeCanHelp from '@/components/ui/HowWeCanHelp';
-import CaseStudyCard from '@/components/ui/CaseStudyCard';
-import MetricCounter from '@/components/ui/MetricCounter';
-import Newsletter from '@/components/ui/Newsletter';
 import Link from 'next/link';
 
 const heroSlides = [
@@ -371,20 +368,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Newsletter */}
-      <section className="section-sm bg-white">
-        <div className="container-narrow">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Monthly insights on AI, CX, and growth
-            </h3>
-            <p className="text-lg text-slate-700">
-              Stay ahead with our latest thinking on customer experience, AI strategy, and pricing innovation.
-            </p>
-          </div>
-          <Newsletter />
-        </div>
-      </section>
     </>
   );
 }
