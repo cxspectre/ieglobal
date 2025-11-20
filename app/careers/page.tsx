@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Careers',
-  description: 'Join IE Global. Small senior teams, big problems, visible impact.',
+  description: 'Join IE Global or partner with us. We build meaningful work with talented people.',
 };
 
 export default function CareersPage() {
@@ -12,136 +12,147 @@ export default function CareersPage() {
     <>
       <Hero
         eyebrow="Careers"
-        title="Where will your career take you?"
-        subtitle="Small senior teams, big problems, visible impact. Join us in building the future of digital transformation."
+        title="Build Meaningful Work With Us"
+        subtitle="Small senior teams. Big problems. Visible impact."
         backgroundPattern="gradient"
       />
 
-      {/* Pitch */}
+      {/* Why IE Global */}
       <section className="section bg-white">
-        <div className="container-narrow">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center">
-            Why IE Global?
-          </h2>
-          <div className="prose prose-lg max-w-none">
-            <p className="text-xl text-slate-700 leading-relaxed mb-6">
-              We're building a different kind of consulting firm—one where strategy meets execution, where your work shows up in client KPIs, and where you grow by solving real problems at scale.
+        <div className="container-wide max-w-5xl">
+          <div className="grid grid-cols-12 gap-16">
+            <div className="col-span-4">
+              <div className="sticky top-32">
+                <h2 className="text-sm font-bold text-signal-red uppercase tracking-wider">
+                  Why IE Global?
+                </h2>
+                <div className="w-16 h-1 bg-signal-red mt-4"></div>
+              </div>
+            </div>
+            <div className="col-span-8">
+              <p className="text-2xl text-navy-900 leading-relaxed mb-8">
+                We're building a different kind of firm—one where your work shows up in client outcomes, where you grow by solving real problems, and where quality matters more than quantity.
+              </p>
+
+              <div className="space-y-8">
+                <div className="border-l-4 border-signal-red pl-6">
+                  <h3 className="text-xl font-bold mb-3 text-navy-900">Senior, small teams</h3>
+                  <p className="text-slate-700 leading-relaxed">
+                    No armies of juniors. You'll work directly with clients alongside experienced engineers and designers.
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-signal-red pl-6">
+                  <h3 className="text-xl font-bold mb-3 text-navy-900">Real problems, real impact</h3>
+                  <p className="text-slate-700 leading-relaxed">
+                    Strategy, engineering, and growth—work that matters to executives and directly moves business outcomes.
+                  </p>
+                </div>
+
+                <div className="border-l-4 border-signal-red pl-6">
+                  <h3 className="text-xl font-bold mb-3 text-navy-900">Craft & growth</h3>
+                  <p className="text-slate-700 leading-relaxed">
+                    We invest in quality—through real projects, continuous learning, and meaningful collaboration.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Current Status - No Open Roles */}
+      <section className="section bg-off-white">
+        <div className="container-wide max-w-4xl text-center">
+          <div className="bg-white p-12 shadow-sm border-l-4 border-signal-red">
+            <h2 className="text-3xl font-bold mb-6 text-navy-900">
+              No Open Roles at the Moment
+            </h2>
+            <p className="text-xl text-slate-700 leading-relaxed mb-8">
+              We're currently focused on delivering exceptional work for our clients. But we're always interested in connecting with talented engineers, designers, and product thinkers.
+            </p>
+            <p className="text-lg text-navy-900 font-semibold mb-8">
+              Want to partner with us or stay in touch?
+            </p>
+            <Link href="/contact" className="inline-flex items-center gap-2 px-8 py-4 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 group">
+              <span>Get in Touch</span>
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* What We Look For (Future) */}
+      <section className="section bg-white">
+        <div className="container-wide max-w-5xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-navy-900">
+              What We Look For
+            </h2>
+            <p className="text-lg text-slate-700">
+              When we do hire, these are the qualities that matter most to us.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
-            <div className="border-l-4 border-signal-red pl-6">
-              <h3 className="text-2xl font-bold mb-3">Senior, small teams</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="p-8 bg-off-white">
+              <h3 className="text-xl font-bold mb-4 text-navy-900">
+                Craft Over Speed
+              </h3>
               <p className="text-slate-700 leading-relaxed">
-                No armies of juniors. You'll work directly with clients alongside experienced consultants, engineers, and designers.
+                You care about doing things right, not just fast. Details matter to you.
               </p>
             </div>
 
-            <div className="border-l-4 border-signal-red pl-6">
-              <h3 className="text-2xl font-bold mb-3">Big, real problems</h3>
+            <div className="p-8 bg-off-white">
+              <h3 className="text-xl font-bold mb-4 text-navy-900">
+                Ownership & Autonomy
+              </h3>
               <p className="text-slate-700 leading-relaxed">
-                AI strategy, customer experience transformation, digital product delivery—work that matters to executives and boards.
+                You take responsibility for outcomes, not just tasks. You think strategically.
               </p>
             </div>
 
-            <div className="border-l-4 border-signal-red pl-6">
-              <h3 className="text-2xl font-bold mb-3">Visible impact</h3>
+            <div className="p-8 bg-off-white">
+              <h3 className="text-xl font-bold mb-4 text-navy-900">
+                Business Thinking
+              </h3>
               <p className="text-slate-700 leading-relaxed">
-                You'll see your work go live, move metrics, and influence decisions. No shelfware.
+                You understand that technology serves business goals, not the other way around.
               </p>
             </div>
 
-            <div className="border-l-4 border-signal-red pl-6">
-              <h3 className="text-2xl font-bold mb-3">Craft & growth</h3>
+            <div className="p-8 bg-off-white">
+              <h3 className="text-xl font-bold mb-4 text-navy-900">
+                Collaborative by Nature
+              </h3>
               <p className="text-slate-700 leading-relaxed">
-                We invest in your development—through real projects, mentorship, and continuous learning.
+                You communicate clearly, work well with others, and value diverse perspectives.
               </p>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Open Roles */}
-      <section className="section bg-off-white">
-        <div className="container-wide">
-          <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center">
-            Open roles
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            <div className="bg-white p-8 shadow-sm card">
-              <h3 className="text-2xl font-bold mb-3">Consultant</h3>
-              <p className="text-slate-700 mb-4">
-                Lead client engagements, design strategies, and deliver measurable outcomes across industries.
-              </p>
-              <Link href="/contact" className="text-signal-red hover:underline font-semibold">
-                Apply →
-              </Link>
-            </div>
-
-            <div className="bg-white p-8 shadow-sm card">
-              <h3 className="text-2xl font-bold mb-3">Data Scientist</h3>
-              <p className="text-slate-700 mb-4">
-                Build predictive models, design AI solutions, and turn data into client value.
-              </p>
-              <Link href="/contact" className="text-signal-red hover:underline font-semibold">
-                Apply →
-              </Link>
-            </div>
-
-            <div className="bg-white p-8 shadow-sm card">
-              <h3 className="text-2xl font-bold mb-3">Product/UX Designer</h3>
-              <p className="text-slate-700 mb-4">
-                Design digital products and customer experiences that drive engagement and conversion.
-              </p>
-              <Link href="/contact" className="text-signal-red hover:underline font-semibold">
-                Apply →
-              </Link>
-            </div>
-
-            <div className="bg-white p-8 shadow-sm card">
-              <h3 className="text-2xl font-bold mb-3">Engagement Manager</h3>
-              <p className="text-slate-700 mb-4">
-                Run complex programs, orchestrate teams, and ensure delivery excellence.
-              </p>
-              <Link href="/contact" className="text-signal-red hover:underline font-semibold">
-                Apply →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Diversity Statement */}
-      <section className="section bg-white">
-        <div className="container-narrow text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8">
-            Diverse teams, better outcomes
-          </h2>
-          <p className="text-xl text-slate-700 leading-relaxed max-w-3xl mx-auto">
-            We're committed to building an inclusive team that reflects the diversity of our clients and communities. Different perspectives make us stronger, more creative, and more effective.
-          </p>
-          <p className="text-lg text-slate-700 mt-6 max-w-2xl mx-auto">
-            IE Global is an equal opportunity employer. We welcome applicants from all backgrounds.
-          </p>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="section-sm bg-signal-red text-white">
-        <div className="container-wide text-center">
+      <section className="py-20 bg-navy-900 text-white">
+        <div className="container-wide text-center max-w-3xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to join us?
+            Interested in working together?
           </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Send us your resume and tell us what you're excited to build.
+          <p className="text-xl text-gray-200 mb-10">
+            Whether you're looking for a role, a partnership, or just want to connect—reach out.
           </p>
-          <Link href="/contact" className="btn-secondary border-white text-white hover:bg-white hover:text-signal-red">
-            Get in touch
+          <Link href="/contact" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-navy-900 font-semibold hover:bg-gray-100 transition-all duration-200 group">
+            <span>Get in Touch</span>
+            <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
           </Link>
         </div>
       </section>
     </>
   );
 }
-
