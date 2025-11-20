@@ -46,14 +46,14 @@ const services = [
   {
     number: '06',
     title: 'Growth & Marketing',
-    description: 'Performance isn't just technical—it's visible.',
+    description: "Performance isn't just technical - it's visible.",
     details: 'SEO, web performance optimization, conversion tracking, attribution, and campaign activation.',
     href: '/services/growth-and-marketing',
   },
   {
     number: '07',
     title: 'Ongoing Support',
-    description: 'We don't just build—we evolve with you.',
+    description: "We don't just build - we evolve with you.",
     details: 'Maintenance, upgrades, performance reviews, security updates, and continuous feature development.',
     href: '/services/ongoing-support',
   },
