@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Navigation from './Navigation';
 import Footer from './Footer';
+import CookieConsent from '@/components/ui/CookieConsent';
 
 type ClientLayoutProps = {
   children: ReactNode;
@@ -50,6 +51,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       />
       <main id="main-content">{children}</main>
       <Footer />
+      <CookieConsent />
     </>
   );
 }

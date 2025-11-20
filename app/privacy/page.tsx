@@ -86,7 +86,28 @@ export default function PrivacyPage() {
 
           <h2>Cookies</h2>
           <p>
-            We use minimal cookies necessary for the website to function properly. Analytics cookies help us understand site usage. You can control cookies through your browser settings.
+            We use cookies to make our website work properly and to understand how visitors use our site.
+          </p>
+          
+          <h3>Essential Cookies</h3>
+          <p>
+            These cookies are necessary for the website to function and cannot be disabled:
+          </p>
+          <ul>
+            <li><strong>Cookie Consent:</strong> Remembers your cookie preferences</li>
+          </ul>
+
+          <h3>Analytics Cookies</h3>
+          <p>
+            With your consent, we use:
+          </p>
+          <ul>
+            <li><strong>Vercel Analytics:</strong> Privacy-friendly analytics that don't track individual users or use personal data</li>
+          </ul>
+
+          <h3>Managing Cookies</h3>
+          <p>
+            You can control your cookie preferences through the banner that appears on your first visit. You can also manage cookies through your browser settings at any time.
           </p>
 
           <h2>International Data Transfers</h2>
