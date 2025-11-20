@@ -106,14 +106,9 @@ export default function PrivacyPage() {
           <p>
             <strong>Email:</strong> <a href="mailto:hello@ie-global.net">hello@ie-global.net</a>
           </p>
-
-          <div className="mt-12 p-6 bg-off-white border-l-4 border-signal-red">
-            <h3 className="text-xl font-bold mb-4">Company Details</h3>
-            <p className="mb-2"><strong>IE Global</strong></p>
-            <p className="mb-2">KvK (Chamber of Commerce): <strong>97185515</strong></p>
-            <p className="mb-2">BTW (VAT): <strong>NL737599054B02</strong></p>
-            <p>Email: <a href="mailto:hello@ie-global.net" className="text-signal-red hover:underline">hello@ie-global.net</a></p>
-          </div>
+          <p className="mt-6">
+            For full company details, see our <Link href="/imprint" className="text-signal-red hover:underline font-semibold">Imprint page</Link>.
+          </p>
         </div>
       </section>
     </>
