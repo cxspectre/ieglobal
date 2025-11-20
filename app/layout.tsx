@@ -23,7 +23,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://ieglobal.com'),
+  metadataBase: new URL('https://ie-global.net'),
   title: {
     default: 'IE Global | Customer-Led Growth & AI Execution',
     template: '%s | IE Global',
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://ieglobal.com',
+    url: 'https://ie-global.net',
     title: 'IE Global | Customer-Led Growth & AI Execution',
     description: 'We help enterprises turn AI and customer insight into measurable growth within 90 days.',
     siteName: 'IE Global',
