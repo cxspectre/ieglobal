@@ -5,22 +5,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================
--- PROFILES TABLE (Extends Supabase Auth)
--- ============================================
-CREATE TABLE profiles (
-  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  full_name TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('admin', 'employee', 'client')),
-  client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
-  avatar_url TEXT,
-  phone TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- ============================================
--- CLIENTS TABLE
+-- CLIENTS TABLE (Create first - referenced by profiles)
 -- ============================================
 CREATE TABLE clients (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -32,6 +17,21 @@ CREATE TABLE clients (
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'completed')),
   assigned_employee_id UUID REFERENCES profiles(id),
   onboarding_notes TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================
+-- PROFILES TABLE (Extends Supabase Auth)
+-- ============================================
+CREATE TABLE profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  full_name TEXT NOT NULL,
+  role TEXT NOT NULL CHECK (role IN ('admin', 'employee', 'client')),
+  client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
+  avatar_url TEXT,
+  phone TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
