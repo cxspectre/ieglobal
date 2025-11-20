@@ -30,17 +30,17 @@ export default function ApproachPage() {
       <section className="section bg-off-white">
         <div className="container-wide max-w-6xl">
           {/* Step 1 */}
-          <div className="mb-24">
-            <div className="grid grid-cols-12 gap-12 items-start">
-              <div className="col-span-3">
-                <div className="sticky top-32">
+          <div className="mb-16 lg:mb-24">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
+              <div className="lg:col-span-3">
+                <div className="lg:sticky lg:top-32">
                   <div className="text-6xl font-bold font-mono text-signal-red/30 mb-4">01</div>
                   <h2 className="text-2xl font-bold text-navy-900">
                     Understand the Business
                   </h2>
                 </div>
               </div>
-              <div className="col-span-9">
+              <div className="lg:col-span-9">
                 <p className="text-xl text-navy-900 font-semibold mb-6">
                   Not just the brief
                 </p>
@@ -64,17 +64,17 @@ export default function ApproachPage() {
           </div>
 
           {/* Step 2 */}
-          <div className="mb-24">
-            <div className="grid grid-cols-12 gap-12 items-start">
-              <div className="col-span-3">
-                <div className="sticky top-32">
+          <div className="mb-16 lg:mb-24">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
+              <div className="lg:col-span-3">
+                <div className="lg:sticky lg:top-32">
                   <div className="text-6xl font-bold font-mono text-signal-red/30 mb-4">02</div>
                   <h2 className="text-2xl font-bold text-navy-900">
                     Architect the Solution
                   </h2>
                 </div>
               </div>
-              <div className="col-span-9">
+              <div className="lg:col-span-9">
                 <p className="text-xl text-navy-900 font-semibold mb-6">
                   With long-term thinking
                 </p>
@@ -99,17 +99,17 @@ export default function ApproachPage() {
           </div>
 
           {/* Step 3 */}
-          <div className="mb-24">
-            <div className="grid grid-cols-12 gap-12 items-start">
-              <div className="col-span-3">
-                <div className="sticky top-32">
+          <div className="mb-16 lg:mb-24">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
+              <div className="lg:col-span-3">
+                <div className="lg:sticky lg:top-32">
                   <div className="text-6xl font-bold font-mono text-signal-red/30 mb-4">03</div>
                   <h2 className="text-2xl font-bold text-navy-900">
                     Build with Precision
                   </h2>
                 </div>
               </div>
-              <div className="col-span-9">
+              <div className="lg:col-span-9">
                 <p className="text-xl text-navy-900 font-semibold mb-6">
                   Engineering meets craft
                 </p>
@@ -131,17 +131,17 @@ export default function ApproachPage() {
           </div>
 
           {/* Step 4 */}
-          <div className="mb-24">
-            <div className="grid grid-cols-12 gap-12 items-start">
-              <div className="col-span-3">
-                <div className="sticky top-32">
+          <div className="mb-16 lg:mb-24">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
+              <div className="lg:col-span-3">
+                <div className="lg:sticky lg:top-32">
                   <div className="text-6xl font-bold font-mono text-signal-red/30 mb-4">04</div>
                   <h2 className="text-2xl font-bold text-navy-900">
                     Test Like a Real User
                   </h2>
                 </div>
               </div>
-              <div className="col-span-9">
+              <div className="lg:col-span-9">
                 <p className="text-xl text-navy-900 font-semibold mb-6">
                   Not just a developer
                 </p>
@@ -162,16 +162,16 @@ export default function ApproachPage() {
 
           {/* Step 5 */}
           <div>
-            <div className="grid grid-cols-12 gap-12 items-start">
-              <div className="col-span-3">
-                <div className="sticky top-32">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
+              <div className="lg:col-span-3">
+                <div className="lg:sticky lg:top-32">
                   <div className="text-6xl font-bold font-mono text-signal-red/30 mb-4">05</div>
                   <h2 className="text-2xl font-bold text-navy-900">
                     Launch & Support
                   </h2>
                 </div>
               </div>
-              <div className="col-span-9">
+              <div className="lg:col-span-9">
                 <p className="text-xl text-navy-900 font-semibold mb-6">
                   Beyond day one
                 </p>

@@ -97,17 +97,17 @@ export default function CaseStudyPage({ params }: Props) {
       {/* The Challenge - Bold Statement */}
       <section className="py-20 bg-white">
         <div className="container-wide max-w-6xl">
-          <div className="grid grid-cols-12 gap-16 items-start">
-            <div className="col-span-3">
-              <div className="sticky top-32">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+            <div className="lg:col-span-3">
+              <div className="lg:sticky lg:top-32">
                 <h2 className="text-sm font-bold text-signal-red uppercase tracking-wider mb-4">
                   The Challenge
                 </h2>
                 <div className="w-16 h-1 bg-signal-red"></div>
               </div>
             </div>
-            <div className="col-span-9">
-              <p className="text-3xl text-navy-900 font-bold leading-tight">
+            <div className="lg:col-span-9">
+              <p className="text-2xl lg:text-3xl text-navy-900 font-bold leading-tight">
                 {caseStudy.challenge}
               </p>
             </div>

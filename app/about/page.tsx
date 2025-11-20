@@ -21,16 +21,16 @@ export default function AboutPage() {
       {/* Why We Exist */}
       <section className="section bg-white">
         <div className="container-wide max-w-5xl">
-          <div className="grid grid-cols-12 gap-16">
-            <div className="col-span-4">
-              <div className="sticky top-32">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-32">
                 <h2 className="text-sm font-bold text-signal-red uppercase tracking-wider">
                   Why We Exist
                 </h2>
                 <div className="w-16 h-1 bg-signal-red mt-4"></div>
               </div>
             </div>
-            <div className="col-span-8">
+            <div className="lg:col-span-8">
               <p className="text-2xl text-navy-900 leading-relaxed mb-8">
                 Digital projects often collapse not from bad intentions, but from unclear direction, technical shortcuts, and short-term thinking.
               </p>
@@ -48,16 +48,16 @@ export default function AboutPage() {
       {/* What We Believe */}
       <section className="section bg-off-white">
         <div className="container-wide max-w-5xl">
-          <div className="grid grid-cols-12 gap-16">
-            <div className="col-span-4">
-              <div className="sticky top-32">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-32">
                 <h2 className="text-sm font-bold text-signal-red uppercase tracking-wider">
                   What We Believe
                 </h2>
                 <div className="w-16 h-1 bg-signal-red mt-4"></div>
               </div>
             </div>
-            <div className="col-span-8">
+            <div className="lg:col-span-8">
               <p className="text-2xl text-navy-900 font-bold leading-tight mb-8">
                 Technology should create momentum—not friction.
               </p>
@@ -124,16 +124,16 @@ export default function AboutPage() {
       {/* The Team */}
       <section className="section bg-navy-900 text-white">
         <div className="container-wide max-w-5xl">
-          <div className="grid grid-cols-12 gap-16">
-            <div className="col-span-4">
-              <div className="sticky top-32">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-32">
                 <h2 className="text-sm font-bold text-signal-red uppercase tracking-wider">
                   The Team
                 </h2>
                 <div className="w-16 h-1 bg-signal-red mt-4"></div>
               </div>
             </div>
-            <div className="col-span-8">
+            <div className="lg:col-span-8">
               <p className="text-2xl text-white leading-relaxed mb-8">
                 We are a focused team of engineers, designers, and product thinkers who care about doing meaningful work—work that lasts.
               </p>

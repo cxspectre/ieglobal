@@ -111,8 +111,8 @@ export default function HeroCarousel({
 
       {/* Content layer */}
       <div className="absolute inset-0" style={{ zIndex: 10 }}>
-        <div className="container-wide relative h-full min-h-screen flex items-center">
-          <div className="max-w-2xl py-32">
+        <div className="container-wide relative h-full min-h-screen flex items-center px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl py-24 sm:py-32">
             {/* Eyebrow */}
             <motion.div
               key={`eyebrow-${currentSlide}`}
@@ -131,7 +131,7 @@ export default function HeroCarousel({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
             >
               {slides[currentSlide].title}
             </motion.h1>
@@ -143,7 +143,7 @@ export default function HeroCarousel({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-lg md:text-xl text-gray-200 mb-10 leading-relaxed max-w-2xl"
+                className="text-base sm:text-lg md:text-xl text-gray-200 mb-10 leading-relaxed max-w-2xl"
               >
                 {slides[currentSlide].subtitle}
               </motion.p>
@@ -174,12 +174,13 @@ export default function HeroCarousel({
       <div className="absolute bottom-0 left-0 right-0" style={{ zIndex: 20 }}>
         <div className="container-wide">
           <div className="flex items-center justify-between border-t border-white/20">
-            <div className="flex items-center">
+            {/* Desktop: Tab Names */}
+            <div className="hidden md:flex items-center overflow-x-auto">
               {slides.map((slide, index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
-                  className={`relative px-0 py-6 text-sm font-medium transition-all duration-300 mr-12 ${
+                  className={`relative px-0 py-6 text-sm font-medium transition-all duration-300 mr-8 lg:mr-12 whitespace-nowrap ${
                     index === currentSlide ? 'text-white' : 'text-white/60 hover:text-white/80'
                   }`}
                   aria-label={`Go to slide: ${slide.eyebrow}`}
@@ -200,42 +201,56 @@ export default function HeroCarousel({
                 </button>
               ))}
             </div>
+
+            {/* Mobile: Dots */}
+            <div className="flex md:hidden items-center gap-2 py-6">
+              {slides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToSlide(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === currentSlide ? 'bg-signal-red w-8' : 'bg-white/40'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
                 
-                {/* Scroll Indicator */}
-                <motion.div
-                  className="py-6 flex items-center gap-2 text-white/80 text-sm"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{
-                    delay: 1,
-                    duration: 0.6,
-                  }}
+            {/* Scroll Indicator - Desktop Only */}
+            <motion.div
+              className="hidden md:flex py-6 items-center gap-2 text-white/80 text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{
+                delay: 1,
+                duration: 0.6,
+              }}
+            >
+              <span className="text-xs uppercase tracking-wider">Scroll</span>
+              <motion.div
+                className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center"
+                animate={{ y: [0, 4, 0] }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  repeatDelay: 0.5,
+                }}
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  <span className="text-xs uppercase tracking-wider">Scroll</span>
-                  <motion.div
-                    className="w-8 h-8 rounded-full border border-white/40 flex items-center justify-center"
-                    animate={{ y: [0, 4, 0] }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      repeatDelay: 0.5,
-                    }}
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </motion.div>
-                </motion.div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </div>
