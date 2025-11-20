@@ -13,6 +13,7 @@
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
     "@next/mdx": "^14.2.33",
+    "@supabase/supabase-js": "^2.84.0",
     "@tailwindcss/forms": "^0.5.9",
     "@tailwindcss/typography": "^0.5.15",
     "@vercel/analytics": "^1.5.0",
