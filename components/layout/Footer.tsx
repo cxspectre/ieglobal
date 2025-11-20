@@ -5,24 +5,17 @@ import Image from 'next/image';
 import Newsletter from '@/components/ui/Newsletter';
 
 const footerLinks = {
-  services: [
-    { title: 'AI & Data Strategy', href: '/services/ai-data-strategy' },
-    { title: 'Customer Experience', href: '/services/customer-experience' },
-    { title: 'Go-to-Market & Pricing', href: '/services/go-to-market-pricing' },
-    { title: 'Operating Model', href: '/services/operating-model' },
-    { title: 'Digital Product', href: '/services/digital-product' },
-  ],
   company: [
     { title: 'About', href: '/about' },
     { title: 'Approach', href: '/approach' },
-    { title: 'Case Studies', href: '/case-studies' },
+    { title: 'Work', href: '/case-studies' },
+    { title: 'Services', href: '/services' },
     { title: 'Careers', href: '/careers' },
     { title: 'Contact', href: '/contact' },
   ],
   legal: [
     { title: 'Privacy Policy', href: '/privacy' },
     { title: 'Terms of Service', href: '/terms' },
-    { title: 'Cookie Policy', href: '/privacy#cookies' },
   ],
 };
 
@@ -34,10 +27,10 @@ export default function Footer() {
         <div className="container-wide py-16">
           <div className="max-w-2xl">
             <h3 className="text-3xl font-bold mb-4">
-              Stay ahead in a rapidly changing world
+              Stay Connected
             </h3>
             <p className="text-gray-300 mb-8 text-lg">
-              Subscribe to our insights—monthly perspectives on AI, customer experience, and growth.
+              Subscribe for updates on new projects, insights, and engineering perspectives.
             </p>
             <Newsletter />
           </div>
@@ -46,9 +39,9 @@ export default function Footer() {
 
       {/* Main Footer Content */}
       <div className="container-wide py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand Column */}
-          <div className="lg:col-span-1">
+          <div>
             <Link href="/" className="inline-block mb-6 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-signal-red">
               <Image
                 src="/logo.png"
@@ -59,7 +52,7 @@ export default function Footer() {
               />
             </Link>
             <p className="text-gray-300 mb-6 leading-relaxed">
-              IE Global designs, builds, and runs high-performance digital systems—engineered for speed, scalability, reliability, and sustainable growth.
+              Digital engineering that creates momentum—not friction.
             </p>
             <div className="flex space-x-4">
               <a
@@ -96,23 +89,6 @@ export default function Footer() {
                 </svg>
               </a>
             </div>
-          </div>
-
-          {/* Services Column */}
-          <div>
-            <h4 className="font-bold text-lg mb-6">Services</h4>
-            <ul className="space-y-3">
-              {footerLinks.services.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-gray-300 hover:text-signal-red transition-colors duration-200"
-                  >
-                    {link.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
           </div>
 
           {/* Company Column */}
@@ -169,4 +145,3 @@ export default function Footer() {
     </footer>
   );
 }
-

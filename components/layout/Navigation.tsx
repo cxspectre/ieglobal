@@ -133,9 +133,9 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
         <div className="flex items-center h-20">
           {/* Left Side: Hamburger + Logo + Navigation */}
           <div className="flex items-center space-x-8 flex-1">
-            {/* Hamburger Menu */}
+            {/* Hamburger Menu - Mobile Only */}
             <button
-              className={cn("p-2 transition-colors duration-500", textColor)}
+              className={cn("lg:hidden p-2 transition-colors duration-500", textColor)}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle menu"
               aria-expanded={isMobileMenuOpen}
@@ -295,23 +295,14 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
             </div>
           </div>
 
-          {/* Right Side: Start Project + Search */}
-          <div className="flex items-center gap-4 ml-auto">
+          {/* Right Side: Start Project Button */}
+          <div className="flex items-center ml-auto">
             <Link
               href="/contact"
               className="hidden lg:inline-flex items-center px-6 py-2.5 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200"
             >
               Start a Project
             </Link>
-
-            <button
-              className={cn("hidden lg:block transition-colors duration-500", textColor)}
-              aria-label="Search"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
           </div>
         </div>
       </div>
