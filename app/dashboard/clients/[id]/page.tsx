@@ -172,16 +172,18 @@ export default function ClientDetailPage() {
   const saveChanges = async () => {
     setSaveLoading(true);
     try {
+      const updateData: any = {
+        company_name: editForm.company_name,
+        contact_person: editForm.contact_person,
+        contact_email: editForm.contact_email,
+        contact_phone: editForm.contact_phone || null,
+        industry: editForm.industry || null,
+        onboarding_notes: editForm.onboarding_notes || null,
+      };
+
       const { error } = await supabase
         .from('clients')
-        .update({
-          company_name: editForm.company_name,
-          contact_person: editForm.contact_person,
-          contact_email: editForm.contact_email,
-          contact_phone: editForm.contact_phone || null,
-          industry: editForm.industry || null,
-          onboarding_notes: editForm.onboarding_notes || null,
-        } as any)
+        .update(updateData)
         .eq('id', params.id);
 
       if (error) throw error;
