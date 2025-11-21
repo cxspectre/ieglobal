@@ -282,22 +282,21 @@ export default function CommandCenterPage() {
               <h2 className="text-2xl font-bold text-navy-900 mb-6">Platform Links</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {[
-                  { name: 'Supabase', url: 'https://supabase.com/dashboard', icon: '🗄️', color: 'from-green-500 to-emerald-600' },
-                  { name: 'Vercel', url: 'https://vercel.com/dashboard', icon: '▲', color: 'from-slate-900 to-gray-900' },
-                  { name: 'GitHub', url: 'https://github.com/cxspectre/ieglobal', icon: '💻', color: 'from-purple-600 to-indigo-700' },
-                  { name: 'Resend', url: 'https://resend.com/emails', icon: '📧', color: 'from-blue-500 to-cyan-600' },
-                  { name: 'Analytics', url: 'https://vercel.com/analytics', icon: '📊', color: 'from-pink-500 to-rose-600' },
-                  { name: 'Portal', url: '/portal', icon: '🔐', color: 'from-orange-500 to-amber-600' },
+                  { name: 'Supabase', url: 'https://supabase.com/dashboard', color: 'from-green-500 to-emerald-600' },
+                  { name: 'Vercel', url: 'https://vercel.com/dashboard', color: 'from-slate-900 to-gray-900' },
+                  { name: 'GitHub', url: 'https://github.com/cxspectre/ieglobal', color: 'from-purple-600 to-indigo-700' },
+                  { name: 'Resend', url: 'https://resend.com/emails', color: 'from-blue-500 to-cyan-600' },
+                  { name: 'Analytics', url: 'https://vercel.com/analytics', color: 'from-pink-500 to-rose-600' },
+                  { name: 'Client Portal', url: '/portal', color: 'from-orange-500 to-amber-600' },
                 ].map((platform) => (
                   <a
                     key={platform.name}
                     href={platform.url}
                     target={platform.url.startsWith('http') ? '_blank' : undefined}
-                    className="group p-4 rounded-xl bg-gradient-to-br from-slate-50 to-gray-100 hover:from-slate-100 hover:to-gray-200 border border-gray-200 transition-all duration-200"
+                    className={`group p-5 rounded-xl bg-gradient-to-br ${platform.color} text-white hover:shadow-lg hover:scale-105 transition-all duration-200`}
                   >
-                    <div className={`text-3xl mb-2`}>{platform.icon}</div>
-                    <p className="font-bold text-navy-900 text-sm mb-1">{platform.name}</p>
-                    <p className="text-xs text-slate-600 group-hover:text-signal-red transition-colors duration-200">
+                    <p className="font-bold text-lg mb-1">{platform.name}</p>
+                    <p className="text-sm text-white/80">
                       Open →
                     </p>
                   </a>

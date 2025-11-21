@@ -17,6 +17,7 @@ export default function PortalNav({ userType, userName, onLogout }: PortalNavPro
     { href: '/dashboard', label: 'Overview', exactMatch: true },
     { href: '/dashboard/clients', label: 'Clients', exactMatch: false },
     { href: '/dashboard/command-center', label: 'Command Center', exactMatch: true },
+    { href: '/dashboard/settings', label: 'Settings', exactMatch: true },
   ];
 
   const clientLinks = [
