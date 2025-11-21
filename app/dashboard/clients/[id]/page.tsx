@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
+import { generateInvoicePDF } from '@/lib/generateInvoicePDF';
 import Link from 'next/link';
 
 type Client = {
@@ -313,6 +314,52 @@ export default function ClientDetailPage() {
     } catch (err: any) {
       console.error('Error updating invoice:', err);
       alert('Failed to update: ' + err.message);
+    }
+  };
+
+  const handleDownloadInvoice = async (invoice: Invoice) => {
+    try {
+      if (!clientData) {
+        alert('Client data not loaded');
+        return;
+      }
+
+      // Generate PDF
+      const pdfBlob = await generateInvoicePDF({
+        invoiceNumber: invoice.invoice_number,
+        customerNumber: clientData.customer_number || '',
+        issueDate: invoice.issue_date,
+        dueDate: invoice.due_date,
+        clientName: clientData.company_name,
+        clientContact: clientData.contact_person,
+        clientAddress: {
+          street: clientData.address_street || '',
+          city: clientData.address_city || '',
+          postalCode: clientData.address_postal_code || '',
+          country: clientData.address_country || 'Netherlands',
+        },
+        clientKvK: clientData.kvk_number || '',
+        clientVAT: clientData.vat_number || '',
+        subtotal: invoice.amount / 1.21,
+        vatRate: 21,
+        vatAmount: invoice.amount - invoice.amount / 1.21,
+        totalAmount: invoice.amount,
+        currency: invoice.currency,
+        description: invoice.description || 'Professional Services',
+      });
+
+      // Download the PDF
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${invoice.invoice_number}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate invoice PDF. Please try again.');
     }
   };
 
@@ -1153,18 +1200,29 @@ export default function ClientDetailPage() {
                               )}
                             </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right flex flex-col items-end gap-3">
                             <p className="text-2xl font-bold text-navy-900">
                               €{invoice.amount.toFixed(2)}
                             </p>
-                            {invoice.status !== 'paid' && (
+                            <div className="flex gap-2">
+                              {invoice.status !== 'paid' && (
+                                <button
+                                  onClick={() => markInvoiceAsPaid(invoice.id)}
+                                  className="px-4 py-2 bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors duration-200"
+                                >
+                                  Mark as Paid
+                                </button>
+                              )}
                               <button
-                                onClick={() => markInvoiceAsPaid(invoice.id)}
-                                className="mt-3 px-4 py-2 bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors duration-200"
+                                onClick={() => handleDownloadInvoice(invoice)}
+                                className="px-4 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200 flex items-center gap-2"
                               >
-                                Mark as Paid
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Download
                               </button>
-                            )}
+                            </div>
                           </div>
                         </div>
                       </div>
