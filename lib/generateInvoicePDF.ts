@@ -53,7 +53,8 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Blob> {
     const logoWidth = 40;
     const logoHeight = 14;
     doc.addImage(logoDataUrl, 'PNG', pageWidth - marginRight - logoWidth, marginTop - 2, logoWidth, logoHeight);
-  } catch {
+  } catch (error) {
+    console.error('[generateInvoicePDF] Failed to render logo', error);
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
