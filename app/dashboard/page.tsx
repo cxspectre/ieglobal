@@ -231,16 +231,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-off-white">
-      <PortalNav 
-        userType="employee" 
-        userName={user?.profile?.full_name}
-        onLogout={handleLogout}
-      />
-
-      {/* Main Content */}
-      <main className="p-8">
-        <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto">
           {/* Hero Section */}
           <div className="mb-8 flex items-end justify-between">
             <div>
@@ -453,8 +444,6 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
-        </div>
-      </main>
     </div>
   );
 }

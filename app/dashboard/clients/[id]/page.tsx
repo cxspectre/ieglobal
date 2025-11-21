@@ -61,7 +61,7 @@ export default function ClientDetailPage() {
   const [saveLoading, setSaveLoading] = useState(false);
   const [clientHasAccount, setClientHasAccount] = useState(false);
   const [clientAccountEmail, setClientAccountEmail] = useState('');
-  const [clientLastSignIn, setClientLastSignIn] = useState<string | null>(null);
+  const [clientAccountActive, setClientAccountActive] = useState(false);
   const [invitationLink, setInvitationLink] = useState('');
   const [creatingAccount, setCreatingAccount] = useState(false);
   const [resendingInvite, setResendingInvite] = useState(false);
@@ -123,21 +123,37 @@ export default function ClientDetailPage() {
         setInternalNotes(notesData as any);
       }
 
-      // Check if client has a user account and get last sign in
-      const { data: clientProfile } = await supabase
+      // Check if client has a user account
+      const { data: clientProfile } = await (supabase as any)
         .from('profiles')
         .select('id, email')
         .eq('client_id', params.id)
         .eq('role', 'client')
-        .maybeSingle() as any;
+        .maybeSingle();
+
+      console.log('Client profile check for client_id:', params.id, 'Found:', clientProfile);
 
       if (clientProfile) {
         setClientHasAccount(true);
         setClientAccountEmail(clientProfile.email);
 
-        // Get last sign in from auth.users (need admin access for this)
-        // For now, we'll just track if account exists
-        // You can enhance this later with activity tracking
+        // Check if user is actually active (has logged in or confirmed email)
+        try {
+          const statusResponse = await fetch('/api/check-user-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: clientProfile.email }),
+          });
+
+          const statusResult = await statusResponse.json();
+          console.log('User status check:', statusResult);
+
+          if (statusResult.active) {
+            setClientAccountActive(true);
+          }
+        } catch (err) {
+          console.error('Failed to check user status:', err);
+        }
       }
       
       setLoading(false);
@@ -147,9 +163,59 @@ export default function ClientDetailPage() {
     loadData();
   }, [params.id]);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+  const toggleClientStatus = async () => {
+    if (!client) return;
+    
+    const newStatus = client.status === 'active' ? 'inactive' : 'active';
+    
+    try {
+      const { error } = await (supabase as any)
+        .from('clients')
+        .update({ status: newStatus })
+        .eq('id', params.id);
+
+      if (error) throw error;
+
+      // Reload client data
+      await loadData();
+    } catch (err: any) {
+      console.error('Error updating status:', err);
+      alert('Failed to update status');
+    }
+  };
+
+  const deleteClient = async () => {
+    if (!client) return;
+
+    const confirmDelete = confirm(
+      `⚠️ Delete ${client.company_name}?\n\n` +
+      `This will permanently delete:\n` +
+      `• Client record\n` +
+      `• All projects\n` +
+      `• All milestones\n` +
+      `• All invoices\n` +
+      `• All files\n` +
+      `• All messages\n\n` +
+      `This action cannot be undone.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      // Delete client (CASCADE will handle all related records)
+      const { error } = await (supabase as any)
+        .from('clients')
+        .delete()
+        .eq('id', params.id);
+
+      if (error) throw error;
+
+      alert(`${client.company_name} has been deleted.`);
+      router.push('/dashboard/clients');
+    } catch (err: any) {
+      console.error('Error deleting client:', err);
+      alert('Failed to delete client: ' + err.message);
+    }
   };
 
   const startEditing = () => {
@@ -368,38 +434,7 @@ export default function ClientDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-off-white">
-      {/* Top Bar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/dashboard" className="font-bold text-xl text-navy-900">
-              IE Global
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/dashboard" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Overview
-              </Link>
-              <Link href="/dashboard/clients" className="text-sm font-medium text-navy-900">
-                Clients
-              </Link>
-              <Link href="/dashboard/templates" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Templates
-              </Link>
-            </nav>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
-          >
-            Sign Out
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="p-8">
-        <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
           <div className="mb-6">
             <Link
@@ -420,13 +455,24 @@ export default function ClientDetailPage() {
                 <h1 className="text-3xl font-bold text-navy-900 mb-2">{client.company_name}</h1>
                 <p className="text-slate-700">{client.contact_person} • {client.contact_email}</p>
               </div>
-              <span className={`px-4 py-2 text-sm font-semibold ${
-                client.status === 'active' ? 'bg-green-100 text-green-800' :
-                client.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
-                'bg-blue-100 text-blue-800'
-              }`}>
-                {client.status}
-              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={toggleClientStatus}
+                  className={`px-4 py-2 text-sm font-semibold transition-all duration-200 hover:opacity-80 ${
+                    client.status === 'active' ? 'bg-green-100 text-green-800' :
+                    client.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
+                    'bg-blue-100 text-blue-800'
+                  }`}
+                >
+                  {client.status === 'active' ? '✓ Active' : '○ Inactive'}
+                </button>
+                <button
+                  onClick={deleteClient}
+                  className="px-4 py-2 bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-all duration-200"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
@@ -612,11 +658,26 @@ export default function ClientDetailPage() {
                         <div>
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3">
-                              <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                Account Created
+                              <span className={`inline-flex items-center gap-2 px-3 py-1 text-sm font-semibold ${
+                                clientAccountActive 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {clientAccountActive ? (
+                                  <>
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Active
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Pending
+                                  </>
+                                )}
                               </span>
                               <span className="text-sm text-slate-700">
                                 {clientAccountEmail}
@@ -631,11 +692,18 @@ export default function ClientDetailPage() {
                             </button>
                           </div>
                           <p className="text-sm text-slate-700 mb-3">
-                            Status: <span className="font-semibold">Invitation sent</span>
+                            {clientAccountActive ? (
+                              <>
+                                Status: <span className="font-semibold text-green-700">Account Active - Client can log in</span>
+                              </>
+                            ) : (
+                              <>
+                                Status: <span className="font-semibold text-yellow-700">Invitation Sent - Awaiting password setup</span>
+                              </>
+                            )}
                             {' • '}
-                            Client can log in at{' '}
                             <a href="/login" target="_blank" className="text-signal-red hover:underline font-semibold">
-                              /login
+                              Portal Login
                             </a>
                           </p>
                           
@@ -977,8 +1045,6 @@ export default function ClientDetailPage() {
               </div>
             )}
           </div>
-        </div>
-      </main>
     </div>
   );
 }

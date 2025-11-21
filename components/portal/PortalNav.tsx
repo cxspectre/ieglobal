@@ -14,17 +14,17 @@ export default function PortalNav({ userType, userName, onLogout }: PortalNavPro
   const pathname = usePathname();
 
   const employeeLinks = [
-    { href: '/dashboard', label: 'Overview' },
-    { href: '/dashboard/clients', label: 'Clients' },
-    { href: '/dashboard/settings', label: 'Settings' },
+    { href: '/dashboard', label: 'Overview', exactMatch: true },
+    { href: '/dashboard/clients', label: 'Clients', exactMatch: false },
+    { href: '/dashboard/settings', label: 'Settings', exactMatch: true },
   ];
 
   const clientLinks = [
-    { href: '/portal', label: 'Overview' },
-    { href: '/portal/milestones', label: 'Milestones' },
-    { href: '/portal/invoices', label: 'Invoices' },
-    { href: '/portal/files', label: 'Files' },
-    { href: '/portal/messages', label: 'Messages' },
+    { href: '/portal', label: 'Overview', exactMatch: true },
+    { href: '/portal/milestones', label: 'Milestones', exactMatch: true },
+    { href: '/portal/invoices', label: 'Invoices', exactMatch: true },
+    { href: '/portal/files', label: 'Files', exactMatch: true },
+    { href: '/portal/messages', label: 'Messages', exactMatch: true },
   ];
 
   const links = userType === 'employee' ? employeeLinks : clientLinks;
@@ -52,7 +52,9 @@ export default function PortalNav({ userType, userName, onLogout }: PortalNavPro
             {/* Navigation Links - Desktop */}
             <nav className="hidden lg:flex items-center gap-1">
               {links.map((link) => {
-                const isActive = pathname === link.href || pathname?.startsWith(link.href + '/');
+                const isActive = link.exactMatch 
+                  ? pathname === link.href 
+                  : pathname === link.href || pathname?.startsWith(link.href + '/');
                 return (
                   <Link
                     key={link.href}
@@ -90,7 +92,9 @@ export default function PortalNav({ userType, userName, onLogout }: PortalNavPro
         <nav className="lg:hidden pb-3 overflow-x-auto">
           <div className="flex items-center gap-2">
             {links.map((link) => {
-              const isActive = pathname === link.href || pathname?.startsWith(link.href + '/');
+              const isActive = link.exactMatch 
+                ? pathname === link.href 
+                : pathname === link.href || pathname?.startsWith(link.href + '/');
               return (
                 <Link
                   key={link.href}

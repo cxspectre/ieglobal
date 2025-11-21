@@ -117,16 +117,7 @@ export default function PortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-off-white">
-      <PortalNav 
-        userType="client" 
-        userName={user?.profile?.full_name}
-        onLogout={handleLogout}
-      />
-
-      {/* Main Content */}
-      <main className="p-8">
-        <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-navy-900 mb-2">
               Welcome, {user?.profile?.full_name}
@@ -244,8 +235,6 @@ export default function PortalPage() {
               </div>
             </div>
           )}
-        </div>
-      </main>
     </div>
   );
 }
