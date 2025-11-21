@@ -86,7 +86,7 @@ export default function ClientDetailPage() {
       }
 
       // Load client
-      const { data, error } = await supabase
+      const { data: clientData, error } = await supabase
         .from('clients')
         .select('*')
         .eq('id', params.id)
@@ -95,7 +95,7 @@ export default function ClientDetailPage() {
       if (error) {
         console.error('Error loading client:', error);
       } else {
-        setClient(data);
+        setClient(clientData);
       }
 
       // Load projects
@@ -131,31 +131,53 @@ export default function ClientDetailPage() {
       if (notesData) setInternalNotes(notesData);
 
       // Check if client has portal account
-      const { data: profileData, error: profileError } = await (supabase as any)
+      // Try by email first (most reliable)
+      let profileByEmail = null;
+      if (clientData) {
+        const emailResult = await (supabase as any)
+          .from('profiles')
+          .select('email, active, role, client_id')
+          .eq('email', (clientData as any).contact_email)
+          .maybeSingle();
+        profileByEmail = emailResult.data;
+      }
+
+      // Also try by client_id with role filter
+      const clientIdResult = await (supabase as any)
         .from('profiles')
-        .select('email, active, role')
+        .select('email, active, role, client_id')
         .eq('client_id', params.id)
         .eq('role', 'client')
         .maybeSingle();
+      const profileByClientId = clientIdResult.data;
 
-      console.log('[ClientDetail] Portal account check:', { profileData, profileError, clientId: params.id });
+      // Use whichever one we found
+      const profileData = profileByEmail || profileByClientId;
+
+      console.log('[ClientDetail] Portal account check:', { 
+        profileByEmail, 
+        profileByClientId,
+        finalProfile: profileData,
+        clientEmail: (clientData as any)?.contact_email,
+        clientId: params.id 
+      });
 
       if (profileData) {
         setClientHasAccount(true);
         setClientAccountEmail(profileData.email);
         setClientAccountActive(profileData.active === true);
-        console.log('[ClientDetail] Portal account found:', { 
+        console.log('[ClientDetail] ✅ Portal account found:', { 
           email: profileData.email, 
           active: profileData.active,
-          hasAccount: true 
+          role: profileData.role
         });
       } else {
         setClientHasAccount(false);
         setClientAccountEmail('');
         setClientAccountActive(false);
-        console.log('[ClientDetail] No portal account found');
+        console.log('[ClientDetail] ❌ No portal account found');
       }
-
+      
       setLoading(false);
   };
 
@@ -168,9 +190,9 @@ export default function ClientDetailPage() {
     
     const newStatus = client.status === 'active' ? 'inactive' : 'active';
     
-    const { error } = await (supabase as any)
-      .from('clients')
-      .update({ status: newStatus })
+      const { error } = await (supabase as any)
+        .from('clients')
+        .update({ status: newStatus })
       .eq('id', client.id);
 
     if (!error) {
@@ -340,9 +362,9 @@ export default function ClientDetailPage() {
       
       const { error } = await (supabase as any).from('internal_notes').insert({
         client_id: params.id,
-        note_text: newNote.trim(),
+          note_text: newNote.trim(),
         created_by: session?.user.id,
-      });
+        });
 
       if (error) throw error;
 
@@ -473,28 +495,28 @@ export default function ClientDetailPage() {
     <div className="max-w-7xl mx-auto">
       {/* Header Bar with Breadcrumb */}
       <div className="mb-8 flex items-center justify-between">
-        <Link
-          href="/dashboard/clients"
-          className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Clients
-        </Link>
+            <Link
+              href="/dashboard/clients"
+              className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Clients
+            </Link>
         
-        <div className="flex items-center gap-3">
-          <button
-            onClick={deleteClient}
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={deleteClient}
             className="px-4 py-2 bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-all duration-200 flex items-center gap-2"
-          >
+                >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
             Delete Client
-          </button>
-        </div>
-      </div>
+                </button>
+              </div>
+            </div>
 
       <div className="grid grid-cols-12 gap-6">
         {/* Sidebar Navigation */}
@@ -516,7 +538,7 @@ export default function ClientDetailPage() {
               >
                 {client.status === 'active' ? '✓ Active' : '○ Inactive'}
               </button>
-            </div>
+          </div>
 
             {/* Navigation Menu */}
             <nav className="p-2">
@@ -598,7 +620,7 @@ export default function ClientDetailPage() {
                   className="w-full px-4 py-2 bg-navy-900 text-white text-sm font-semibold hover:bg-navy-900/90 transition-all duration-200 disabled:opacity-50"
                 >
                   {creatingAccount ? 'Creating...' : 'Create Portal Account'}
-                </button>
+              </button>
               </div>
             ) : (
               <div className="p-6 border-t border-gray-200 bg-green-50">
@@ -619,62 +641,62 @@ export default function ClientDetailPage() {
                 )}
               </div>
             )}
+            </div>
           </div>
-        </div>
 
         {/* Main Content Area */}
         <div className="col-span-12 lg:col-span-9">
           {/* OVERVIEW TAB */}
-          {activeTab === 'overview' && (
+            {activeTab === 'overview' && (
             <div className="space-y-6">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-navy-900">Client Details</h2>
-                {!isEditing ? (
-                  <button
-                    onClick={startEditing}
+                  {!isEditing ? (
+                    <button
+                      onClick={startEditing}
                     className="px-6 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200 flex items-center gap-2"
-                  >
+                    >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    Edit Client
-                  </button>
-                ) : (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={cancelEditing}
+                      Edit Client
+                    </button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={cancelEditing}
                       className="px-6 py-2 bg-gray-100 text-navy-900 text-sm font-semibold hover:bg-gray-200 transition-colors duration-200"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={saveChanges}
-                      disabled={saveLoading}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={saveChanges}
+                        disabled={saveLoading}
                       className="px-6 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-colors duration-200 disabled:opacity-50"
-                    >
-                      {saveLoading ? 'Saving...' : 'Save Changes'}
-                    </button>
-                  </div>
-                )}
-              </div>
+                      >
+                        {saveLoading ? 'Saving...' : 'Save Changes'}
+                      </button>
+                    </div>
+                  )}
+                </div>
 
-              {isEditing ? (
+                {isEditing ? (
                 /* EDIT MODE */
                 <div className="space-y-6">
                   {/* Company Information Card */}
                   <div className="bg-white p-6 border border-gray-200">
                     <h3 className="text-lg font-bold text-navy-900 mb-4 border-b border-gray-200 pb-2">Company Information</h3>
                     <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-navy-900 mb-2">Company Name</label>
-                        <input
-                          type="text"
-                          value={editForm.company_name}
-                          onChange={(e) => setEditForm({ ...editForm, company_name: e.target.value })}
+                    <div>
+                      <label className="block text-sm font-semibold text-navy-900 mb-2">Company Name</label>
+                      <input
+                        type="text"
+                        value={editForm.company_name}
+                        onChange={(e) => setEditForm({ ...editForm, company_name: e.target.value })}
                           className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                        />
-                      </div>
+                      />
+                    </div>
                       <div>
                         <label className="block text-sm font-semibold text-navy-900 mb-2">Industry</label>
                         <input
@@ -700,105 +722,105 @@ export default function ClientDetailPage() {
                   <div className="bg-white p-6 border border-gray-200">
                     <h3 className="text-lg font-bold text-navy-900 mb-4 border-b border-gray-200 pb-2">Contact Information</h3>
                     <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-navy-900 mb-2">Contact Person</label>
-                        <input
-                          type="text"
-                          value={editForm.contact_person}
-                          onChange={(e) => setEditForm({ ...editForm, contact_person: e.target.value })}
+                    <div>
+                      <label className="block text-sm font-semibold text-navy-900 mb-2">Contact Person</label>
+                      <input
+                        type="text"
+                        value={editForm.contact_person}
+                        onChange={(e) => setEditForm({ ...editForm, contact_person: e.target.value })}
                           className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-navy-900 mb-2">Email</label>
-                        <input
-                          type="email"
-                          value={editForm.contact_email}
-                          onChange={(e) => setEditForm({ ...editForm, contact_email: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-navy-900 mb-2">Phone</label>
-                        <input
-                          type="text"
-                          value={editForm.contact_phone}
-                          onChange={(e) => setEditForm({ ...editForm, contact_phone: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                        />
-                      </div>
+                      />
                     </div>
-                  </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-navy-900 mb-2">Email</label>
+                      <input
+                        type="email"
+                        value={editForm.contact_email}
+                        onChange={(e) => setEditForm({ ...editForm, contact_email: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-navy-900 mb-2">Phone</label>
+                      <input
+                          type="text"
+                        value={editForm.contact_phone}
+                        onChange={(e) => setEditForm({ ...editForm, contact_phone: e.target.value })}
+                          className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                      />
+                    </div>
+                    </div>
+                    </div>
 
                   {/* Billing Address Card */}
                   <div className="bg-white p-6 border border-gray-200">
                     <h3 className="text-lg font-bold text-navy-900 mb-4 border-b border-gray-200 pb-2">Billing Address</h3>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-navy-900 mb-2">Street Address</label>
-                        <input
-                          type="text"
-                          value={editForm.address_street}
-                          onChange={(e) => setEditForm({ ...editForm, address_street: e.target.value })}
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-navy-900 mb-2">Street Address</label>
+                          <input
+                            type="text"
+                            value={editForm.address_street}
+                            onChange={(e) => setEditForm({ ...editForm, address_street: e.target.value })}
                           className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                        />
-                      </div>
+                          />
+                        </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-semibold text-navy-900 mb-2">Postal Code</label>
-                          <input
-                            type="text"
-                            value={editForm.address_postal_code}
-                            onChange={(e) => setEditForm({ ...editForm, address_postal_code: e.target.value })}
+                          <div>
+                            <label className="block text-sm font-semibold text-navy-900 mb-2">Postal Code</label>
+                            <input
+                              type="text"
+                              value={editForm.address_postal_code}
+                              onChange={(e) => setEditForm({ ...editForm, address_postal_code: e.target.value })}
                             className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                          />
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-navy-900 mb-2">City</label>
+                            <input
+                              type="text"
+                              value={editForm.address_city}
+                              onChange={(e) => setEditForm({ ...editForm, address_city: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                            />
+                          </div>
                         </div>
                         <div>
-                          <label className="block text-sm font-semibold text-navy-900 mb-2">City</label>
+                          <label className="block text-sm font-semibold text-navy-900 mb-2">Country</label>
                           <input
                             type="text"
-                            value={editForm.address_city}
-                            onChange={(e) => setEditForm({ ...editForm, address_city: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-navy-900 mb-2">Country</label>
-                        <input
-                          type="text"
-                          value={editForm.address_country}
-                          onChange={(e) => setEditForm({ ...editForm, address_country: e.target.value })}
+                            value={editForm.address_country}
+                            onChange={(e) => setEditForm({ ...editForm, address_country: e.target.value })}
                           className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                        />
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
 
                   {/* Legal Information Card */}
                   <div className="bg-white p-6 border border-gray-200">
                     <h3 className="text-lg font-bold text-navy-900 mb-4 border-b border-gray-200 pb-2">Legal Information</h3>
                     <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-navy-900 mb-2">VAT Number</label>
-                        <input
-                          type="text"
-                          value={editForm.vat_number}
-                          onChange={(e) => setEditForm({ ...editForm, vat_number: e.target.value })}
+                        <div>
+                          <label className="block text-sm font-semibold text-navy-900 mb-2">VAT Number</label>
+                          <input
+                            type="text"
+                            value={editForm.vat_number}
+                            onChange={(e) => setEditForm({ ...editForm, vat_number: e.target.value })}
                           className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                        />
-                      </div>
-                      <div>
+                          />
+                        </div>
+                        <div>
                         <label className="block text-sm font-semibold text-navy-900 mb-2">KvK Number</label>
-                        <input
-                          type="text"
-                          value={editForm.kvk_number}
-                          onChange={(e) => setEditForm({ ...editForm, kvk_number: e.target.value })}
+                          <input
+                            type="text"
+                            value={editForm.kvk_number}
+                            onChange={(e) => setEditForm({ ...editForm, kvk_number: e.target.value })}
                           className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                        />
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
 
                   {/* Onboarding Notes Card */}
                   <div className="bg-white p-6 border border-gray-200">
@@ -810,35 +832,35 @@ export default function ClientDetailPage() {
                       className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none resize-none"
                       placeholder="Add any relevant notes about client onboarding, special requirements, etc."
                     />
+                    </div>
                   </div>
-                </div>
-              ) : (
+                ) : (
                 /* VIEW MODE */
                 <div className="space-y-6">
                   {/* Company Information Card */}
                   <div className="bg-white p-6 border-l-4 border-navy-900">
                     <h3 className="text-lg font-bold text-navy-900 mb-4">Company Information</h3>
                     <div className="grid grid-cols-2 gap-6">
-                      <div>
+                        <div>
                         <p className="text-sm text-slate-600 mb-1">Company Name</p>
                         <p className="font-semibold text-navy-900">{client.company_name}</p>
-                      </div>
-                      <div>
+                        </div>
+                        <div>
                         <p className="text-sm text-slate-600 mb-1">Industry</p>
                         <p className="font-semibold text-navy-900">{client.industry || '—'}</p>
-                      </div>
-                      <div>
+                        </div>
+                          <div>
                         <p className="text-sm text-slate-600 mb-1">Customer Number</p>
                         <p className="font-semibold text-navy-900">{client.customer_number || '—'}</p>
-                      </div>
-                      <div>
+                          </div>
+                          <div>
                         <p className="text-sm text-slate-600 mb-1">Client Since</p>
                         <p className="font-semibold text-navy-900">
                           {new Date(client.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                         </p>
+                          </div>
                       </div>
                     </div>
-                  </div>
 
                   {/* Contact Information Card */}
                   <div className="bg-white p-6 border-l-4 border-signal-red">
@@ -861,103 +883,103 @@ export default function ClientDetailPage() {
 
                   {/* Billing Address Card */}
                   <div className="bg-white p-6 border-l-4 border-green-600">
-                    <h3 className="text-lg font-bold text-navy-900 mb-4">Billing Address</h3>
+                        <h3 className="text-lg font-bold text-navy-900 mb-4">Billing Address</h3>
                     <div className="space-y-2 text-slate-700">
                       <p>{client.address_street || '—'}</p>
                       <p>{client.address_postal_code && client.address_city ? `${client.address_postal_code} ${client.address_city}` : '—'}</p>
                       <p>{client.address_country || '—'}</p>
-                    </div>
-                  </div>
+                        </div>
+                      </div>
 
                   {/* Legal Information Card */}
                   <div className="bg-white p-6 border-l-4 border-blue-600">
-                    <h3 className="text-lg font-bold text-navy-900 mb-4">Legal Information</h3>
+                        <h3 className="text-lg font-bold text-navy-900 mb-4">Legal Information</h3>
                     <div className="grid grid-cols-2 gap-6">
-                      <div>
+                            <div>
                         <p className="text-sm text-slate-600 mb-1">VAT Number</p>
                         <p className="font-semibold text-navy-900">{client.vat_number || '—'}</p>
-                      </div>
-                      <div>
+                            </div>
+                            <div>
                         <p className="text-sm text-slate-600 mb-1">KvK Number</p>
                         <p className="font-semibold text-navy-900">{client.kvk_number || '—'}</p>
+                            </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
 
                   {/* Onboarding Notes Card */}
-                  {client.onboarding_notes && (
+                    {client.onboarding_notes && (
                     <div className="bg-amber-50 p-6 border-l-4 border-amber-500">
                       <h3 className="text-lg font-bold text-navy-900 mb-3">Onboarding Notes</h3>
-                      <p className="text-slate-700 whitespace-pre-wrap">{client.onboarding_notes}</p>
-                    </div>
-                  )}
+                        <p className="text-slate-700 whitespace-pre-wrap">{client.onboarding_notes}</p>
+                      </div>
+                    )}
 
                   {/* Invitation Link (if exists) */}
-                  {invitationLink && (
+                          {invitationLink && (
                     <div className="bg-blue-50 p-6 border-l-4 border-blue-500">
                       <h3 className="text-lg font-bold text-navy-900 mb-3">Portal Invitation Link</h3>
                       <p className="text-xs text-slate-600 mb-2">Share this link with the client to set up their portal access:</p>
                       <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={invitationLink}
-                          readOnly
+                                <input
+                                  type="text"
+                                  value={invitationLink}
+                                  readOnly
                           className="flex-1 px-4 py-2 bg-white border border-blue-300 text-sm font-mono"
-                        />
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(invitationLink);
-                            alert('Link copied to clipboard!');
-                          }}
+                                />
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(invitationLink);
+                                    alert('Link copied to clipboard!');
+                                  }}
                           className="px-4 py-2 bg-navy-900 text-white text-sm font-semibold hover:bg-navy-900/90"
-                        >
-                          Copy
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
+                                >
+                                  Copy
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                  </div>
+                )}
+              </div>
+            )}
 
           {/* PROJECTS TAB */}
-          {activeTab === 'projects' && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-navy-900">Projects</h2>
-                <Link
+            {activeTab === 'projects' && (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-navy-900">Projects</h2>
+                  <Link
                   href={`/dashboard/clients/${params.id}/projects/new`}
                   className="px-6 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200 flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                  </svg>
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
                   New Project
-                </Link>
-              </div>
+                  </Link>
+                </div>
 
-              {projects.length === 0 ? (
+                {projects.length === 0 ? (
                 <div className="bg-white p-12 text-center border border-dashed border-gray-300">
                   <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                   <p className="text-slate-700 mb-4">No projects yet</p>
-                  <Link
+                    <Link
                     href={`/dashboard/clients/${params.id}/projects/new`}
                     className="inline-block px-6 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200"
-                  >
-                    Create First Project
-                  </Link>
-                </div>
-              ) : (
+                    >
+                      Create First Project
+                    </Link>
+                  </div>
+                ) : (
                 <div className="grid grid-cols-1 gap-4">
-                  {projects.map((project) => (
+                    {projects.map((project) => (
                     <div key={project.id} className="bg-white p-6 border-l-4 border-signal-red hover:shadow-md transition-shadow duration-200">
                       <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold text-navy-900 mb-2">{project.name}</h3>
-                          {project.description && (
+                          <div className="flex-1">
+                            <h3 className="text-xl font-bold text-navy-900 mb-2">{project.name}</h3>
+                            {project.description && (
                             <p className="text-slate-700 mb-4">{project.description}</p>
                           )}
                           <div className="flex items-center gap-6 text-sm">
@@ -976,79 +998,79 @@ export default function ClientDetailPage() {
                                   className="h-full bg-signal-red transition-all duration-300"
                                   style={{ width: `${project.progress_percentage}%` }}
                                 />
-                              </div>
+                          </div>
                               <span className="text-slate-600 font-semibold">{project.progress_percentage}%</span>
                             </div>
                           </div>
                         </div>
                         <div className="flex gap-2 ml-4">
-                          <Link
-                            href={`/dashboard/projects/${project.id}/milestones`}
+                            <Link
+                              href={`/dashboard/projects/${project.id}/milestones`}
                             className="px-4 py-2 bg-gray-100 text-navy-900 text-sm font-semibold hover:bg-gray-200 transition-colors duration-200"
-                          >
-                            Milestones
-                          </Link>
-                          <Link
-                            href={`/dashboard/projects/${project.id}/messages`}
+                            >
+                              Milestones
+                            </Link>
+                            <Link
+                              href={`/dashboard/projects/${project.id}/messages`}
                             className="px-4 py-2 bg-navy-900 text-white text-sm font-semibold hover:bg-navy-900/90 transition-colors duration-200"
-                          >
-                            Messages
-                          </Link>
+                            >
+                              Messages
+                            </Link>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
           {/* INVOICES TAB */}
-          {activeTab === 'invoices' && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-navy-900">Invoices</h2>
-                <Link
+            {activeTab === 'invoices' && (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-navy-900">Invoices</h2>
+                  <Link
                   href={`/dashboard/clients/${params.id}/invoices/new`}
                   className="px-6 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200 flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                  </svg>
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
                   New Invoice
-                </Link>
-              </div>
+                  </Link>
+                </div>
 
-              {invoices.length === 0 ? (
+                {invoices.length === 0 ? (
                 <div className="bg-white p-12 text-center border border-dashed border-gray-300">
                   <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
                   </svg>
                   <p className="text-slate-700 mb-4">No invoices yet</p>
-                  <Link
+                    <Link
                     href={`/dashboard/clients/${params.id}/invoices/new`}
                     className="inline-block px-6 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200"
-                  >
-                    Create First Invoice
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {invoices.map((invoice) => (
+                    >
+                      Create First Invoice
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {invoices.map((invoice) => (
                     <div key={invoice.id} className="bg-white p-6 border-l-4 border-signal-red hover:shadow-md transition-shadow duration-200">
                       <div className="flex items-start justify-between">
-                        <div className="flex-1">
+                          <div className="flex-1">
                           <div className="flex items-center gap-4 mb-3">
-                            <h3 className="text-xl font-bold text-navy-900">{invoice.invoice_number}</h3>
-                            <span className={`px-3 py-1 text-xs font-semibold ${
-                              invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                              invoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {invoice.status.toUpperCase()}
-                            </span>
-                          </div>
-                          {invoice.description && (
+                              <h3 className="text-xl font-bold text-navy-900">{invoice.invoice_number}</h3>
+                              <span className={`px-3 py-1 text-xs font-semibold ${
+                                invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                                invoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {invoice.status.toUpperCase()}
+                              </span>
+                            </div>
+                            {invoice.description && (
                             <p className="text-slate-700 mb-4 text-sm">{invoice.description}</p>
                           )}
                           <div className="grid grid-cols-3 gap-4 text-sm">
@@ -1064,20 +1086,20 @@ export default function ClientDetailPage() {
                                 {new Date(invoice.due_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </p>
                             </div>
-                            {invoice.paid_date && (
+                              {invoice.paid_date && (
                               <div>
                                 <p className="text-slate-600">Paid</p>
                                 <p className="font-semibold text-green-700">
                                   {new Date(invoice.paid_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                                 </p>
                               </div>
-                            )}
+                              )}
+                            </div>
                           </div>
-                        </div>
                         <div className="text-right flex flex-col items-end gap-3 ml-6">
                           <p className="text-3xl font-bold text-navy-900">
-                            €{invoice.amount.toFixed(2)}
-                          </p>
+                              €{invoice.amount.toFixed(2)}
+                            </p>
                           <div className="flex gap-2">
                             {invoice.status !== 'paid' && (
                               <button
@@ -1097,18 +1119,18 @@ export default function ClientDetailPage() {
                               Download
                             </button>
                           </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
           {/* FILES TAB */}
-          {activeTab === 'files' && (
-            <div>
+            {activeTab === 'files' && (
+              <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-navy-900">Files</h2>
                 <Link
@@ -1134,46 +1156,46 @@ export default function ClientDetailPage() {
                   Go to Files Section
                 </Link>
               </div>
-            </div>
-          )}
+              </div>
+            )}
 
           {/* INTERNAL NOTES TAB */}
-          {activeTab === 'notes' && (
-            <div>
-              <h2 className="text-2xl font-bold text-navy-900 mb-6">Internal Notes</h2>
+            {activeTab === 'notes' && (
+              <div>
+                <h2 className="text-2xl font-bold text-navy-900 mb-6">Internal Notes</h2>
 
-              {/* Add Note Form */}
+                {/* Add Note Form */}
               <div className="bg-white p-6 border-l-4 border-signal-red mb-6">
                 <h3 className="text-lg font-semibold text-navy-900 mb-4">Add New Note</h3>
-                <textarea
-                  value={newNote}
-                  onChange={(e) => setNewNote(e.target.value)}
-                  rows={4}
+                    <textarea
+                      value={newNote}
+                      onChange={(e) => setNewNote(e.target.value)}
+                      rows={4}
                   placeholder="Add an internal note about this client..."
                   className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none resize-none mb-3"
-                />
-                <button
-                  onClick={addInternalNote}
-                  disabled={addingNote || !newNote.trim()}
+                    />
+                    <button
+                      onClick={addInternalNote}
+                      disabled={addingNote || !newNote.trim()}
                   className="px-6 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {addingNote ? 'Adding...' : 'Add Note'}
-                </button>
-              </div>
+                    >
+                      {addingNote ? 'Adding...' : 'Add Note'}
+                    </button>
+                </div>
 
-              {/* Notes List */}
-              {internalNotes.length === 0 ? (
+                {/* Notes List */}
+                {internalNotes.length === 0 ? (
                 <div className="bg-white p-12 text-center border border-dashed border-gray-300">
                   <svg className="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                   <p className="text-slate-700">No internal notes yet</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {internalNotes.map((note) => (
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {internalNotes.map((note) => (
                     <div key={note.id} className="bg-white p-6 border-l-4 border-gray-300">
-                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-start justify-between mb-3">
                         <div>
                           <p className="font-semibold text-navy-900">{note.profiles?.full_name || 'Unknown'}</p>
                           <p className="text-xs text-slate-600">
@@ -1185,17 +1207,17 @@ export default function ClientDetailPage() {
                               minute: '2-digit'
                             })}
                           </p>
+                          </div>
                         </div>
+                        <p className="text-slate-700 whitespace-pre-wrap">{note.note_text}</p>
                       </div>
-                      <p className="text-slate-700 whitespace-pre-wrap">{note.note_text}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
         </div>
-      </div>
+          </div>
     </div>
   );
 }
