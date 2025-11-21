@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import Image from 'next/image';
@@ -11,7 +11,27 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [sessionReady, setSessionReady] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    // Check if session exists
+    const checkSession = async () => {
+      const supabase = createBrowserClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      console.log('Reset password page - session:', session);
+      
+      if (!session) {
+        setError('Auth session missing! Please click the link from your email again or request a new invitation.');
+        return;
+      }
+      
+      setSessionReady(true);
+    };
+    
+    checkSession();
+  }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,10 +170,10 @@ export default function ResetPasswordPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !sessionReady}
               className="w-full px-8 py-4 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Setting Password...' : 'Set Password & Access Portal'}
+              {!sessionReady ? 'Verifying...' : loading ? 'Setting Password...' : 'Set Password & Access Portal'}
             </button>
           </form>
 
