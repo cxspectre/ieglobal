@@ -319,7 +319,7 @@ export default function ClientDetailPage() {
 
   const handleDownloadInvoice = async (invoice: Invoice) => {
     try {
-      if (!clientData) {
+      if (!client) {
         alert('Client data not loaded');
         return;
       }
@@ -327,19 +327,19 @@ export default function ClientDetailPage() {
       // Generate PDF
       const pdfBlob = await generateInvoicePDF({
         invoiceNumber: invoice.invoice_number,
-        customerNumber: clientData.customer_number || '',
+        customerNumber: client.customer_number || '',
         issueDate: invoice.issue_date,
         dueDate: invoice.due_date,
-        clientName: clientData.company_name,
-        clientContact: clientData.contact_person,
+        clientName: client.company_name,
+        clientContact: client.contact_person,
         clientAddress: {
-          street: clientData.address_street || '',
-          city: clientData.address_city || '',
-          postalCode: clientData.address_postal_code || '',
-          country: clientData.address_country || 'Netherlands',
+          street: client.address_street || '',
+          city: client.address_city || '',
+          postalCode: client.address_postal_code || '',
+          country: client.address_country || 'Netherlands',
         },
-        clientKvK: clientData.kvk_number || '',
-        clientVAT: clientData.vat_number || '',
+        clientKvK: client.kvk_number || '',
+        clientVAT: client.vat_number || '',
         subtotal: invoice.amount / 1.21,
         vatRate: 21,
         vatAmount: invoice.amount - invoice.amount / 1.21,
