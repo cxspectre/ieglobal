@@ -54,7 +54,7 @@ export default function NewInvoicePage() {
         user_id: session.user.id,
         action_type: 'invoice_created',
         description: `Invoice ${formData.invoice_number} created for €${formData.amount}`,
-      });
+      } as any);
 
       // Redirect back
       router.push(`/dashboard/clients/${params.id}`);

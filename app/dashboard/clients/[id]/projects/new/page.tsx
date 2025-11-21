@@ -55,7 +55,7 @@ export default function NewProjectPage() {
         user_id: session.user.id,
         action_type: 'project_created',
         description: `Project "${formData.name}" created`,
-      });
+      } as any);
 
       // Redirect to client detail
       router.push(`/dashboard/clients/${params.id}`);
