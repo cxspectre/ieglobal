@@ -19,16 +19,36 @@ export default function ResetPasswordPage() {
     const handleAuth = async () => {
       const supabase = createBrowserClient();
       
-      // Check if there's a token hash in the URL
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const access_token = hashParams.get('access_token');
-      const refresh_token = hashParams.get('refresh_token');
-      const type = hashParams.get('type');
+      
+      // Check for error in URL first
+      const errorCode = hashParams.get('error_code');
+      const errorDesc = hashParams.get('error_description');
+      
+      if (errorCode === 'otp_expired') {
+        setError('⏰ This invitation link has expired (links are valid for 1 hour).\n\nPlease contact your administrator to resend the invitation, or use the "Resend Invite" button in the Command Center.');
+        return;
+      }
+      
+      if (errorCode) {
+        setError(`Link error: ${errorDesc || errorCode}. Please request a new invitation.`);
+        return;
+      }
+      
+      // Try to get tokens from hash
+      let access_token = hashParams.get('access_token');
+      let refresh_token = hashParams.get('refresh_token');
 
-      if (access_token && refresh_token && type === 'recovery') {
+      // If not in hash, try query params
+      if (!access_token) {
+        const searchParams = new URLSearchParams(window.location.search);
+        access_token = searchParams.get('access_token');
+        refresh_token = searchParams.get('refresh_token');
+      }
+
+      if (access_token && refresh_token) {
         console.log('Setting session from URL tokens');
         
-        // Set the session with the tokens from URL
         const { error: sessionError } = await supabase.auth.setSession({
           access_token,
           refresh_token,
@@ -36,11 +56,11 @@ export default function ResetPasswordPage() {
 
         if (sessionError) {
           console.error('Failed to set session:', sessionError);
-          setError('Failed to verify invitation link. Please request a new invitation.');
+          setError(`Failed to verify link: ${sessionError.message}. Please request a new invitation.`);
           return;
         }
 
-        // Clear the hash from URL for security
+        // Clear the hash/query from URL
         window.history.replaceState(null, '', window.location.pathname);
         setSessionReady(true);
         return;
@@ -52,7 +72,7 @@ export default function ResetPasswordPage() {
       console.log('Reset password page - session:', session);
       
       if (!session) {
-        setError('Auth session missing! Please click the link from your email again or request a new invitation.');
+        setError('Auth session missing! Please request a new invitation from your administrator.');
         return;
       }
       
@@ -159,8 +179,18 @@ export default function ResetPasswordPage() {
 
           <form onSubmit={handleResetPassword} className="space-y-6">
             {error && (
-              <div className="p-4 bg-red-50 border border-red-200 text-red-900 text-sm rounded">
-                {error}
+              <div className="p-4 bg-red-50 border border-red-200 rounded">
+                <p className="text-sm text-red-900 mb-3">{error}</p>
+                {error.includes('expired') && (
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    <p className="text-sm text-yellow-900 font-semibold mb-2">How to get a new invitation:</p>
+                    <ol className="text-sm text-yellow-900 space-y-1 ml-4 list-decimal">
+                      <li>Contact your IE Global administrator</li>
+                      <li>They can resend your invitation from Command Center → Team Management</li>
+                      <li>You'll receive a new email with a fresh link (valid for 1 hour)</li>
+                    </ol>
+                  </div>
+                )}
               </div>
             )}
 

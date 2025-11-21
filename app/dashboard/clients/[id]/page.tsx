@@ -14,6 +14,13 @@ type Client = {
   industry: string | null;
   status: string;
   onboarding_notes: string | null;
+  address_street: string | null;
+  address_city: string | null;
+  address_postal_code: string | null;
+  address_country: string | null;
+  vat_number: string | null;
+  kvk_number: string | null;
+  customer_number: string | null;
   created_at: string;
 };
 
@@ -226,6 +233,13 @@ export default function ClientDetailPage() {
       contact_phone: client?.contact_phone || '',
       industry: client?.industry || '',
       onboarding_notes: client?.onboarding_notes || '',
+      address_street: client?.address_street || '',
+      address_city: client?.address_city || '',
+      address_postal_code: client?.address_postal_code || '',
+      address_country: client?.address_country || 'Netherlands',
+      vat_number: client?.vat_number || '',
+      kvk_number: client?.kvk_number || '',
+      customer_number: client?.customer_number || '',
     });
     setIsEditing(true);
   };
@@ -247,6 +261,13 @@ export default function ClientDetailPage() {
           contact_phone: editForm.contact_phone || null,
           industry: editForm.industry || null,
           onboarding_notes: editForm.onboarding_notes || null,
+          address_street: editForm.address_street || null,
+          address_city: editForm.address_city || null,
+          address_postal_code: editForm.address_postal_code || null,
+          address_country: editForm.address_country || 'Netherlands',
+          vat_number: editForm.vat_number || null,
+          kvk_number: editForm.kvk_number || null,
+          customer_number: editForm.customer_number || null,
         })
         .eq('id', params.id);
 
@@ -261,6 +282,7 @@ export default function ClientDetailPage() {
 
       if (data) setClient(data);
       setIsEditing(false);
+      alert('✅ Client information updated successfully!');
     } catch (err: any) {
       console.error('Error saving:', err);
       alert('Failed to save changes: ' + err.message);
@@ -637,13 +659,193 @@ export default function ClientDetailPage() {
                         className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none resize-none"
                       />
                     </div>
+
+                    {/* Address Section */}
+                    <div className="border-t pt-6 mt-6">
+                      <h3 className="text-lg font-semibold text-navy-900 mb-4">Billing Address</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-navy-900 mb-2">Street Address</label>
+                          <input
+                            type="text"
+                            value={editForm.address_street}
+                            onChange={(e) => setEditForm({ ...editForm, address_street: e.target.value })}
+                            placeholder="e.g., Main Street 123"
+                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-navy-900 mb-2">Postal Code</label>
+                            <input
+                              type="text"
+                              value={editForm.address_postal_code}
+                              onChange={(e) => setEditForm({ ...editForm, address_postal_code: e.target.value })}
+                              placeholder="e.g., 1234AB"
+                              className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-navy-900 mb-2">City</label>
+                            <input
+                              type="text"
+                              value={editForm.address_city}
+                              onChange={(e) => setEditForm({ ...editForm, address_city: e.target.value })}
+                              placeholder="e.g., Amsterdam"
+                              className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-navy-900 mb-2">Country</label>
+                          <input
+                            type="text"
+                            value={editForm.address_country}
+                            onChange={(e) => setEditForm({ ...editForm, address_country: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Legal Information Section */}
+                    <div className="border-t pt-6 mt-6">
+                      <h3 className="text-lg font-semibold text-navy-900 mb-4">Legal Information</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-navy-900 mb-2">VAT Number</label>
+                          <input
+                            type="text"
+                            value={editForm.vat_number}
+                            onChange={(e) => setEditForm({ ...editForm, vat_number: e.target.value })}
+                            placeholder="e.g., NL123456789B01"
+                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold text-navy-900 mb-2">KVK / Chamber of Commerce</label>
+                          <input
+                            type="text"
+                            value={editForm.kvk_number}
+                            onChange={(e) => setEditForm({ ...editForm, kvk_number: e.target.value })}
+                            placeholder="e.g., 12345678"
+                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Customer Number */}
+                    <div className="border-t pt-6 mt-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-navy-900 mb-2">Customer Number</label>
+                        <input
+                          type="text"
+                          value={editForm.customer_number}
+                          onChange={(e) => setEditForm({ ...editForm, customer_number: e.target.value })}
+                          placeholder="e.g., 2025-001"
+                          className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                        />
+                        <p className="text-xs text-slate-500 mt-1">Used for invoice references</p>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <>
+                    {/* Contact Information */}
+                    <div className="mb-8 p-6 bg-off-white border-l-4 border-blue-500">
+                      <h3 className="text-lg font-bold text-navy-900 mb-4">Contact Information</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-semibold text-slate-700">Contact Person:</span>
+                          <p className="text-navy-900">{client.contact_person}</p>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-slate-700">Email:</span>
+                          <p className="text-navy-900">{client.contact_email}</p>
+                        </div>
+                        {client.contact_phone && (
+                          <div>
+                            <span className="font-semibold text-slate-700">Phone:</span>
+                            <p className="text-navy-900">{client.contact_phone}</p>
+                          </div>
+                        )}
+                        {client.industry && (
+                          <div>
+                            <span className="font-semibold text-slate-700">Industry:</span>
+                            <p className="text-navy-900">{client.industry}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Billing Address */}
+                    {(client.address_street || client.address_city || client.address_postal_code) && (
+                      <div className="mb-8 p-6 bg-off-white border-l-4 border-green-500">
+                        <h3 className="text-lg font-bold text-navy-900 mb-4">Billing Address</h3>
+                        <div className="text-sm text-slate-700">
+                          {client.address_street && <p>{client.address_street}</p>}
+                          {(client.address_postal_code || client.address_city) && (
+                            <p>
+                              {client.address_postal_code} {client.address_city}
+                            </p>
+                          )}
+                          {client.address_country && <p>{client.address_country}</p>}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Legal Information */}
+                    {(client.vat_number || client.kvk_number) && (
+                      <div className="mb-8 p-6 bg-off-white border-l-4 border-purple-500">
+                        <h3 className="text-lg font-bold text-navy-900 mb-4">Legal Information</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          {client.vat_number && (
+                            <div>
+                              <span className="font-semibold text-slate-700">VAT Number:</span>
+                              <p className="text-navy-900">{client.vat_number}</p>
+                            </div>
+                          )}
+                          {client.kvk_number && (
+                            <div>
+                              <span className="font-semibold text-slate-700">KVK Number:</span>
+                              <p className="text-navy-900">{client.kvk_number}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Customer Number */}
+                    {client.customer_number && (
+                      <div className="mb-8 p-6 bg-off-white border-l-4 border-orange-500">
+                        <h3 className="text-lg font-bold text-navy-900 mb-2">Customer Number</h3>
+                        <p className="text-sm text-slate-700">{client.customer_number}</p>
+                      </div>
+                    )}
+
+                    {/* Onboarding Notes */}
                     {client.onboarding_notes && (
                       <div className="mb-8 p-6 bg-off-white border-l-4 border-signal-red">
                         <h3 className="text-sm font-bold text-navy-900 mb-2">Onboarding Notes</h3>
                         <p className="text-slate-700 whitespace-pre-wrap">{client.onboarding_notes}</p>
+                      </div>
+                    )}
+
+                    {/* Missing Information Warning */}
+                    {(!client.address_street || !client.vat_number) && (
+                      <div className="mb-8 p-6 bg-yellow-50 border-l-4 border-yellow-500">
+                        <h3 className="text-lg font-bold text-yellow-900 mb-2">⚠️ Missing Information</h3>
+                        <p className="text-sm text-yellow-800 mb-2">
+                          This client is missing information required for EU-compliant invoices:
+                        </p>
+                        <ul className="text-sm text-yellow-800 list-disc list-inside space-y-1">
+                          {!client.address_street && <li>Billing address</li>}
+                          {!client.vat_number && <li>VAT number</li>}
+                        </ul>
+                        <p className="text-sm text-yellow-800 mt-3">
+                          Click "Edit Client" above to add this information.
+                        </p>
                       </div>
                     )}
                   </>

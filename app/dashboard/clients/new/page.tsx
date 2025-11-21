@@ -19,6 +19,12 @@ export default function NewClientPage() {
     industry: '',
     project_type: '',
     onboarding_notes: '',
+    address_street: '',
+    address_city: '',
+    address_postal_code: '',
+    address_country: 'Netherlands',
+    vat_number: '',
+    kvk_number: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +47,12 @@ export default function NewClientPage() {
           contact_phone: formData.contact_phone || null,
           industry: formData.industry || null,
           onboarding_notes: formData.onboarding_notes || null,
+          address_street: formData.address_street || null,
+          address_city: formData.address_city || null,
+          address_postal_code: formData.address_postal_code || null,
+          address_country: formData.address_country || 'Netherlands',
+          vat_number: formData.vat_number || null,
+          kvk_number: formData.kvk_number || null,
           assigned_employee_id: session.user.id,
           status: 'active',
         })
@@ -159,6 +171,103 @@ export default function NewClientPage() {
                   placeholder="e.g., Technology, Construction, Education"
                   className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
                 />
+              </div>
+
+              {/* Address Section */}
+              <div className="border-t pt-6 mt-6">
+                <h3 className="text-lg font-semibold text-navy-900 mb-4">Billing Address (for invoices)</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="address_street" className="block text-sm font-semibold text-navy-900 mb-2">
+                      Street Address
+                    </label>
+                    <input
+                      type="text"
+                      id="address_street"
+                      value={formData.address_street}
+                      onChange={(e) => setFormData({ ...formData, address_street: e.target.value })}
+                      placeholder="e.g., Main Street 123"
+                      className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label htmlFor="address_postal_code" className="block text-sm font-semibold text-navy-900 mb-2">
+                        Postal Code
+                      </label>
+                      <input
+                        type="text"
+                        id="address_postal_code"
+                        value={formData.address_postal_code}
+                        onChange={(e) => setFormData({ ...formData, address_postal_code: e.target.value })}
+                        placeholder="e.g., 1234AB"
+                        className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="address_city" className="block text-sm font-semibold text-navy-900 mb-2">
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        id="address_city"
+                        value={formData.address_city}
+                        onChange={(e) => setFormData({ ...formData, address_city: e.target.value })}
+                        placeholder="e.g., Amsterdam"
+                        className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="address_country" className="block text-sm font-semibold text-navy-900 mb-2">
+                      Country
+                    </label>
+                    <input
+                      type="text"
+                      id="address_country"
+                      value={formData.address_country}
+                      onChange={(e) => setFormData({ ...formData, address_country: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Legal Information Section */}
+              <div className="border-t pt-6 mt-6">
+                <h3 className="text-lg font-semibold text-navy-900 mb-4">Legal Information (for EU invoices)</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="vat_number" className="block text-sm font-semibold text-navy-900 mb-2">
+                      VAT Number
+                    </label>
+                    <input
+                      type="text"
+                      id="vat_number"
+                      value={formData.vat_number}
+                      onChange={(e) => setFormData({ ...formData, vat_number: e.target.value })}
+                      placeholder="e.g., NL123456789B01"
+                      className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="kvk_number" className="block text-sm font-semibold text-navy-900 mb-2">
+                      KVK / Chamber of Commerce Number
+                    </label>
+                    <input
+                      type="text"
+                      id="kvk_number"
+                      value={formData.kvk_number}
+                      onChange={(e) => setFormData({ ...formData, kvk_number: e.target.value })}
+                      placeholder="e.g., 12345678"
+                      className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Project Type */}
