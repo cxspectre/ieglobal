@@ -90,7 +90,7 @@ export default function FilesPage() {
           storage_path: filePath,
           category: 'document',
           uploaded_by: session.user.id,
-        });
+        } as any);
 
       if (dbError) throw dbError;
 
