@@ -125,7 +125,7 @@ export default function ClientInvoicesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-700">Loading invoices...</p>
@@ -135,7 +135,7 @@ export default function ClientInvoicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-off-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Top Bar */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="px-8 h-16 flex items-center justify-between">
@@ -173,16 +173,25 @@ export default function ClientInvoicesPage() {
       {/* Main Content */}
       <main className="p-8">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold text-navy-900 mb-8">Invoices</h1>
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-navy-900 mb-3">Invoices</h1>
+            <p className="text-xl text-slate-700">View and download your invoices</p>
+          </div>
 
           {invoices.length === 0 ? (
-            <div className="bg-white p-12 text-center">
-              <p className="text-slate-700">No invoices yet.</p>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-16 text-center shadow-lg">
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-gray-200 flex items-center justify-center">
+                <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-navy-900 mb-2">No invoices yet</h2>
+              <p className="text-slate-600">You'll see invoices here when they're issued</p>
             </div>
           ) : (
             <div className="space-y-4">
               {invoices.map((invoice) => (
-                <div key={invoice.id} className="bg-white p-8 border-l-4 border-signal-red">
+                <div key={invoice.id} className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border-l-4 border-signal-red hover:shadow-xl transition-shadow duration-300">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-4 mb-3">
