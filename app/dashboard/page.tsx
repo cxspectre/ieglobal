@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import Link from 'next/link';
-import PortalNav from '@/components/portal/PortalNav';
 
 type Stats = {
   activeClients: number;
@@ -91,7 +90,7 @@ export default function DashboardPage() {
     };
 
     checkUser();
-  }, []); // Remove dependencies to prevent re-checking
+  }, []);
 
   const loadStats = async () => {
     // Get active clients count
@@ -214,17 +213,12 @@ export default function DashboardPage() {
     });
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-off-white">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-700">Loading...</p>
+          <p className="text-slate-700">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -232,219 +226,311 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto">
-          {/* Hero Section */}
-          <div className="mb-8 flex items-end justify-between">
+      {/* Hero Section */}
+      <div className="mb-10">
+        <p className="text-sm text-slate-600 mb-2">
+          {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </p>
+        <h1 className="text-4xl font-bold text-navy-900 mb-3">
+          Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, {user?.profile?.full_name?.split(' ')[0]}
+        </h1>
+        <p className="text-lg text-slate-700">
+          Here's an overview of your business operations
+        </p>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+        <Link
+          href="/dashboard/clients/new"
+          className="bg-white p-6 border-l-4 border-signal-red hover:shadow-md transition-all duration-200 group flex items-center gap-4"
+        >
+          <div className="w-12 h-12 bg-signal-red/10 rounded-full flex items-center justify-center group-hover:bg-signal-red/20 transition-colors duration-200">
+            <svg className="w-6 h-6 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="font-semibold text-navy-900 group-hover:text-signal-red transition-colors duration-200">New Client</h3>
+            <p className="text-sm text-slate-600">Add a new client</p>
+          </div>
+        </Link>
+
+        <Link
+          href="/dashboard/clients"
+          className="bg-white p-6 border-l-4 border-navy-900 hover:shadow-md transition-all duration-200 group flex items-center gap-4"
+        >
+          <div className="w-12 h-12 bg-navy-900/10 rounded-full flex items-center justify-center group-hover:bg-navy-900/20 transition-colors duration-200">
+            <svg className="w-6 h-6 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="font-semibold text-navy-900 group-hover:text-navy-900/80 transition-colors duration-200">All Clients</h3>
+            <p className="text-sm text-slate-600">Manage clients</p>
+          </div>
+        </Link>
+
+        <Link
+          href="/dashboard/command-center"
+          className="bg-white p-6 border-l-4 border-blue-600 hover:shadow-md transition-all duration-200 group flex items-center gap-4"
+        >
+          <div className="w-12 h-12 bg-blue-600/10 rounded-full flex items-center justify-center group-hover:bg-blue-600/20 transition-colors duration-200">
+            <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="font-semibold text-navy-900 group-hover:text-blue-600 transition-colors duration-200">Command Center</h3>
+            <p className="text-sm text-slate-600">System overview</p>
+          </div>
+        </Link>
+      </div>
+
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        {/* Active Clients */}
+        <div className="bg-white p-6 border-l-4 border-signal-red">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-sm text-slate-600 mb-2">
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </p>
-              <h1 className="text-4xl font-bold text-navy-900 mb-2">
-                Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, {user?.profile?.full_name?.split(' ')[0]}
-              </h1>
-              <p className="text-lg text-slate-700">
-                Here's what's happening with your projects
-              </p>
+              <p className="text-sm text-slate-600 mb-1">Active Clients</p>
+              <p className="text-4xl font-bold text-navy-900">{stats.activeClients}</p>
             </div>
-            <Link
-              href="/dashboard/clients/new"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            <div className="w-14 h-14 bg-signal-red/10 rounded-full flex items-center justify-center">
+              <svg className="w-7 h-7 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              New Client
-            </Link>
-          </div>
-
-          {/* Stats Grid - Primary Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Active Clients */}
-            <Link href="/dashboard/clients" className="bg-gradient-to-br from-signal-red to-red-600 p-8 text-white hover:shadow-lg transition-all duration-200 group">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm text-white/80 mb-1">Active Clients</p>
-                  <p className="text-5xl font-bold">{stats.activeClients}</p>
-                </div>
-                <svg className="w-12 h-12 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <p className="text-sm text-white/70 group-hover:text-white transition-colors duration-200">View all clients →</p>
-            </Link>
-
-            {/* Projects */}
-            <div className="bg-white p-8 border border-gray-200 hover:shadow-lg transition-shadow duration-200">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">Active Projects</p>
-                  <p className="text-5xl font-bold text-navy-900">{stats.inProgressProjects}</p>
-                </div>
-                <svg className="w-12 h-12 text-blue-500/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <p className="text-xs text-slate-500">{stats.completedProjects} completed • {stats.totalProjects} total</p>
-            </div>
-
-            {/* Revenue */}
-            <div className="bg-gradient-to-br from-green-600 to-emerald-600 p-8 text-white hover:shadow-lg transition-shadow duration-200">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm text-white/80 mb-1">Total Revenue</p>
-                  <p className="text-4xl font-bold">€{stats.totalRevenue.toLocaleString()}</p>
-                </div>
-                <svg className="w-12 h-12 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p className="text-sm text-white/70">From paid invoices</p>
-            </div>
-
-            {/* Invoices */}
-            <div className="bg-white p-8 border border-gray-200 hover:shadow-lg transition-shadow duration-200">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">Invoices</p>
-                  <p className="text-5xl font-bold text-navy-900">{stats.pendingInvoices}</p>
-                </div>
-                <svg className="w-12 h-12 text-yellow-500/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <p className="text-xs text-slate-500">
-                {stats.overdueInvoices > 0 && (
-                  <span className="text-red-600 font-semibold">{stats.overdueInvoices} overdue • </span>
-                )}
-                Pending payment
-              </p>
             </div>
           </div>
+          <Link href="/dashboard/clients" className="text-sm text-signal-red hover:underline font-medium">
+            View all clients →
+          </Link>
+        </div>
 
-          {/* Upcoming Milestones */}
-          {upcomingMilestones.length > 0 && (
-            <div className="bg-white p-8 mb-8">
-              <h2 className="text-xl font-bold text-navy-900 mb-6">⚡ Upcoming Milestones (Next 7 Days)</h2>
+        {/* Active Projects */}
+        <div className="bg-white p-6 border-l-4 border-blue-600">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm text-slate-600 mb-1">Active Projects</p>
+              <p className="text-4xl font-bold text-navy-900">{stats.inProgressProjects}</p>
+            </div>
+            <div className="w-14 h-14 bg-blue-600/10 rounded-full flex items-center justify-center">
+              <svg className="w-7 h-7 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          </div>
+          <p className="text-sm text-slate-600">
+            {stats.completedProjects} completed • {stats.totalProjects} total
+          </p>
+        </div>
+
+        {/* Total Revenue */}
+        <div className="bg-white p-6 border-l-4 border-green-600">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm text-slate-600 mb-1">Total Revenue</p>
+              <p className="text-4xl font-bold text-green-700">€{stats.totalRevenue.toLocaleString()}</p>
+            </div>
+            <div className="w-14 h-14 bg-green-600/10 rounded-full flex items-center justify-center">
+              <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <p className="text-sm text-slate-600">From paid invoices</p>
+        </div>
+
+        {/* Pending Invoices */}
+        <div className={`bg-white p-6 border-l-4 ${stats.overdueInvoices > 0 ? 'border-red-600' : 'border-yellow-600'}`}>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm text-slate-600 mb-1">Pending Invoices</p>
+              <p className="text-4xl font-bold text-navy-900">{stats.pendingInvoices}</p>
+            </div>
+            <div className={`w-14 h-14 ${stats.overdueInvoices > 0 ? 'bg-red-600/10' : 'bg-yellow-600/10'} rounded-full flex items-center justify-center`}>
+              <svg className={`w-7 h-7 ${stats.overdueInvoices > 0 ? 'text-red-600' : 'text-yellow-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+              </svg>
+            </div>
+          </div>
+          {stats.overdueInvoices > 0 ? (
+            <p className="text-sm text-red-600 font-semibold">⚠️ {stats.overdueInvoices} overdue</p>
+          ) : (
+            <p className="text-sm text-slate-600">All on track</p>
+          )}
+        </div>
+      </div>
+
+      {/* Upcoming Milestones Alert */}
+      {upcomingMilestones.length > 0 && (
+        <div className="bg-amber-50 p-6 border-l-4 border-amber-500 mb-10">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-navy-900 mb-4">⚡ Upcoming Milestones (Next 7 Days)</h2>
               <div className="space-y-3">
                 {upcomingMilestones.map((milestone) => (
-                  <div key={milestone.id} className="flex items-start justify-between p-4 bg-yellow-50 border-l-4 border-yellow-500">
+                  <div key={milestone.id} className="flex items-center justify-between p-4 bg-white rounded">
                     <div>
                       <p className="font-semibold text-navy-900">{milestone.title}</p>
                       <p className="text-sm text-slate-700">
                         {milestone.projects.clients.company_name} • {milestone.projects.name}
                       </p>
                     </div>
-                    <span className="text-sm font-semibold text-yellow-700 whitespace-nowrap ml-4">
-                      {new Date(milestone.expected_date).toLocaleDateString()}
+                    <span className="text-sm font-semibold text-amber-700 whitespace-nowrap ml-4 bg-white px-3 py-1 rounded border border-amber-200">
+                      {new Date(milestone.expected_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          {/* Project Status Overview */}
-          {Object.keys(projectsByStatus).length > 0 && (
-            <div className="bg-white p-8 mb-8">
-              <h2 className="text-xl font-bold text-navy-900 mb-6">Projects by Status</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {Object.entries(projectsByStatus).map(([status, count]: [string, any]) => (
-                  <div key={status} className="text-center p-4 bg-off-white">
-                    <p className="text-2xl font-bold text-navy-900">{count}</p>
-                    <p className="text-xs text-slate-600 capitalize">{status.replace('_', ' ')}</p>
-                  </div>
-                ))}
-              </div>
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+        {/* Recent Clients */}
+        <div className="bg-white p-6 border-l-4 border-navy-900">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-navy-900">Recent Clients</h2>
+            <Link
+              href="/dashboard/clients"
+              className="text-sm font-semibold text-signal-red hover:underline"
+            >
+              View all →
+            </Link>
+          </div>
+          {recentClients.length === 0 ? (
+            <div className="text-center py-8">
+              <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <p className="text-slate-600 text-sm mb-3">No clients yet</p>
+              <Link
+                href="/dashboard/clients/new"
+                className="inline-block px-4 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90"
+              >
+                Add First Client
+              </Link>
             </div>
-          )}
-
-          {/* Recent Invoices */}
-          {recentInvoices.length > 0 && (
-            <div className="bg-white p-8 mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-navy-900">Recent Invoices</h2>
-                {stats.overdueInvoices > 0 && (
-                  <span className="px-3 py-1 bg-red-100 text-red-800 text-sm font-semibold">
-                    {stats.overdueInvoices} Overdue
-                  </span>
-                )}
-              </div>
-              <div className="space-y-3">
-                {recentInvoices.map((invoice) => (
-                  <div key={invoice.id} className="flex items-center justify-between p-4 bg-off-white">
-                    <div className="flex-1">
-                      <p className="font-semibold text-navy-900">{invoice.invoice_number}</p>
-                      <p className="text-sm text-slate-600">{invoice.clients?.company_name}</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-lg font-bold text-navy-900">€{invoice.amount.toFixed(2)}</span>
-                      <span className={`px-3 py-1 text-xs font-semibold ${
-                        invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                        invoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {invoice.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Recent Clients & Recent Activity */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Recent Clients */}
-            <div className="bg-white p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-navy-900">Recent Clients</h2>
+          ) : (
+            <div className="space-y-2">
+              {recentClients.map((client) => (
                 <Link
-                  href="/dashboard/clients/new"
-                  className="text-sm font-semibold text-signal-red hover:text-signal-red/80 transition-colors duration-200"
+                  key={client.id}
+                  href={`/dashboard/clients/${client.id}`}
+                  className="block p-4 bg-off-white hover:bg-gray-100 transition-colors duration-200 border border-gray-100"
                 >
-                  + Add Client
-                </Link>
-              </div>
-              {recentClients.length === 0 ? (
-                <p className="text-slate-700 text-sm">No clients yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  {recentClients.map((client) => (
-                    <Link
-                      key={client.id}
-                      href={`/dashboard/clients/${client.id}`}
-                      className="block p-4 bg-off-white hover:bg-gray-100 transition-colors duration-200"
-                    >
+                  <div className="flex items-center justify-between">
+                    <div>
                       <p className="font-semibold text-navy-900">{client.company_name}</p>
                       <p className="text-sm text-slate-600">{client.contact_person}</p>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Recent Activity */}
-            <div className="bg-white p-8">
-              <h2 className="text-xl font-bold text-navy-900 mb-6">Recent Activity</h2>
-              {recentActivity.length === 0 ? (
-                <p className="text-slate-700 text-sm">No recent activity yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  {recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0">
-                      <div className="w-2 h-2 bg-signal-red rounded-full mt-2 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-sm text-slate-700">{activity.description}</p>
-                        <p className="text-xs text-slate-500 mt-1">
-                          {new Date(activity.created_at).toLocaleString()}
-                        </p>
-                      </div>
                     </div>
-                  ))}
+                    <span className={`px-2 py-1 text-xs font-semibold ${
+                      client.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {client.status}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Recent Activity */}
+        <div className="bg-white p-6 border-l-4 border-purple-600">
+          <h2 className="text-xl font-bold text-navy-900 mb-6">Recent Activity</h2>
+          {recentActivity.length === 0 ? (
+            <div className="text-center py-8">
+              <svg className="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-slate-600 text-sm">No activity yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {recentActivity.map((activity) => (
+                <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0">
+                  <div className="w-2 h-2 bg-signal-red rounded-full mt-2 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm text-slate-700 leading-relaxed">{activity.description}</p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      {new Date(activity.created_at).toLocaleString('en-GB', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
                 </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Recent Invoices */}
+      {recentInvoices.length > 0 && (
+        <div className="bg-white p-6 border-l-4 border-yellow-600 mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-navy-900">Recent Invoices</h2>
+              {stats.overdueInvoices > 0 && (
+                <p className="text-sm text-red-600 font-semibold mt-1">⚠️ {stats.overdueInvoices} overdue</p>
               )}
             </div>
+            <Link
+              href="/dashboard/clients"
+              className="text-sm font-semibold text-signal-red hover:underline"
+            >
+              View all →
+            </Link>
           </div>
+          <div className="space-y-3">
+            {recentInvoices.map((invoice) => (
+              <div key={invoice.id} className="flex items-center justify-between p-4 bg-off-white border border-gray-100">
+                <div className="flex-1">
+                  <p className="font-semibold text-navy-900">{invoice.invoice_number}</p>
+                  <p className="text-sm text-slate-600">{invoice.clients?.company_name || 'Unknown Client'}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-lg font-bold text-navy-900">€{invoice.amount.toFixed(2)}</span>
+                  <span className={`px-3 py-1 text-xs font-semibold ${
+                    invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                    invoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {invoice.status.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Project Status Breakdown */}
+      {Object.keys(projectsByStatus).length > 0 && (
+        <div className="bg-white p-6 border-l-4 border-indigo-600">
+          <h2 className="text-xl font-bold text-navy-900 mb-6">Projects by Status</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {Object.entries(projectsByStatus).map(([status, count]: [string, any]) => (
+              <div key={status} className="text-center p-4 bg-off-white border border-gray-200">
+                <p className="text-3xl font-bold text-navy-900 mb-1">{count}</p>
+                <p className="text-xs text-slate-600 capitalize font-medium">{status.replace('_', ' ')}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
