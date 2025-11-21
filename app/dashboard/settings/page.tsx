@@ -121,6 +121,28 @@ export default function CommandCenterPage() {
     }
   };
 
+  const resendEmployeeInvite = async (email: string) => {
+    try {
+      const response = await fetch('/api/resend-client-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) throw new Error(result.error);
+
+      if (result.invitationLink) {
+        alert(`Invitation resent to ${email}!\n\nBackup link:\n${result.invitationLink}`);
+      } else {
+        alert(`Invitation resent to ${email}`);
+      }
+    } catch (err: any) {
+      alert('Failed: ' + err.message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-off-white">
@@ -352,9 +374,14 @@ export default function CommandCenterPage() {
                     </td>
                     <td className="px-6 py-4"><p className="text-sm text-slate-700">{new Date(emp.created_at).toLocaleDateString()}</p></td>
                     <td className="px-6 py-4 text-right">
-                      <button onClick={() => deleteEmployee(emp.id, emp.full_name)} className="text-sm font-semibold text-red-600 hover:text-red-700">
-                        Remove
-                      </button>
+                      <div className="flex items-center justify-end gap-3">
+                        <button onClick={() => resendEmployeeInvite(emp.email)} className="text-sm font-semibold text-signal-red hover:text-signal-red/80">
+                          Resend Invite
+                        </button>
+                        <button onClick={() => deleteEmployee(emp.id, emp.full_name)} className="text-sm font-semibold text-red-600 hover:text-red-700">
+                          Remove
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
