@@ -124,11 +124,6 @@ export default function MilestonesPage() {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
-
   const updateProjectStatus = async (newStatus: string) => {
     try {
       const { error } = await (supabase as any)
@@ -187,35 +182,7 @@ export default function MilestonesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-off-white">
-      {/* Top Bar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/dashboard" className="font-bold text-xl text-navy-900">
-              IE Global
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/dashboard" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Overview
-              </Link>
-              <Link href="/dashboard/clients" className="text-sm font-medium text-navy-900">
-                Clients
-              </Link>
-            </nav>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
-          >
-            Sign Out
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="p-8">
-        <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             {project && (
@@ -422,8 +389,6 @@ export default function MilestonesPage() {
               ))}
             </div>
           )}
-        </div>
-      </main>
     </div>
   );
 }

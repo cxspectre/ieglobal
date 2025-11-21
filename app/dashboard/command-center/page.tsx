@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 
+type Stats = {
+  activeClients: number;
+  activeProjects: number;
+  pendingInvoices: number;
+  totalRevenue: number;
+  thisMonthRevenue: number;
+};
+
 type Employee = {
   id: string;
   full_name: string;
@@ -22,12 +30,10 @@ type Activity = {
 
 export default function CommandCenterPage() {
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [stats, setStats] = useState<Stats>({ activeClients: 0, activeProjects: 0, pendingInvoices: 0, totalRevenue: 0, thisMonthRevenue: 0 });
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const [systemHealth, setSystemHealth] = useState({ database: 'healthy', storage: 'healthy', email: 'healthy' });
-  const [newEmployee, setNewEmployee] = useState({ email: '', fullName: '', role: 'employee' });
-  const [creating, setCreating] = useState(false);
   const router = useRouter();
   const supabase = createBrowserClient();
 
@@ -38,24 +44,34 @@ export default function CommandCenterPage() {
   }, []);
 
   const checkAuth = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
-        return;
-      }
-
-      const { data: profile } = await (supabase as any).from('profiles').select('role').eq('id', session.user.id).single();
-      if (profile?.role !== 'admin' && profile?.role !== 'employee') {
-        router.push('/portal');
-      }
-    } catch (err) {
-      console.error('Auth error:', err);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
       router.push('/login');
+      return;
+    }
+
+    const { data: profile } = await (supabase as any).from('profiles').select('role').eq('id', session.user.id).single();
+    if (profile?.role !== 'admin' && profile?.role !== 'employee') {
+      router.push('/portal');
     }
   };
 
   const loadDashboardData = async () => {
+    // Stats
+    const { count: clientsCount } = await (supabase as any).from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active');
+    const { count: projectsCount } = await (supabase as any).from('projects').select('*', { count: 'exact', head: true }).eq('status', 'in_progress');
+    const { count: pendingCount } = await (supabase as any).from('invoices').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+    
+    const { data: paidInvoices } = await (supabase as any).from('invoices').select('amount').eq('status', 'paid');
+    const totalRevenue = paidInvoices?.reduce((sum: number, inv: any) => sum + inv.amount, 0) || 0;
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    const { data: monthInvoices } = await (supabase as any).from('invoices').select('amount').eq('status', 'paid').gte('paid_date', startOfMonth.toISOString().split('T')[0]);
+    const thisMonthRevenue = monthInvoices?.reduce((sum: number, inv: any) => sum + inv.amount, 0) || 0;
+
+    setStats({ activeClients: clientsCount || 0, activeProjects: projectsCount || 0, pendingInvoices: pendingCount || 0, totalRevenue, thisMonthRevenue });
+
     // Employees
     const { data: empData } = await (supabase as any).from('profiles').select('*').in('role', ['admin', 'employee']).order('created_at', { ascending: false });
     if (empData) setEmployees(empData);
@@ -77,50 +93,6 @@ export default function CommandCenterPage() {
     }
   };
 
-  const createEmployeeAccount = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCreating(true);
-
-    try {
-      const response = await fetch('/api/create-employee-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newEmployee),
-      });
-
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-
-      alert(`Employee account created!\n\nInvitation sent to: ${newEmployee.email}`);
-      setNewEmployee({ email: '', fullName: '', role: 'employee' });
-      await loadDashboardData();
-    } catch (err: any) {
-      alert('Failed: ' + err.message);
-    }
-    setCreating(false);
-  };
-
-  const deleteEmployee = async (employeeId: string, employeeName: string) => {
-    if (!confirm(`Delete ${employeeName}? This will remove their dashboard access.`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/delete-employee', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ employeeId }),
-      });
-
-      if (!response.ok) throw new Error('Failed to delete');
-
-      alert(`${employeeName} has been removed.`);
-      await loadDashboardData();
-    } catch (err: any) {
-      alert('Failed: ' + err.message);
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-off-white">
@@ -132,73 +104,64 @@ export default function CommandCenterPage() {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Hero */}
-      <div className="mb-8">
+      <div className="mb-10">
         <h1 className="text-4xl font-bold text-navy-900 mb-2">Command Center</h1>
-        <p className="text-xl text-slate-700">Services, tools, team & company information</p>
+        <p className="text-xl text-slate-700">Your mission control for IE Global operations</p>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white border-b border-gray-200 mb-8">
-        <div className="flex items-center gap-8 overflow-x-auto">
-          {[
-            { key: 'overview', label: 'Overview' },
-            { key: 'team', label: 'Team Management' },
-            { key: 'services', label: 'Services' },
-            { key: 'company', label: 'Company Info' },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`py-4 text-sm font-semibold whitespace-nowrap transition-colors duration-200 ${
-                activeTab === tab.key
-                  ? 'text-navy-900 border-b-2 border-signal-red'
-                  : 'text-slate-700 hover:text-navy-900 border-b-2 border-transparent'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <Link href="/dashboard/clients" className="bg-white p-6 border-l-4 border-signal-red hover:shadow-lg transition-shadow duration-200">
+          <p className="text-sm text-slate-700 mb-2">Active Clients</p>
+          <p className="text-4xl font-bold text-navy-900">{stats.activeClients}</p>
+        </Link>
+        
+        <div className="bg-white p-6 border-l-4 border-blue-500">
+          <p className="text-sm text-slate-700 mb-2">Active Projects</p>
+          <p className="text-4xl font-bold text-navy-900">{stats.activeProjects}</p>
+        </div>
+        
+        <div className="bg-white p-6 border-l-4 border-yellow-500">
+          <p className="text-sm text-slate-700 mb-2">Pending Invoices</p>
+          <p className="text-4xl font-bold text-navy-900">{stats.pendingInvoices}</p>
+        </div>
+        
+        <div className="bg-white p-6 border-l-4 border-green-500">
+          <p className="text-sm text-slate-700 mb-2">This Month</p>
+          <p className="text-3xl font-bold text-navy-900">€{stats.thisMonthRevenue.toLocaleString()}</p>
+        </div>
+        
+        <div className="bg-white p-6 border-l-4 border-purple-500">
+          <p className="text-sm text-slate-700 mb-2">Total Revenue</p>
+          <p className="text-3xl font-bold text-navy-900">€{stats.totalRevenue.toLocaleString()}</p>
         </div>
       </div>
 
-      {/* Overview Tab */}
-      {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Tools & Quick Actions */}
         <div className="lg:col-span-2 space-y-8">
           {/* Quick Access Tools */}
           <div className="bg-white p-8 border-l-4 border-signal-red">
             <h2 className="text-2xl font-bold text-navy-900 mb-6">Quick Access</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <a href="https://supabase.com/dashboard" target="_blank" className="p-4 bg-off-white hover:bg-green-50 border-l-4 border-green-500 transition-all duration-200 group">
-                <p className="font-bold text-navy-900 text-sm">Supabase</p>
-                <p className="text-xs text-slate-600 group-hover:text-green-700">Open →</p>
-              </a>
-              
-              <a href="https://resend.com/emails" target="_blank" className="p-4 bg-off-white hover:bg-blue-50 border-l-4 border-blue-500 transition-all duration-200 group">
-                <p className="font-bold text-navy-900 text-sm">Resend</p>
-                <p className="text-xs text-slate-600 group-hover:text-blue-700">Open →</p>
-              </a>
-              
-              <a href="https://vercel.com/dashboard" target="_blank" className="p-4 bg-off-white hover:bg-purple-50 border-l-4 border-purple-500 transition-all duration-200 group">
-                <p className="font-bold text-navy-900 text-sm">Vercel</p>
-                <p className="text-xs text-slate-600 group-hover:text-purple-700">Open →</p>
-              </a>
-              
-              <a href="https://github.com/cxspectre/ieglobal" target="_blank" className="p-4 bg-off-white hover:bg-gray-50 border-l-4 border-gray-500 transition-all duration-200 group">
-                <p className="font-bold text-navy-900 text-sm">GitHub</p>
-                <p className="text-xs text-slate-600 group-hover:text-gray-700">Open →</p>
-              </a>
-              
-              <a href="https://ie-global.net" target="_blank" className="p-4 bg-off-white hover:bg-red-50 border-l-4 border-signal-red transition-all duration-200 group">
-                <p className="font-bold text-navy-900 text-sm">Website</p>
-                <p className="text-xs text-slate-600 group-hover:text-red-700">Open →</p>
-              </a>
-              
-              <Link href="/portal" target="_blank" className="p-4 bg-off-white hover:bg-yellow-50 border-l-4 border-yellow-500 transition-all duration-200 group">
-                <p className="font-bold text-navy-900 text-sm">Portal</p>
-                <p className="text-xs text-slate-600 group-hover:text-yellow-700">Open →</p>
-              </Link>
+              {[
+                { name: 'Supabase', url: 'https://supabase.com/dashboard', color: 'green' },
+                { name: 'Resend', url: 'https://resend.com/emails', color: 'blue' },
+                { name: 'Vercel', url: 'https://vercel.com/dashboard', color: 'purple' },
+                { name: 'GitHub', url: 'https://github.com/cxspectre/ieglobal', color: 'gray' },
+                { name: 'Website', url: 'https://ie-global.net', color: 'red' },
+                { name: 'Portal', url: '/portal', color: 'yellow' },
+              ].map((tool) => (
+                <a
+                  key={tool.name}
+                  href={tool.url}
+                  target="_blank"
+                  className={`p-4 bg-off-white hover:bg-${tool.color}-50 border-l-4 border-${tool.color}-500 transition-all duration-200 group`}
+                >
+                  <p className="font-bold text-navy-900 text-sm">{tool.name}</p>
+                  <p className="text-xs text-slate-600 group-hover:text-${tool.color}-700">Open →</p>
+                </a>
+              ))}
             </div>
           </div>
 
@@ -322,7 +285,6 @@ export default function CommandCenterPage() {
           </div>
         </div>
       </div>
-      )}
     </div>
   );
 }

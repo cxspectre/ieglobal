@@ -65,33 +65,8 @@ export default function NewInvoicePage() {
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
-
   return (
-    <div className="min-h-screen bg-off-white">
-      {/* Top Bar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/dashboard" className="font-bold text-xl text-navy-900">
-              IE Global
-            </Link>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
-          >
-            Sign Out
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="p-8">
-        <div className="max-w-3xl mx-auto">
+    <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="mb-8">
             <Link
@@ -213,8 +188,6 @@ export default function NewInvoicePage() {
               </div>
             </form>
           </div>
-        </div>
-      </main>
     </div>
   );
 }

@@ -135,11 +135,6 @@ export default function MessagesPage() {
     setSending(false);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-off-white">
@@ -170,10 +165,8 @@ export default function MessagesPage() {
             </nav>
           </div>
           <button
-            onClick={handleLogout}
             className="text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
           >
-            Sign Out
           </button>
         </div>
       </header>
