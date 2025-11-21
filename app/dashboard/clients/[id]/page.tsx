@@ -131,16 +131,29 @@ export default function ClientDetailPage() {
       if (notesData) setInternalNotes(notesData);
 
       // Check if client has portal account
-      const { data: profileData } = await (supabase as any)
+      const { data: profileData, error: profileError } = await (supabase as any)
         .from('profiles')
-        .select('email, active')
+        .select('email, active, role')
         .eq('client_id', params.id)
+        .eq('role', 'client')
         .maybeSingle();
+
+      console.log('[ClientDetail] Portal account check:', { profileData, profileError, clientId: params.id });
 
       if (profileData) {
         setClientHasAccount(true);
         setClientAccountEmail(profileData.email);
-        setClientAccountActive(profileData.active);
+        setClientAccountActive(profileData.active === true);
+        console.log('[ClientDetail] Portal account found:', { 
+          email: profileData.email, 
+          active: profileData.active,
+          hasAccount: true 
+        });
+      } else {
+        setClientHasAccount(false);
+        setClientAccountEmail('');
+        setClientAccountActive(false);
+        console.log('[ClientDetail] No portal account found');
       }
 
       setLoading(false);
