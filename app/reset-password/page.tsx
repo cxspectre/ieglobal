@@ -15,9 +15,38 @@ export default function ResetPasswordPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if session exists
-    const checkSession = async () => {
+    // Handle token from URL if present, otherwise check session
+    const handleAuth = async () => {
       const supabase = createBrowserClient();
+      
+      // Check if there's a token hash in the URL
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const access_token = hashParams.get('access_token');
+      const refresh_token = hashParams.get('refresh_token');
+      const type = hashParams.get('type');
+
+      if (access_token && refresh_token && type === 'recovery') {
+        console.log('Setting session from URL tokens');
+        
+        // Set the session with the tokens from URL
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token,
+          refresh_token,
+        });
+
+        if (sessionError) {
+          console.error('Failed to set session:', sessionError);
+          setError('Failed to verify invitation link. Please request a new invitation.');
+          return;
+        }
+
+        // Clear the hash from URL for security
+        window.history.replaceState(null, '', window.location.pathname);
+        setSessionReady(true);
+        return;
+      }
+
+      // Check if session already exists
       const { data: { session } } = await supabase.auth.getSession();
       
       console.log('Reset password page - session:', session);
@@ -30,7 +59,7 @@ export default function ResetPasswordPage() {
       setSessionReady(true);
     };
     
-    checkSession();
+    handleAuth();
   }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
