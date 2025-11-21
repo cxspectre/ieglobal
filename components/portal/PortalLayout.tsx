@@ -44,13 +44,13 @@ export default function PortalLayout({ children, userType }: PortalLayoutProps) 
   };
 
   return (
-    <div className="min-h-screen bg-off-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <PortalNav 
         userType={userType} 
         userName={userName}
         onLogout={handleLogout}
       />
-      <main className="p-8">
+      <main>
         {children}
       </main>
     </div>

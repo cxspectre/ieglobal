@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Link from 'next/link';
 
 type Message = {
   id: string;
@@ -128,14 +127,9 @@ export default function ClientMessagesPage() {
     setSending(false);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-700">Loading...</p>
@@ -147,40 +141,9 @@ export default function ClientMessagesPage() {
   const currentProject = projects.find(p => p.id === selectedProjectId);
 
   return (
-    <div className="min-h-screen bg-off-white flex flex-col">
-      {/* Top Bar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/portal" className="font-bold text-xl text-navy-900">
-              Portal
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/portal" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Overview
-              </Link>
-              <Link href="/portal/milestones" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Milestones
-              </Link>
-              <Link href="/portal/invoices" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Invoices
-              </Link>
-              <Link href="/portal/files" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Files
-              </Link>
-            </nav>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
-          >
-            Sign Out
-          </button>
-        </div>
-      </header>
-
+    <div className="min-h-screen flex flex-col">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col p-8">
+      <div className="flex-1 flex flex-col px-8 py-12">
         <div className="max-w-5xl mx-auto w-full flex flex-col h-full">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-navy-900 mb-2">Messages</h1>

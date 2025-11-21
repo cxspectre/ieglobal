@@ -99,17 +99,16 @@ export default function PortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="max-w-7xl mx-auto px-8 py-12">
+    <div className="max-w-7xl mx-auto px-8 py-12">
         {/* Welcome Header */}
         <div className="mb-10">
           <h1 className="text-4xl font-bold text-navy-900 mb-3">
             Welcome back, {user?.profile?.full_name?.split(' ')[0]} 👋
-          </h1>
+            </h1>
           <p className="text-xl text-slate-700">
             Track your projects and stay updated with IE Global
-          </p>
-        </div>
+            </p>
+          </div>
 
         {/* Quick Navigation */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
@@ -163,7 +162,7 @@ export default function PortalPage() {
         </div>
 
         {/* Projects */}
-        {projects.length === 0 ? (
+          {projects.length === 0 ? (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-16 text-center shadow-lg">
             <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-gray-200 flex items-center justify-center">
               <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -171,66 +170,66 @@ export default function PortalPage() {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-navy-900 mb-2">
-              Welcome to Your Portal
-            </h2>
+                Welcome to Your Portal
+              </h2>
             <p className="text-slate-600">
-              Your IE Global team is setting up your project. You'll see updates here soon!
-            </p>
-          </div>
-        ) : (
+                Your IE Global team is setting up your project. You'll see updates here soon!
+              </p>
+            </div>
+          ) : (
           <div className="space-y-6 mb-10">
-            {projects.map((project) => (
+              {projects.map((project) => (
               <div key={project.id} className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border-l-4 border-signal-red">
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex-1">
-                    <h2 className="text-2xl font-bold text-navy-900 mb-2">
-                      {project.name}
-                    </h2>
-                    {project.description && (
-                      <p className="text-slate-700">{project.description}</p>
-                    )}
-                  </div>
+                        <h2 className="text-2xl font-bold text-navy-900 mb-2">
+                          {project.name}
+                        </h2>
+                        {project.description && (
+                          <p className="text-slate-700">{project.description}</p>
+                        )}
+                      </div>
                   <span className={`px-4 py-2 text-sm font-semibold rounded-full ${
-                    project.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                    project.status === 'review' ? 'bg-purple-100 text-purple-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {project.status.replace('_', ' ')}
-                  </span>
-                </div>
-                
-                {(project.start_date || project.expected_completion_date) && (
+                        project.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                        project.status === 'review' ? 'bg-purple-100 text-purple-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {project.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                    
+                    {(project.start_date || project.expected_completion_date) && (
                   <div className="flex items-center gap-6 text-sm text-slate-600 mb-6">
-                    {project.start_date && (
+                        {project.start_date && (
                       <span>Started: {new Date(project.start_date).toLocaleDateString('en-GB')}</span>
-                    )}
-                    {project.expected_completion_date && (
+                        )}
+                        {project.expected_completion_date && (
                       <span>Expected: {new Date(project.expected_completion_date).toLocaleDateString('en-GB')}</span>
                     )}
                   </div>
                 )}
 
                 {/* Progress Bar */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-semibold text-navy-900">Project Progress</span>
-                    <span className="text-2xl font-bold text-navy-900">{project.progress_percentage}%</span>
-                  </div>
+                      <span className="text-2xl font-bold text-navy-900">{project.progress_percentage}%</span>
+                    </div>
                   <div className="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
-                    <div 
+                        <div 
                       className="bg-gradient-to-r from-signal-red to-red-600 h-full transition-all duration-500" 
-                      style={{ width: `${project.progress_percentage}%` }}
-                    ></div>
+                          style={{ width: `${project.progress_percentage}%` }}
+                        ></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
 
-        {/* Recent Activity */}
-        {recentActivity.length > 0 && (
+          {/* Recent Activity */}
+          {recentActivity.length > 0 && (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
             <h2 className="text-2xl font-bold text-navy-900 mb-6">Recent Updates</h2>
             <div className="space-y-4">
@@ -246,21 +245,20 @@ export default function PortalPage() {
                   </div>
                   <div className="flex-1 pt-1">
                     <p className="text-sm text-slate-700 leading-relaxed">{activity.description}</p>
-                    <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-slate-500 mt-1">
                       {new Date(activity.created_at).toLocaleString('en-GB', {
                         day: 'numeric',
                         month: 'short',
                         hour: '2-digit',
                         minute: '2-digit'
                       })}
-                    </p>
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
     </div>
   );
 }

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { generateInvoicePDF } from '@/lib/generateInvoicePDF';
-import Link from 'next/link';
 
 type Invoice = {
   id: string;
@@ -63,11 +62,6 @@ export default function ClientInvoicesPage() {
     if (invoicesData) setInvoices(invoicesData);
     
     setLoading(false);
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
   };
 
   const handleDownloadInvoice = async (invoice: Invoice) => {
@@ -135,43 +129,9 @@ export default function ClientInvoicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Top Bar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/portal" className="font-bold text-xl text-navy-900">
-              Portal
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/portal" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Overview
-              </Link>
-              <Link href="/portal/milestones" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Milestones
-              </Link>
-              <Link href="/portal/invoices" className="text-sm font-medium text-navy-900 border-b-2 border-signal-red pb-0.5">
-                Invoices
-              </Link>
-              <Link href="/portal/files" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Files
-              </Link>
-              <Link href="/portal/messages" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Messages
-              </Link>
-            </nav>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
-          >
-            Sign Out
-          </button>
-        </div>
-      </header>
-
+    <div className="min-h-screen">
       {/* Main Content */}
-      <main className="p-8">
+      <main className="px-8 py-12">
         <div className="max-w-5xl mx-auto">
           <div className="mb-8">
             <h1 className="text-4xl font-bold text-navy-900 mb-3">Invoices</h1>

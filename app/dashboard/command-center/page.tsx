@@ -123,12 +123,12 @@ export default function CommandCenterPage() {
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-            </div>
+      </div>
             <div>
               <h1 className="text-2xl font-bold text-navy-900">Command Center</h1>
               <p className="text-sm text-slate-600">System overview & operations</p>
-            </div>
-          </div>
+        </div>
+        </div>
         </div>
       </div>
 
@@ -159,9 +159,9 @@ export default function CommandCenterPage() {
                 </div>
               ))}
             </div>
+            </div>
           </div>
-        </div>
-        
+
         {/* Key Metrics Row */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
           <Link href="/dashboard/clients" className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
@@ -231,7 +231,7 @@ export default function CommandCenterPage() {
           <div className="lg:col-span-2 space-y-8">
             {/* Quick Actions Grid */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
-              <h2 className="text-2xl font-bold text-navy-900 mb-6">Quick Actions</h2>
+            <h2 className="text-2xl font-bold text-navy-900 mb-6">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-4">
                 <Link href="/dashboard/clients/new" className="group p-6 rounded-xl bg-signal-red text-white hover:bg-signal-red/90 hover:shadow-lg transition-all duration-200">
                   <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
@@ -241,8 +241,8 @@ export default function CommandCenterPage() {
                   </div>
                   <p className="text-lg font-bold mb-1">New Client</p>
                   <p className="text-sm text-white/80">Add client & start project</p>
-                </Link>
-
+              </Link>
+              
                 <Link href="/dashboard/settings" className="group p-6 rounded-xl bg-navy-900 text-white hover:bg-navy-900/90 hover:shadow-lg transition-all duration-200">
                   <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
                     <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -250,9 +250,9 @@ export default function CommandCenterPage() {
                     </svg>
                   </div>
                   <p className="text-lg font-bold mb-1">Add Team Member</p>
-                  <p className="text-sm text-white/80">Invite employee</p>
-                </Link>
-
+                <p className="text-sm text-white/80">Invite employee</p>
+              </Link>
+              
                 <Link href="/dashboard/clients" className="group p-6 rounded-xl bg-slate-50 hover:bg-white border border-gray-200 hover:border-signal-red/30 hover:shadow-lg transition-all duration-200">
                   <div className="w-12 h-12 bg-navy-900/10 rounded-xl flex items-center justify-center mb-4">
                     <svg className="w-7 h-7 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -261,8 +261,8 @@ export default function CommandCenterPage() {
                   </div>
                   <p className="text-lg font-bold text-navy-900 mb-1">Browse Clients</p>
                   <p className="text-sm text-slate-600">View all accounts</p>
-                </Link>
-
+              </Link>
+              
                 <Link href="/" target="_blank" className="group p-6 rounded-xl bg-slate-50 hover:bg-white border border-gray-200 hover:border-signal-red/30 hover:shadow-lg transition-all duration-200">
                   <div className="w-12 h-12 bg-navy-900/10 rounded-xl flex items-center justify-center mb-4">
                     <svg className="w-7 h-7 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -271,9 +271,9 @@ export default function CommandCenterPage() {
                   </div>
                   <p className="text-lg font-bold text-navy-900 mb-1">View Website</p>
                   <p className="text-sm text-slate-600">ie-global.net</p>
-                </Link>
-              </div>
+              </Link>
             </div>
+          </div>
 
             {/* External Platform Links */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
@@ -321,18 +321,18 @@ export default function CommandCenterPage() {
                       </div>
                       <div className="flex-1 pt-1">
                         <p className="text-sm text-slate-700 leading-relaxed">{activity.description}</p>
-                        <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-slate-500 mt-1">
                           {new Date(activity.created_at).toLocaleString('en-GB', {
                             day: 'numeric',
                             month: 'short',
                             hour: '2-digit',
                             minute: '2-digit'
                           })}
-                        </p>
-                      </div>
+                      </p>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -356,22 +356,22 @@ export default function CommandCenterPage() {
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <p className="font-bold text-navy-900 text-sm mb-1">{emp.full_name}</p>
-                          <p className="text-xs text-slate-600">{emp.email}</p>
-                        </div>
+                    <p className="text-xs text-slate-600">{emp.email}</p>
+                  </div>
                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                           emp.role === 'admin' 
                             ? 'bg-red-100 text-red-700' 
                             : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {emp.role.toUpperCase()}
-                        </span>
+                  }`}>
+                    {emp.role.toUpperCase()}
+                  </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${emp.active ? 'bg-green-500' : 'bg-gray-400'}`} />
                         <span className="text-xs text-slate-500">{emp.active ? 'Active' : 'Inactive'}</span>
                       </div>
-                    </div>
-                  ))}
+                </div>
+              ))}
                 </div>
               )}
             </div>

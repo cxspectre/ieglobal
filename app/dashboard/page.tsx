@@ -229,23 +229,23 @@ export default function DashboardPage() {
       {/* Floating Header */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200 mb-8">
         <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
-          <div>
+            <div>
             <h1 className="text-2xl font-bold text-navy-900">Dashboard</h1>
             <p className="text-sm text-slate-600">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-            </p>
-          </div>
-          <Link
-            href="/dashboard/clients/new"
+              </p>
+            </div>
+            <Link
+              href="/dashboard/clients/new"
             className="px-6 py-3 bg-signal-red text-white font-semibold rounded-full hover:bg-signal-red/90 hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            New Client
-          </Link>
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              New Client
+            </Link>
         </div>
-      </div>
+          </div>
 
       <div className="max-w-7xl mx-auto px-8 pb-12">
         {/* Welcome Message */}
@@ -256,7 +256,7 @@ export default function DashboardPage() {
           <p className="text-xl text-slate-700">
             Let's make today productive
           </p>
-        </div>
+                </div>
 
         {/* Stats Row - Subtle Professional Style */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -265,9 +265,9 @@ export default function DashboardPage() {
               <div className="flex items-center gap-4 mb-3">
                 <div className="w-12 h-12 rounded-xl bg-signal-red/10 flex items-center justify-center">
                   <svg className="w-6 h-6 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
                 <div>
                   <p className="text-sm font-medium text-slate-600">Active Clients</p>
                   <p className="text-3xl font-bold text-navy-900">{stats.activeClients}</p>
@@ -294,7 +294,7 @@ export default function DashboardPage() {
             <div className="text-xs text-slate-500">
               {stats.completedProjects} done • {stats.totalProjects} total
             </div>
-          </div>
+                </div>
 
           <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
             <div className="flex items-center gap-4 mb-3">
@@ -309,7 +309,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="text-xs text-slate-500">Paid invoices YTD</div>
-          </div>
+                </div>
 
           <div className={`bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 ${stats.overdueInvoices > 0 ? 'ring-2 ring-red-500/20' : ''}`}>
             <div className="flex items-center gap-4 mb-3">
@@ -330,12 +330,12 @@ export default function DashboardPage() {
                 </svg>
                 {stats.overdueInvoices} overdue
               </div>
-            )}
+                )}
+            </div>
           </div>
-        </div>
 
         {/* Alert: Upcoming Milestones */}
-        {upcomingMilestones.length > 0 && (
+          {upcomingMilestones.length > 0 && (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg mb-10 border-l-4 border-signal-red">
             <div className="flex items-center gap-3 mb-5">
               <div className="w-10 h-10 bg-signal-red/10 rounded-xl flex items-center justify-center">
@@ -343,7 +343,7 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div>
+                    <div>
                 <h2 className="text-xl font-bold text-navy-900">Upcoming This Week</h2>
                 <p className="text-sm text-slate-600">{upcomingMilestones.length} milestones due in the next 7 days</p>
               </div>
@@ -360,11 +360,11 @@ export default function DashboardPage() {
                   <span className="px-4 py-2 bg-white rounded-lg text-sm font-semibold text-navy-900 whitespace-nowrap ml-4 border border-gray-200">
                     {new Date(milestone.expected_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                   </span>
-                </div>
-              ))}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -409,7 +409,7 @@ export default function DashboardPage() {
                           <p className="font-bold text-navy-900 group-hover:text-signal-red transition-colors duration-200 mb-1">
                             {client.company_name}
                           </p>
-                          <p className="text-sm text-slate-600">{client.contact_person}</p>
+                      <p className="text-sm text-slate-600">{client.contact_person}</p>
                         </div>
                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                           client.status === 'active' 
