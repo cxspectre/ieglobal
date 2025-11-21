@@ -109,9 +109,9 @@ export default function MilestonesPage() {
         updateData.completed_date = new Date().toISOString().split('T')[0];
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('milestones')
-        .update(updateData as any)
+        .update(updateData)
         .eq('id', milestoneId);
 
       if (error) throw error;
@@ -131,9 +131,9 @@ export default function MilestonesPage() {
 
   const updateProjectStatus = async (newStatus: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('projects')
-        .update({ status: newStatus } as any)
+        .update({ status: newStatus })
         .eq('id', params.projectId);
 
       if (error) throw error;
@@ -154,9 +154,9 @@ export default function MilestonesPage() {
 
   const updateProgress = async (newProgress: number) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('projects')
-        .update({ progress_percentage: newProgress } as any)
+        .update({ progress_percentage: newProgress })
         .eq('id', params.projectId);
 
       if (error) throw error;

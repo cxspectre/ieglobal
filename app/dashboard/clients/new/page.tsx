@@ -32,7 +32,7 @@ export default function NewClientPage() {
       if (!session) throw new Error('Not authenticated');
 
       // Create client
-      const { data: newClient, error: clientError } = await supabase
+      const { data: newClient, error: clientError } = await (supabase as any)
         .from('clients')
         .insert({
           company_name: formData.company_name,
@@ -43,7 +43,7 @@ export default function NewClientPage() {
           onboarding_notes: formData.onboarding_notes || null,
           assigned_employee_id: session.user.id,
           status: 'active',
-        } as any)
+        })
         .select()
         .single();
 

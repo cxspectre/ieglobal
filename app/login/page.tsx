@@ -34,7 +34,7 @@ export default function LoginPage() {
       // Try to get profile - wait a moment for session to be established
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await (supabase as any)
         .from('profiles')
         .select('*')
         .eq('id', authData.user.id)

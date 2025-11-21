@@ -43,7 +43,7 @@ export default function ResetPasswordPage() {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
-        const { data: profile } = await supabase
+        const { data: profile } = await (supabase as any)
           .from('profiles')
           .select('role')
           .eq('id', user.id)

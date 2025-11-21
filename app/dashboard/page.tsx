@@ -60,7 +60,7 @@ export default function DashboardPage() {
         }
 
         // Get profile
-        const { data: profile, error } = await supabase
+        const { data: profile, error } = await (supabase as any)
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
@@ -132,15 +132,15 @@ export default function DashboardPage() {
       .neq('status', 'paid');
 
     // Get total revenue (paid invoices)
-    const { data: paidInvoices } = await supabase
+    const { data: paidInvoices } = await (supabase as any)
       .from('invoices')
       .select('amount')
       .eq('status', 'paid');
 
-    const totalRevenue = paidInvoices?.reduce((sum, inv) => sum + inv.amount, 0) || 0;
+    const totalRevenue = paidInvoices?.reduce((sum: number, inv: any) => sum + inv.amount, 0) || 0;
 
     // Get recent clients
-    const { data: recentClientsData } = await supabase
+    const { data: recentClientsData } = await (supabase as any)
       .from('clients')
       .select('*')
       .order('created_at', { ascending: false })
@@ -149,7 +149,7 @@ export default function DashboardPage() {
     if (recentClientsData) setRecentClients(recentClientsData);
 
     // Get recent activity
-    const { data: activityData } = await supabase
+    const { data: activityData } = await (supabase as any)
       .from('activities')
       .select('*')
       .order('created_at', { ascending: false })
@@ -160,7 +160,7 @@ export default function DashboardPage() {
     // Get upcoming milestones (next 7 days)
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);
-    const { data: milestonesData } = await supabase
+    const { data: milestonesData } = await (supabase as any)
       .from('milestones')
       .select(`
         id,
@@ -179,10 +179,10 @@ export default function DashboardPage() {
       .order('expected_date', { ascending: true })
       .limit(5);
 
-    if (milestonesData) setUpcomingMilestones(milestonesData as any);
+    if (milestonesData) setUpcomingMilestones(milestonesData);
 
     // Get recent invoices
-    const { data: invoicesData } = await supabase
+    const { data: invoicesData } = await (supabase as any)
       .from('invoices')
       .select('*, clients(company_name)')
       .order('created_at', { ascending: false })
@@ -191,12 +191,12 @@ export default function DashboardPage() {
     if (invoicesData) setRecentInvoices(invoicesData);
 
     // Get projects breakdown by status
-    const { data: allProjects } = await supabase
+    const { data: allProjects } = await (supabase as any)
       .from('projects')
       .select('status');
 
     if (allProjects) {
-      const statusCounts = allProjects.reduce((acc: any, project) => {
+      const statusCounts = allProjects.reduce((acc: any, project: any) => {
         acc[project.status] = (acc[project.status] || 0) + 1;
         return acc;
       }, {});

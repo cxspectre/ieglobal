@@ -31,7 +31,7 @@ export default function NewProjectPage() {
       if (!session) throw new Error('Not authenticated');
 
       // Create project
-      const { data: newProject, error: projectError } = await supabase
+      const { data: newProject, error: projectError } = await (supabase as any)
         .from('projects')
         .insert({
           client_id: params.id as string,
@@ -42,20 +42,22 @@ export default function NewProjectPage() {
           start_date: formData.start_date || null,
           expected_completion_date: formData.expected_completion_date || null,
           progress_percentage: 0,
-        } as any)
+        })
         .select()
         .single();
 
       if (projectError) throw projectError;
 
       // Log activity
-      await supabase.from('activities').insert({
-        client_id: params.id as string,
-        project_id: newProject.id,
-        user_id: session.user.id,
-        action_type: 'project_created',
-        description: `Project "${formData.name}" created`,
-      } as any);
+      if (newProject) {
+        await (supabase as any).from('activities').insert({
+          client_id: params.id as string,
+          project_id: newProject.id,
+          user_id: session.user.id,
+          action_type: 'project_created',
+          description: `Project "${formData.name}" created`,
+        });
+      }
 
       // Redirect to client detail
       router.push(`/dashboard/clients/${params.id}`);

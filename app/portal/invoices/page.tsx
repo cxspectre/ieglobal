@@ -36,7 +36,7 @@ export default function ClientInvoicesPage() {
     }
 
     // Get profile
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('client_id')
       .eq('id', session.user.id)

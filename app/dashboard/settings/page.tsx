@@ -28,7 +28,7 @@ export default function SettingsPage() {
         return;
       }
 
-      const { data: profile } = await supabase
+      const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)

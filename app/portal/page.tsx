@@ -38,7 +38,7 @@ export default function PortalPage() {
       }
 
       // Get profile with client info - specify the relationship explicitly
-      const { data: profile, error } = await supabase
+      const { data: profile, error } = await (supabase as any)
         .from('profiles')
         .select(`
           *,
@@ -66,7 +66,7 @@ export default function PortalPage() {
 
       // Load projects for this client
       if (profile.client_id) {
-        const { data: projectsData, error: projectsError } = await supabase
+        const { data: projectsData, error: projectsError } = await (supabase as any)
           .from('projects')
           .select('*')
           .eq('client_id', profile.client_id)
@@ -79,7 +79,7 @@ export default function PortalPage() {
         }
 
         // Load recent activity
-        const { data: activityData } = await supabase
+        const { data: activityData } = await (supabase as any)
           .from('activities')
           .select('*')
           .eq('client_id', profile.client_id)
@@ -137,7 +137,6 @@ export default function PortalPage() {
           </div>
 
           {/* Projects Overview */}
-          {console.log('Rendering portal with projects:', projects)}
           {projects.length === 0 ? (
             <div className="bg-white p-12 text-center mb-8 border-l-4 border-signal-red">
               <h2 className="text-2xl font-bold text-navy-900 mb-4">

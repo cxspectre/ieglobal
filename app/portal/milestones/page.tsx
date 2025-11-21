@@ -50,7 +50,7 @@ export default function ClientMilestonesPage() {
     }
 
     // Get profile
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('client_id, full_name')
       .eq('id', session.user.id)
@@ -64,7 +64,7 @@ export default function ClientMilestonesPage() {
     setUserName(profile.full_name);
 
     // Load projects
-    const { data: projectsData } = await supabase
+    const { data: projectsData } = await (supabase as any)
       .from('projects')
       .select('*')
       .eq('client_id', profile.client_id)
@@ -79,7 +79,7 @@ export default function ClientMilestonesPage() {
   };
 
   const loadMilestones = async (projectId: string) => {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from('milestones')
       .select('*')
       .eq('project_id', projectId)

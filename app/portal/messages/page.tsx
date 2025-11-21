@@ -53,12 +53,12 @@ export default function ClientMessagesPage() {
 
     setCurrentUserId(session.user.id);
 
-    // Get profile
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('client_id')
-      .eq('id', session.user.id)
-      .single();
+      // Get profile
+      const { data: profile } = await (supabase as any)
+        .from('profiles')
+        .select('client_id')
+        .eq('id', session.user.id)
+        .single();
 
     if (!profile?.client_id) {
       setLoading(false);
@@ -66,7 +66,7 @@ export default function ClientMessagesPage() {
     }
 
     // Load projects
-    const { data: projectsData } = await supabase
+    const { data: projectsData } = await (supabase as any)
       .from('projects')
       .select('id, name')
       .eq('client_id', profile.client_id)
@@ -81,7 +81,7 @@ export default function ClientMessagesPage() {
   };
 
   const loadMessages = async (projectId: string) => {
-    const { data: messagesData } = await supabase
+    const { data: messagesData } = await (supabase as any)
       .from('messages')
       .select(`
         *,
@@ -95,7 +95,7 @@ export default function ClientMessagesPage() {
       .order('created_at', { ascending: true });
 
     if (messagesData) {
-      setMessages(messagesData as any);
+      setMessages(messagesData);
     }
   };
 
