@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Link from 'next/link';
 
 type FileItem = {
   id: string;
@@ -86,14 +85,31 @@ export default function ClientFilesPage() {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+  const getFileIcon = (fileType: string) => {
+    if (fileType.includes('pdf')) {
+      return (
+        <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+      );
+    }
+    if (fileType.includes('image')) {
+      return (
+        <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      );
+    }
+    return (
+      <svg className="w-8 h-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      </svg>
+    );
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-700">Loading files...</p>
@@ -103,110 +119,60 @@ export default function ClientFilesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-off-white">
-      {/* Top Bar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/portal" className="font-bold text-xl text-navy-900">
-              Portal
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/portal" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Overview
-              </Link>
-              <Link href="/portal/milestones" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Milestones
-              </Link>
-              <Link href="/portal/invoices" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Invoices
-              </Link>
-              <Link href="/portal/files" className="text-sm font-medium text-navy-900 border-b-2 border-signal-red pb-0.5">
-                Files
-              </Link>
-              <Link href="/portal/messages" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Messages
-              </Link>
-            </nav>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="max-w-7xl mx-auto px-8 py-12">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-navy-900 mb-3">Files</h1>
+          <p className="text-xl text-slate-700">Access all your project documents and files</p>
+        </div>
+
+        {files.length === 0 ? (
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-16 text-center shadow-lg">
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-gray-200 flex items-center justify-center">
+              <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-navy-900 mb-2">No files yet</h2>
+            <p className="text-slate-600">Your IE Global team will upload project files here</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
-          >
-            Sign Out
-          </button>
-        </div>
-      </header>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {files.map((file) => (
+              <div key={file.id} className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-14 h-14 bg-slate-50 rounded-xl flex items-center justify-center flex-shrink-0 border border-gray-200">
+                    {getFileIcon(file.file_type)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-navy-900 truncate mb-1">{file.file_name}</h3>
+                    <p className="text-xs text-slate-600">{formatFileSize(file.file_size)}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-xs text-slate-500 mb-4">
+                  {file.category && (
+                    <span className="px-2 py-1 bg-slate-100 rounded-full text-slate-700 font-medium">
+                      {file.category}
+                    </span>
+                  )}
+                  <span>{new Date(file.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                </div>
 
-      {/* Main Content */}
-      <main className="p-8">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold text-navy-900 mb-8">Files & Documents</h1>
-
-          {files.length === 0 ? (
-            <div className="bg-white p-12 text-center">
-              <p className="text-slate-700">No files available yet. Your IE Global team will share files here as they become available.</p>
-            </div>
-          ) : (
-            <div className="bg-white">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-off-white border-b border-gray-200">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-navy-900 uppercase tracking-wider">
-                        File Name
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-navy-900 uppercase tracking-wider">
-                        Size
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-bold text-navy-900 uppercase tracking-wider">
-                        Uploaded
-                      </th>
-                      <th className="px-6 py-4 text-right text-xs font-bold text-navy-900 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {files.map((file) => (
-                      <tr key={file.id} className="hover:bg-off-white transition-colors duration-150">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <svg className="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                            <span className="font-semibold text-navy-900">{file.file_name}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm text-slate-700">{formatFileSize(file.file_size)}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm text-slate-700">
-                            {new Date(file.created_at).toLocaleDateString()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <button
-                            onClick={() => downloadFile(file)}
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-colors duration-200"
-                          >
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            Download
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <button
+                  onClick={() => downloadFile(file)}
+                  className="w-full px-4 py-2 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200 flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Download
+                </button>
               </div>
-            </div>
-          )}
-        </div>
-      </main>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-
