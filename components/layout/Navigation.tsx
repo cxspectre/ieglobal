@@ -295,13 +295,23 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
             </div>
           </div>
 
-          {/* Right Side: Start Project Button */}
-          <div className="flex items-center ml-auto">
+          {/* Right Side: Start Project Button + Login */}
+          <div className="flex items-center gap-4 ml-auto">
             <Link
               href="/contact"
               className="hidden lg:inline-flex items-center px-6 py-2.5 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200"
             >
               Start a Project
+            </Link>
+            <Link
+              href="/login"
+              className={cn("hidden lg:flex items-center gap-2 transition-colors duration-500", textColor)}
+              aria-label="Sign In"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span className="text-sm font-medium">Sign In</span>
             </Link>
           </div>
         </div>

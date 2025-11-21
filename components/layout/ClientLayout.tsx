@@ -15,6 +15,10 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const [isHeroVisible, setIsHeroVisible] = useState(true);
   const [heroIsDark, setHeroIsDark] = useState(true);
 
+  // Pages without nav/footer (portal pages)
+  const noLayoutPages = ['/login', '/dashboard', '/portal', '/reset-password', '/auth'];
+  const hideLayout = noLayoutPages.some(path => pathname?.startsWith(path));
+
   // Pages without dark heroes (always use white navbar)
   const whiteBackgroundPages = ['/privacy', '/terms', '/imprint'];
   const isWhiteBackgroundPage = whiteBackgroundPages.includes(pathname);
@@ -39,6 +43,11 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
     window.addEventListener('hero-slide-change', handleHeroChange as EventListener);
     return () => window.removeEventListener('hero-slide-change', handleHeroChange as EventListener);
   }, []);
+
+  // If it's a portal page, don't render nav/footer
+  if (hideLayout) {
+    return <>{children}</>;
+  }
 
   return (
     <>

@@ -5,7 +5,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================
--- CLIENTS TABLE (Create first - referenced by profiles)
+-- CLIENTS TABLE (Create first - without FK to profiles)
 -- ============================================
 CREATE TABLE clients (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -15,7 +15,7 @@ CREATE TABLE clients (
   contact_email TEXT NOT NULL,
   contact_phone TEXT,
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'completed')),
-  assigned_employee_id UUID REFERENCES profiles(id),
+  assigned_employee_id UUID, -- FK added later
   onboarding_notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -29,12 +29,21 @@ CREATE TABLE profiles (
   email TEXT UNIQUE NOT NULL,
   full_name TEXT NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('admin', 'employee', 'client')),
-  client_id UUID REFERENCES clients(id) ON DELETE CASCADE,
+  client_id UUID, -- FK added later
   avatar_url TEXT,
   phone TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- ============================================
+-- ADD FOREIGN KEYS (After both tables exist)
+-- ============================================
+ALTER TABLE clients ADD CONSTRAINT fk_clients_assigned_employee 
+  FOREIGN KEY (assigned_employee_id) REFERENCES profiles(id);
+
+ALTER TABLE profiles ADD CONSTRAINT fk_profiles_client 
+  FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE;
 
 -- ============================================
 -- PROJECTS TABLE
