@@ -44,7 +44,7 @@ export default function NewInvoicePage() {
           due_date: formData.due_date,
           description: formData.description || null,
           created_by: session.user.id,
-        });
+        } as any);
 
       if (invoiceError) throw invoiceError;
 
