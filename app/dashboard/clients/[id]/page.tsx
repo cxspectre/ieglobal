@@ -131,35 +131,42 @@ export default function ClientDetailPage() {
       if (notesData) setInternalNotes(notesData);
 
       // Check if client has portal account
-      // Try by email first (most reliable)
-      let profileByEmail = null;
+      // Try multiple approaches to find the account
+      let profileData = null;
+      
+      // Approach 1: By email address (most reliable)
       if (clientData) {
         const emailResult = await (supabase as any)
           .from('profiles')
           .select('email, active, role, client_id')
           .eq('email', (clientData as any).contact_email)
           .maybeSingle();
-        profileByEmail = emailResult.data;
+        
+        if (emailResult.data) {
+          profileData = emailResult.data;
+          console.log('[ClientDetail] ✅ Found by email:', emailResult.data);
+        }
       }
 
-      // Also try by client_id with role filter
-      const clientIdResult = await (supabase as any)
-        .from('profiles')
-        .select('email, active, role, client_id')
-        .eq('client_id', params.id)
-        .eq('role', 'client')
-        .maybeSingle();
-      const profileByClientId = clientIdResult.data;
+      // Approach 2: By client_id (if not found by email)
+      if (!profileData) {
+        const clientIdResult = await (supabase as any)
+          .from('profiles')
+          .select('email, active, role, client_id')
+          .eq('client_id', params.id)
+          .maybeSingle();
+        
+        if (clientIdResult.data) {
+          profileData = clientIdResult.data;
+          console.log('[ClientDetail] ✅ Found by client_id:', clientIdResult.data);
+        }
+      }
 
-      // Use whichever one we found
-      const profileData = profileByEmail || profileByClientId;
-
-      console.log('[ClientDetail] Portal account check:', { 
-        profileByEmail, 
-        profileByClientId,
-        finalProfile: profileData,
+      console.log('[ClientDetail] Final portal account check:', { 
+        profileData,
         clientEmail: (clientData as any)?.contact_email,
-        clientId: params.id 
+        clientId: params.id,
+        hasAccount: !!profileData
       });
 
       if (profileData) {
