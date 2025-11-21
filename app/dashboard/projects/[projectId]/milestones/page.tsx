@@ -87,7 +87,7 @@ export default function MilestonesPage() {
           status: 'upcoming',
           order_index: milestones.length,
           created_by: session.user.id,
-        });
+        } as any);
 
       if (error) throw error;
 
@@ -111,7 +111,7 @@ export default function MilestonesPage() {
 
       const { error } = await supabase
         .from('milestones')
-        .update(updateData)
+        .update(updateData as any)
         .eq('id', milestoneId);
 
       if (error) throw error;
@@ -133,7 +133,7 @@ export default function MilestonesPage() {
     try {
       const { error } = await supabase
         .from('projects')
-        .update({ status: newStatus })
+        .update({ status: newStatus } as any)
         .eq('id', params.projectId);
 
       if (error) throw error;
@@ -156,7 +156,7 @@ export default function MilestonesPage() {
     try {
       const { error } = await supabase
         .from('projects')
-        .update({ progress_percentage: newProgress })
+        .update({ progress_percentage: newProgress } as any)
         .eq('id', params.projectId);
 
       if (error) throw error;

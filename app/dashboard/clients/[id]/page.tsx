@@ -181,7 +181,7 @@ export default function ClientDetailPage() {
           contact_phone: editForm.contact_phone || null,
           industry: editForm.industry || null,
           onboarding_notes: editForm.onboarding_notes || null,
-        })
+        } as any)
         .eq('id', params.id);
 
       if (error) throw error;
@@ -209,7 +209,7 @@ export default function ClientDetailPage() {
         .update({
           status: 'paid',
           paid_date: new Date().toISOString().split('T')[0],
-        })
+        } as any)
         .eq('id', invoiceId);
 
       if (error) throw error;
@@ -242,7 +242,7 @@ export default function ClientDetailPage() {
           client_id: params.id as string,
           note_text: newNote.trim(),
           created_by: session.user.id,
-        });
+        } as any);
 
       if (error) throw error;
 

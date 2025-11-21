@@ -115,7 +115,7 @@ export default function ClientMessagesPage() {
           sender_id: session.user.id,
           message_text: newMessage.trim(),
           is_internal: false, // Clients can never send internal messages
-        });
+        } as any);
 
       if (error) throw error;
 

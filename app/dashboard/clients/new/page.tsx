@@ -43,7 +43,7 @@ export default function NewClientPage() {
           onboarding_notes: formData.onboarding_notes || null,
           assigned_employee_id: session.user.id,
           status: 'active',
-        })
+        } as any)
         .select()
         .single();
 

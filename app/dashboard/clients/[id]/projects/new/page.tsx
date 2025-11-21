@@ -42,7 +42,7 @@ export default function NewProjectPage() {
           start_date: formData.start_date || null,
           expected_completion_date: formData.expected_completion_date || null,
           progress_percentage: 0,
-        })
+        } as any)
         .select()
         .single();
 

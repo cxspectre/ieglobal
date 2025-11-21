@@ -119,7 +119,7 @@ export default function MessagesPage() {
           sender_id: session.user.id,
           message_text: newMessage.trim(),
           is_internal: isInternal,
-        });
+        } as any);
 
       if (error) throw error;
 
