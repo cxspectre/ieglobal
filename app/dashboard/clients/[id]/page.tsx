@@ -129,7 +129,7 @@ export default function ClientDetailPage() {
         .select('id, email')
         .eq('client_id', params.id)
         .eq('role', 'client')
-        .maybeSingle();
+        .maybeSingle() as any;
 
       if (clientProfile) {
         setClientHasAccount(true);
