@@ -134,42 +134,40 @@ export default function CommandCenterPage() {
 
       <div className="max-w-7xl mx-auto px-8 pb-12">
         {/* System Health Alert */}
-        <div className="bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 p-1 rounded-2xl mb-10 shadow-lg">
-          <div className="bg-white rounded-xl p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-md">
-                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-navy-900 mb-1">All Systems Operational</h2>
-                <p className="text-sm text-slate-600">Last checked: {new Date().toLocaleTimeString()}</p>
-              </div>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                {[
-                  { name: 'Database', status: systemHealth.database },
-                  { name: 'Storage', status: systemHealth.storage },
-                  { name: 'Auth', status: systemHealth.auth },
-                ].map((system) => (
-                  <div key={system.name} className="px-4 py-2 bg-gradient-to-br from-slate-50 to-gray-100 rounded-lg">
-                    <div className={`w-3 h-3 rounded-full mx-auto mb-1 ${
-                      system.status === 'healthy' ? 'bg-green-500 animate-pulse' : 'bg-red-500'
-                    }`} />
-                    <p className="text-xs font-medium text-slate-700">{system.name}</p>
-                  </div>
-                ))}
-              </div>
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg mb-10 border-l-4 border-green-600">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center">
+              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-navy-900 mb-1">All Systems Operational</h2>
+              <p className="text-sm text-slate-600">Last checked: {new Date().toLocaleTimeString()}</p>
+            </div>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              {[
+                { name: 'Database', status: systemHealth.database },
+                { name: 'Storage', status: systemHealth.storage },
+                { name: 'Auth', status: systemHealth.auth },
+              ].map((system) => (
+                <div key={system.name} className="px-4 py-2 bg-slate-50 rounded-lg border border-gray-200">
+                  <div className={`w-3 h-3 rounded-full mx-auto mb-1 ${
+                    system.status === 'healthy' ? 'bg-green-500 animate-pulse' : 'bg-red-500'
+                  }`} />
+                  <p className="text-xs font-medium text-slate-700">{system.name}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-
+        
         {/* Key Metrics Row */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-10">
           <Link href="/dashboard/clients" className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-signal-red to-pink-600 flex items-center justify-center shadow-md">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="w-10 h-10 rounded-xl bg-signal-red/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
@@ -180,8 +178,8 @@ export default function CommandCenterPage() {
 
           <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-md">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="w-10 h-10 rounded-xl bg-navy-900/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
@@ -192,8 +190,8 @@ export default function CommandCenterPage() {
 
           <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center shadow-md">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="w-10 h-10 rounded-xl bg-slate-700/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
                 </svg>
               </div>
@@ -204,20 +202,20 @@ export default function CommandCenterPage() {
 
           <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-md">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             </div>
-            <p className="text-2xl font-bold text-emerald-700 mb-1">€{stats.thisMonthRevenue.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-green-700 mb-1">€{stats.thisMonthRevenue.toLocaleString()}</p>
             <p className="text-xs text-slate-600">This Month</p>
           </div>
 
           <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl border border-white/50 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-md">
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="w-10 h-10 rounded-xl bg-navy-900/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
               </div>
@@ -225,7 +223,7 @@ export default function CommandCenterPage() {
             <p className="text-2xl font-bold text-navy-900 mb-1">€{stats.totalRevenue.toLocaleString()}</p>
             <p className="text-xs text-slate-600">Total Revenue</p>
           </div>
-        </div>
+          </div>
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -235,9 +233,9 @@ export default function CommandCenterPage() {
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
               <h2 className="text-2xl font-bold text-navy-900 mb-6">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-4">
-                <Link href="/dashboard/clients/new" className="group p-6 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 text-white hover:shadow-lg hover:scale-105 transition-all duration-200">
+                <Link href="/dashboard/clients/new" className="group p-6 rounded-xl bg-signal-red text-white hover:bg-signal-red/90 hover:shadow-lg transition-all duration-200">
                   <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
-                    <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                     </svg>
                   </div>
@@ -245,9 +243,9 @@ export default function CommandCenterPage() {
                   <p className="text-sm text-white/80">Add client & start project</p>
                 </Link>
 
-                <Link href="/dashboard/settings" className="group p-6 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 text-white hover:shadow-lg hover:scale-105 transition-all duration-200">
+                <Link href="/dashboard/settings" className="group p-6 rounded-xl bg-navy-900 text-white hover:bg-navy-900/90 hover:shadow-lg transition-all duration-200">
                   <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
-                    <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
                   </div>
@@ -255,24 +253,24 @@ export default function CommandCenterPage() {
                   <p className="text-sm text-white/80">Invite employee</p>
                 </Link>
 
-                <Link href="/dashboard/clients" className="group p-6 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 text-white hover:shadow-lg hover:scale-105 transition-all duration-200">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
-                    <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <Link href="/dashboard/clients" className="group p-6 rounded-xl bg-slate-50 hover:bg-white border border-gray-200 hover:border-signal-red/30 hover:shadow-lg transition-all duration-200">
+                  <div className="w-12 h-12 bg-navy-900/10 rounded-xl flex items-center justify-center mb-4">
+                    <svg className="w-7 h-7 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
-                  <p className="text-lg font-bold mb-1">Browse Clients</p>
-                  <p className="text-sm text-white/80">View all accounts</p>
+                  <p className="text-lg font-bold text-navy-900 mb-1">Browse Clients</p>
+                  <p className="text-sm text-slate-600">View all accounts</p>
                 </Link>
 
-                <Link href="/" target="_blank" className="group p-6 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 text-white hover:shadow-lg hover:scale-105 transition-all duration-200">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
-                    <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <Link href="/" target="_blank" className="group p-6 rounded-xl bg-slate-50 hover:bg-white border border-gray-200 hover:border-signal-red/30 hover:shadow-lg transition-all duration-200">
+                  <div className="w-12 h-12 bg-navy-900/10 rounded-xl flex items-center justify-center mb-4">
+                    <svg className="w-7 h-7 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <p className="text-lg font-bold mb-1">View Website</p>
-                  <p className="text-sm text-white/80">ie-global.net</p>
+                  <p className="text-lg font-bold text-navy-900 mb-1">View Website</p>
+                  <p className="text-sm text-slate-600">ie-global.net</p>
                 </Link>
               </div>
             </div>
@@ -282,21 +280,21 @@ export default function CommandCenterPage() {
               <h2 className="text-2xl font-bold text-navy-900 mb-6">Platform Links</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {[
-                  { name: 'Supabase', url: 'https://supabase.com/dashboard', color: 'from-green-500 to-emerald-600' },
-                  { name: 'Vercel', url: 'https://vercel.com/dashboard', color: 'from-slate-900 to-gray-900' },
-                  { name: 'GitHub', url: 'https://github.com/cxspectre/ieglobal', color: 'from-purple-600 to-indigo-700' },
-                  { name: 'Resend', url: 'https://resend.com/emails', color: 'from-blue-500 to-cyan-600' },
-                  { name: 'Analytics', url: 'https://vercel.com/analytics', color: 'from-pink-500 to-rose-600' },
-                  { name: 'Client Portal', url: '/portal', color: 'from-orange-500 to-amber-600' },
+                  { name: 'Supabase', url: 'https://supabase.com/dashboard' },
+                  { name: 'Vercel', url: 'https://vercel.com/dashboard' },
+                  { name: 'GitHub', url: 'https://github.com/cxspectre/ieglobal' },
+                  { name: 'Resend', url: 'https://resend.com/emails' },
+                  { name: 'Analytics', url: 'https://vercel.com/analytics' },
+                  { name: 'Client Portal', url: '/portal' },
                 ].map((platform) => (
                   <a
                     key={platform.name}
                     href={platform.url}
                     target={platform.url.startsWith('http') ? '_blank' : undefined}
-                    className={`group p-5 rounded-xl bg-gradient-to-br ${platform.color} text-white hover:shadow-lg hover:scale-105 transition-all duration-200`}
+                    className="group p-5 rounded-xl bg-slate-50 hover:bg-white border border-gray-200 hover:border-signal-red/30 hover:shadow-lg transition-all duration-200"
                   >
-                    <p className="font-bold text-lg mb-1">{platform.name}</p>
-                    <p className="text-sm text-white/80">
+                    <p className="font-bold text-navy-900 text-lg mb-1">{platform.name}</p>
+                    <p className="text-sm text-slate-600 group-hover:text-signal-red transition-colors duration-200">
                       Open →
                     </p>
                   </a>
@@ -307,23 +305,18 @@ export default function CommandCenterPage() {
             {/* Activity Timeline */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
               <h2 className="text-2xl font-bold text-navy-900 mb-6">System Activity</h2>
-              {recentActivity.length === 0 ? (
+            {recentActivity.length === 0 ? (
                 <p className="text-slate-700 text-center py-8">No recent activity</p>
-              ) : (
+            ) : (
                 <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                   {recentActivity.map((activity, index) => (
                     <div key={activity.id} className="flex gap-3">
                       <div className="relative">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          activity.action_type === 'client_created' ? 'bg-gradient-to-br from-red-500 to-pink-600' :
-                          activity.action_type === 'invoice_created' ? 'bg-gradient-to-br from-yellow-500 to-orange-600' :
-                          activity.action_type === 'project_created' ? 'bg-gradient-to-br from-blue-500 to-cyan-600' :
-                          'bg-gradient-to-br from-purple-500 to-indigo-600'
-                        }`}>
-                          <div className="w-2 h-2 bg-white rounded-full" />
+                        <div className="w-8 h-8 rounded-full bg-signal-red/10 flex items-center justify-center flex-shrink-0 border-2 border-signal-red">
+                          <div className="w-2 h-2 bg-signal-red rounded-full" />
                         </div>
                         {index < recentActivity.length - 1 && (
-                          <div className="absolute top-8 left-1/2 -translate-x-1/2 w-0.5 h-full bg-gradient-to-b from-slate-300 to-transparent" />
+                          <div className="absolute top-8 left-1/2 -translate-x-1/2 w-0.5 h-full bg-gray-200" />
                         )}
                       </div>
                       <div className="flex-1 pt-1">
@@ -340,26 +333,26 @@ export default function CommandCenterPage() {
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+            )}
           </div>
+        </div>
 
           {/* Right Column - Team & Info */}
-          <div className="space-y-8">
-            {/* Team Directory */}
+        <div className="space-y-8">
+          {/* Team Directory */}
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-navy-900">Team</h3>
-                <Link href="/dashboard/settings" className="text-sm font-semibold text-signal-red hover:underline">
-                  Manage →
-                </Link>
-              </div>
+              <Link href="/dashboard/settings" className="text-sm font-semibold text-signal-red hover:underline">
+                Manage →
+              </Link>
+            </div>
               {employees.length === 0 ? (
                 <p className="text-slate-600 text-center py-8 text-sm">No team members</p>
               ) : (
-                <div className="space-y-3">
+            <div className="space-y-3">
                   {employees.map((emp) => (
-                    <div key={emp.id} className="p-4 rounded-xl bg-gradient-to-r from-slate-50 to-gray-100">
+                    <div key={emp.id} className="p-4 rounded-xl bg-slate-50 border border-gray-200">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <p className="font-bold text-navy-900 text-sm mb-1">{emp.full_name}</p>
@@ -367,8 +360,8 @@ export default function CommandCenterPage() {
                         </div>
                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                           emp.role === 'admin' 
-                            ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white' 
-                            : 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white'
+                            ? 'bg-red-100 text-red-700' 
+                            : 'bg-blue-100 text-blue-700'
                         }`}>
                           {emp.role.toUpperCase()}
                         </span>
@@ -390,20 +383,20 @@ export default function CommandCenterPage() {
                 <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 to-gray-100">
                   <p className="text-xs font-semibold text-slate-600 mb-1">Legal Name</p>
                   <p className="font-bold text-navy-900">IE Global</p>
-                </div>
+          </div>
                 <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 to-gray-100">
                   <p className="text-xs font-semibold text-slate-600 mb-1">KvK Number</p>
                   <p className="font-mono font-bold text-navy-900">97185515</p>
-                </div>
+              </div>
                 <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 to-gray-100">
                   <p className="text-xs font-semibold text-slate-600 mb-1">VAT Number</p>
                   <p className="font-mono font-bold text-navy-900">NL737599054B02</p>
-                </div>
+              </div>
                 <div className="p-4 rounded-xl bg-gradient-to-br from-slate-50 to-gray-100">
                   <p className="text-xs font-semibold text-slate-600 mb-1">Contact Email</p>
-                  <a href="mailto:hello@ie-global.net" className="font-semibold text-signal-red hover:underline">
-                    hello@ie-global.net
-                  </a>
+                <a href="mailto:hello@ie-global.net" className="font-semibold text-signal-red hover:underline">
+                  hello@ie-global.net
+                </a>
                 </div>
               </div>
             </div>

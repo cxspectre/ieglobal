@@ -151,11 +151,11 @@ export default function ClientDetailPage() {
       // Approach 2: By client_id (if not found by email)
       if (!profileData) {
         const clientIdResult = await (supabase as any)
-          .from('profiles')
+        .from('profiles')
           .select('email, active, role, client_id')
-          .eq('client_id', params.id)
-          .maybeSingle();
-        
+        .eq('client_id', params.id)
+        .maybeSingle();
+
         if (clientIdResult.data) {
           profileData = clientIdResult.data;
           console.log('[ClientDetail] ✅ Found by client_id:', clientIdResult.data);
@@ -366,7 +366,7 @@ export default function ClientDetailPage() {
     setAddingNote(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       const { error } = await (supabase as any).from('internal_notes').insert({
         client_id: params.id,
           note_text: newNote.trim(),
@@ -988,7 +988,7 @@ export default function ClientDetailPage() {
                             <h3 className="text-xl font-bold text-navy-900 mb-2">{project.name}</h3>
                             {project.description && (
                             <p className="text-slate-700 mb-4">{project.description}</p>
-                          )}
+                            )}
                           <div className="flex items-center gap-6 text-sm">
                             <div>
                               <span className={`px-3 py-1 text-xs font-semibold ${
@@ -1079,7 +1079,7 @@ export default function ClientDetailPage() {
                             </div>
                             {invoice.description && (
                             <p className="text-slate-700 mb-4 text-sm">{invoice.description}</p>
-                          )}
+                            )}
                           <div className="grid grid-cols-3 gap-4 text-sm">
                             <div>
                               <p className="text-slate-600">Issued</p>

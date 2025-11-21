@@ -31,11 +31,11 @@ export default function SettingsPage() {
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      router.push('/login');
-      return;
-    }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/login');
+        return;
+      }
 
     const { data: profile } = await (supabase as any)
       .from('profiles')
@@ -43,8 +43,8 @@ export default function SettingsPage() {
       .eq('id', session.user.id)
       .single();
 
-    if (profile?.role !== 'admin' && profile?.role !== 'employee') {
-      router.push('/portal');
+      if (profile?.role !== 'admin' && profile?.role !== 'employee') {
+        router.push('/portal');
       return;
     }
 
@@ -164,7 +164,7 @@ export default function SettingsPage() {
               <h1 className="text-2xl font-bold text-navy-900">Settings</h1>
               <p className="text-sm text-slate-600">Manage your account and team</p>
             </div>
-          </div>
+      </div>
         </div>
       </div>
 
@@ -281,8 +281,8 @@ export default function SettingsPage() {
                     >
                       {savingProfile ? 'Saving...' : 'Save Changes'}
                     </button>
-                  </div>
-                </div>
+            </div>
+          </div>
 
                 {/* Password Change */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
@@ -359,12 +359,12 @@ export default function SettingsPage() {
                   
                   {employees.length === 0 ? (
                     <p className="text-slate-600 text-center py-8">No team members yet</p>
-                  ) : (
-                    <div className="space-y-3">
+            ) : (
+              <div className="space-y-3">
                       {employees.map((emp) => (
                         <div key={emp.id} className="p-5 rounded-xl bg-gradient-to-r from-slate-50 to-gray-100 border border-gray-200">
                           <div className="flex items-center justify-between">
-                            <div className="flex-1">
+                    <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
                                 <p className="font-bold text-navy-900">{emp.full_name}</p>
                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -380,9 +380,9 @@ export default function SettingsPage() {
                                 </div>
                               </div>
                               <p className="text-sm text-slate-600">{emp.email}</p>
-                              <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-xs text-slate-500 mt-1">
                                 Joined {new Date(emp.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                              </p>
+                      </p>
                             </div>
                             {emp.id !== user.id && user?.profile?.role === 'admin' && (
                               <button
@@ -392,13 +392,13 @@ export default function SettingsPage() {
                                 Remove
                               </button>
                             )}
-                          </div>
-                        </div>
-                      ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
+            )}
+          </div>
+        </div>
             )}
 
             {/* COMPANY INFO TAB */}
@@ -416,13 +416,13 @@ export default function SettingsPage() {
                     <div className="p-6 rounded-xl bg-gradient-to-br from-slate-50 to-gray-100">
                       <p className="text-sm font-semibold text-slate-600 mb-2">KvK Number</p>
                       <p className="text-lg font-mono font-bold text-navy-900">97185515</p>
-                    </div>
+                </div>
 
                     <div className="p-6 rounded-xl bg-gradient-to-br from-slate-50 to-gray-100">
                       <p className="text-sm font-semibold text-slate-600 mb-2">VAT Number</p>
                       <p className="text-lg font-mono font-bold text-navy-900">NL737599054B02</p>
-                    </div>
-                  </div>
+            </div>
+          </div>
 
                   <div className="p-6 rounded-xl bg-gradient-to-br from-slate-50 to-gray-100">
                     <p className="text-sm font-semibold text-slate-600 mb-2">Registered Address</p>
@@ -430,7 +430,7 @@ export default function SettingsPage() {
                       <p>ODER 20 Box 66193</p>
                       <p>2491DC Den Haag</p>
                       <p>Netherlands</p>
-                    </div>
+            </div>
                   </div>
 
                   <div className="p-6 rounded-xl bg-gradient-to-br from-slate-50 to-gray-100">
@@ -442,8 +442,8 @@ export default function SettingsPage() {
                       <a href="tel:+31627207108" className="block font-semibold text-signal-red hover:underline">
                         +31 6 27 20 71 08
                       </a>
-                    </div>
-                  </div>
+            </div>
+          </div>
 
                   <div className="p-6 rounded-xl bg-gradient-to-br from-slate-50 to-gray-100">
                     <p className="text-sm font-semibold text-slate-600 mb-2">Banking Details</p>
@@ -451,11 +451,11 @@ export default function SettingsPage() {
                       <p><span className="font-semibold">Bank:</span> BUNQ</p>
                       <p><span className="font-semibold">IBAN:</span> NL50 BUNQ 2152 5367 38</p>
                       <p><span className="font-semibold">BIC:</span> BUNQNL2A</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
+          </div>
+        </div>
+      </div>
+      )}
 
             {/* SECURITY TAB */}
             {activeTab === 'security' && (
@@ -465,7 +465,7 @@ export default function SettingsPage() {
                   
                   <div className="space-y-6">
                     {/* Active Sessions */}
-                    <div>
+                <div>
                       <h3 className="text-lg font-bold text-navy-900 mb-3">Active Session</h3>
                       <div className="p-5 rounded-xl bg-green-50 border border-green-200">
                         <div className="flex items-center gap-3">
@@ -473,17 +473,17 @@ export default function SettingsPage() {
                             <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                          </div>
-                          <div>
+                </div>
+                <div>
                             <p className="font-semibold text-navy-900">Current Browser Session</p>
                             <p className="text-sm text-slate-600">Logged in as {user?.email}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                </div>
+              </div>
+          </div>
+        </div>
 
                     {/* Password */}
-                    <div>
+          <div>
                       <h3 className="text-lg font-bold text-navy-900 mb-3">Password</h3>
                       <p className="text-sm text-slate-600 mb-4">
                         Update your password to keep your account secure
@@ -494,10 +494,10 @@ export default function SettingsPage() {
                       >
                         Change Password
                       </button>
-                    </div>
+              </div>
 
                     {/* Sign Out */}
-                    <div>
+          <div>
                       <h3 className="text-lg font-bold text-navy-900 mb-3">Sign Out</h3>
                       <p className="text-sm text-slate-600 mb-4">
                         Sign out of your account on this device
@@ -511,9 +511,9 @@ export default function SettingsPage() {
                       >
                         Sign Out
                       </button>
-                    </div>
-                  </div>
-                </div>
+              </div>
+            </div>
+          </div>
               </div>
             )}
           </div>

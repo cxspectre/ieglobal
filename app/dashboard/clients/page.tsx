@@ -53,8 +53,8 @@ export default function ClientsPage() {
   const filteredClients = clients
     .filter(client => {
       const matchesSearch = 
-        client.company_name.toLowerCase().includes(search.toLowerCase()) ||
-        client.contact_person.toLowerCase().includes(search.toLowerCase()) ||
+    client.company_name.toLowerCase().includes(search.toLowerCase()) ||
+    client.contact_person.toLowerCase().includes(search.toLowerCase()) ||
         client.contact_email.toLowerCase().includes(search.toLowerCase());
       
       const matchesStatus = statusFilter === 'all' || client.status === statusFilter;
@@ -81,39 +81,39 @@ export default function ClientsPage() {
       {/* Floating Header */}
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200 mb-8">
         <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
-          <div>
+            <div>
             <h1 className="text-2xl font-bold text-navy-900">Clients</h1>
             <p className="text-sm text-slate-600">{clients.length} total • {activeCount} active</p>
-          </div>
-          <Link
-            href="/dashboard/clients/new"
+            </div>
+            <Link
+              href="/dashboard/clients/new"
             className="px-6 py-3 bg-gradient-to-r from-signal-red to-red-600 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all duration-200 flex items-center gap-2"
-          >
+            >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
             Add Client
-          </Link>
+            </Link>
         </div>
-      </div>
+          </div>
 
       <div className="max-w-7xl mx-auto px-8 pb-12">
         {/* Search & Filter Bar */}
         <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50 mb-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Search */}
+          {/* Search */}
             <div className="lg:col-span-2">
               <div className="relative">
                 <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <input
-                  type="text"
+            <input
+              type="text"
                   placeholder="Search by company name, contact person, or email..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none text-navy-900 bg-white"
-                />
+            />
               </div>
             </div>
 
@@ -138,10 +138,10 @@ export default function ClientsPage() {
               ))}
             </div>
           </div>
-        </div>
+          </div>
 
         {/* Clients Grid */}
-        {filteredClients.length === 0 ? (
+          {filteredClients.length === 0 ? (
           <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-16 text-center shadow-lg">
             <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-gray-200 flex items-center justify-center">
               <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -153,22 +153,22 @@ export default function ClientsPage() {
             </h3>
             <p className="text-slate-600 mb-6">
               {search ? 'Try adjusting your search or filters' : 'Add your first client to get started'}
-            </p>
-            {!search && (
-              <Link
-                href="/dashboard/clients/new"
+              </p>
+              {!search && (
+                <Link
+                  href="/dashboard/clients/new"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-signal-red to-red-600 text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all duration-200"
-              >
+                >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
                 Add Your First Client
-              </Link>
-            )}
-          </div>
-        ) : (
+                </Link>
+              )}
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredClients.map((client) => (
+                    {filteredClients.map((client) => (
               <Link
                 key={client.id}
                 href={`/dashboard/clients/${client.id}`}
@@ -181,9 +181,9 @@ export default function ClientsPage() {
                       client.status === 'active' 
                         ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' 
                         : 'bg-gray-200 text-gray-700'
-                    }`}>
-                      {client.status}
-                    </span>
+                          }`}>
+                            {client.status}
+                          </span>
                     <svg className="w-5 h-5 text-slate-400 group-hover:text-signal-red group-hover:translate-x-1 transition-all duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
@@ -219,9 +219,9 @@ export default function ClientsPage() {
                     </span>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
+                          </Link>
+                    ))}
+              </div>
         )}
 
         {/* Results Counter */}
@@ -230,8 +230,8 @@ export default function ClientsPage() {
             <p className="text-sm text-slate-600">
               Showing {filteredClients.length} of {clients.length} clients
             </p>
-          </div>
-        )}
+            </div>
+          )}
       </div>
     </div>
   );
