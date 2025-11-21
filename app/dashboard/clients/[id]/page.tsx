@@ -172,18 +172,16 @@ export default function ClientDetailPage() {
   const saveChanges = async () => {
     setSaveLoading(true);
     try {
-      const updateData: any = {
-        company_name: editForm.company_name,
-        contact_person: editForm.contact_person,
-        contact_email: editForm.contact_email,
-        contact_phone: editForm.contact_phone || null,
-        industry: editForm.industry || null,
-        onboarding_notes: editForm.onboarding_notes || null,
-      };
-
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('clients')
-        .update(updateData)
+        .update({
+          company_name: editForm.company_name,
+          contact_person: editForm.contact_person,
+          contact_email: editForm.contact_email,
+          contact_phone: editForm.contact_phone || null,
+          industry: editForm.industry || null,
+          onboarding_notes: editForm.onboarding_notes || null,
+        })
         .eq('id', params.id);
 
       if (error) throw error;
@@ -206,12 +204,12 @@ export default function ClientDetailPage() {
 
   const markInvoiceAsPaid = async (invoiceId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('invoices')
         .update({
           status: 'paid',
           paid_date: new Date().toISOString().split('T')[0],
-        } as any)
+        })
         .eq('id', invoiceId);
 
       if (error) throw error;
@@ -238,13 +236,13 @@ export default function ClientDetailPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('internal_notes')
         .insert({
           client_id: params.id as string,
           note_text: newNote.trim(),
           created_by: session.user.id,
-        } as any);
+        });
 
       if (error) throw error;
 
