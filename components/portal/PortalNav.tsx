@@ -77,9 +77,12 @@ export default function PortalNav({ userType, userName, userRole, onLogout }: Po
           {/* Right Side - User Info & Logout */}
           <div className="flex items-center gap-4">
             {userName && (
-              <span className="hidden md:block text-sm text-slate-700">
+              <Link
+                href={userType === 'employee' ? '/dashboard/profile' : '/portal/profile'}
+                className="hidden md:block text-sm text-slate-700 hover:text-signal-red transition-colors duration-200 cursor-pointer"
+              >
                 {userName}
-              </span>
+              </Link>
             )}
             <button
               onClick={onLogout}
