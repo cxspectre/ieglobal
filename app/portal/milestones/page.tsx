@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import Link from 'next/link';
+import PortalNav from '@/components/portal/PortalNav';
 
 type Milestone = {
   id: string;
@@ -87,9 +88,14 @@ export default function ClientMilestonesPage() {
     if (data) setMilestones(data);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen flex items-center justify-center bg-off-white">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-700">Loading...</p>
@@ -101,9 +107,15 @@ export default function ClientMilestonesPage() {
   const currentProject = projects.find(p => p.id === selectedProjectId);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-off-white">
+      <PortalNav 
+        userType="client" 
+        userName={userName}
+        onLogout={handleLogout}
+      />
+
       {/* Main Content */}
-      <main className="px-8 py-12">
+      <main className="p-8">
         <div className="max-w-5xl mx-auto">
           <h1 className="text-3xl font-bold text-navy-900 mb-8">Project Milestones</h1>
 
