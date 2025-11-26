@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getCaseStudy, getCaseStudies } from '@/lib/mdx';
-import { formatDate } from '@/lib/utils';
 
 type Props = {
   params: { slug: string };
@@ -71,7 +70,7 @@ export default function CaseStudyPage({ params }: Props) {
           </p>
 
           {/* Meta Info */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-8 border-t border-white/20">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pt-8 border-t border-white/20">
             <div>
               <div className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Client</div>
               <div className="text-base font-semibold text-white">{caseStudy.client}</div>
@@ -79,10 +78,6 @@ export default function CaseStudyPage({ params }: Props) {
             <div>
               <div className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Industry</div>
               <div className="text-base font-semibold text-white">{caseStudy.industry}</div>
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Date</div>
-              <div className="text-base font-semibold text-white">{formatDate(caseStudy.date)}</div>
             </div>
             {caseStudy.services && caseStudy.services.length > 0 && (
               <div>

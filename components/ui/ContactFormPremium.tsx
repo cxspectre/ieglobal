@@ -8,16 +8,8 @@ type ContactFormData = {
   email: string;
   company?: string;
   message: string;
-  timeline: string;
   ongoingSupport: boolean;
 };
-
-const timelineOptions = [
-  'As soon as possible',
-  'Within 1-2 months',
-  'Within 3-6 months',
-  'Just exploring options',
-];
 
 export default function ContactFormPremium() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -159,25 +151,6 @@ export default function ContactFormPremium() {
               {errors.message.message}
             </p>
           )}
-        </div>
-
-        {/* Timeline */}
-        <div>
-          <label htmlFor="timeline" className="block text-sm font-semibold text-navy-900 mb-2">
-            Timeline & Budget Range
-          </label>
-          <select
-            id="timeline"
-            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none text-navy-900 transition-colors duration-200"
-            {...register('timeline')}
-          >
-            <option value="">Select a timeline...</option>
-            {timelineOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
         </div>
 
         {/* Ongoing Support Checkbox */}
