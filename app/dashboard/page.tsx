@@ -301,23 +301,23 @@ export default function DashboardPage() {
             </div>
 
             {/* Invoices */}
-            <div className="bg-white p-8 border border-gray-200 hover:shadow-lg transition-shadow duration-200">
+            <Link href="/dashboard/invoices" className="bg-white p-8 border border-gray-200 hover:shadow-lg transition-shadow duration-200 group">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Invoices</p>
                   <p className="text-5xl font-bold text-navy-900">{stats.pendingInvoices}</p>
                 </div>
-                <svg className="w-12 h-12 text-yellow-500/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <svg className="w-12 h-12 text-yellow-500/30 group-hover:text-yellow-500/50 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 group-hover:text-signal-red transition-colors duration-200">
                 {stats.overdueInvoices > 0 && (
                   <span className="text-red-600 font-semibold">{stats.overdueInvoices} overdue • </span>
                 )}
-                Pending payment
+                View all invoices →
               </p>
-            </div>
+            </Link>
           </div>
 
           {/* Upcoming Milestones */}
