@@ -12,6 +12,7 @@ type PortalLayoutProps = {
 
 export default function PortalLayout({ children, userType }: PortalLayoutProps) {
   const [userName, setUserName] = useState('');
+  const [userRole, setUserRole] = useState<'admin' | 'employee' | 'client' | undefined>();
   const router = useRouter();
   const supabase = createBrowserClient();
 
@@ -29,12 +30,13 @@ export default function PortalLayout({ children, userType }: PortalLayoutProps) 
 
     const { data: profile } = await (supabase as any)
       .from('profiles')
-      .select('full_name')
+      .select('full_name, role')
       .eq('id', session.user.id)
       .single();
 
     if (profile) {
       setUserName(profile.full_name);
+      setUserRole(profile.role);
     }
   };
 
@@ -48,6 +50,7 @@ export default function PortalLayout({ children, userType }: PortalLayoutProps) 
       <PortalNav 
         userType={userType} 
         userName={userName}
+        userRole={userRole}
         onLogout={handleLogout}
       />
       <main className="p-8">

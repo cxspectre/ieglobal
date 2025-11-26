@@ -7,16 +7,18 @@ import { usePathname } from 'next/navigation';
 type PortalNavProps = {
   userType: 'employee' | 'client';
   userName?: string;
+  userRole?: 'admin' | 'employee' | 'client';
   onLogout: () => void;
 };
 
-export default function PortalNav({ userType, userName, onLogout }: PortalNavProps) {
+export default function PortalNav({ userType, userName, userRole, onLogout }: PortalNavProps) {
   const pathname = usePathname();
 
   const employeeLinks = [
     { href: '/dashboard', label: 'Overview', exactMatch: true },
     { href: '/dashboard/clients', label: 'Clients', exactMatch: false },
     { href: '/dashboard/settings', label: 'Command Center', exactMatch: true },
+    ...(userRole === 'admin' ? [{ href: '/dashboard/finance', label: 'Finance', exactMatch: true }] : []),
   ];
 
   const clientLinks = [
