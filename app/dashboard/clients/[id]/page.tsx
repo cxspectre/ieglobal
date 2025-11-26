@@ -62,7 +62,7 @@ export default function ClientDetailPage() {
   const [internalNotes, setInternalNotes] = useState<InternalNote[]>([]);
   const [newNote, setNewNote] = useState('');
   const [addingNote, setAddingNote] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeSection, setActiveSection] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
   const [saveLoading, setSaveLoading] = useState(false);
@@ -138,13 +138,10 @@ export default function ClientDetailPage() {
         .eq('role', 'client')
         .maybeSingle();
 
-      console.log('Client profile check for client_id:', params.id, 'Found:', clientProfile);
-
       if (clientProfile) {
         setClientHasAccount(true);
         setClientAccountEmail(clientProfile.email);
 
-        // Check if user is actually active (has logged in or confirmed email)
         try {
           const statusResponse = await fetch('/api/check-user-status', {
             method: 'POST',
@@ -153,8 +150,6 @@ export default function ClientDetailPage() {
           });
 
           const statusResult = await statusResponse.json();
-          console.log('User status check:', statusResult);
-
           if (statusResult.active) {
             setClientAccountActive(true);
           }
@@ -182,8 +177,6 @@ export default function ClientDetailPage() {
         .eq('id', params.id);
 
       if (error) throw error;
-
-      // Reload client data
       await loadData();
     } catch (err: any) {
       console.error('Error updating status:', err);
@@ -209,14 +202,12 @@ export default function ClientDetailPage() {
     if (!confirmDelete) return;
 
     try {
-      // Delete client (CASCADE will handle all related records)
       const { error } = await (supabase as any)
         .from('clients')
         .delete()
         .eq('id', params.id);
 
       if (error) throw error;
-
       alert(`${client.company_name} has been deleted.`);
       router.push('/dashboard/clients');
     } catch (err: any) {
@@ -273,7 +264,6 @@ export default function ClientDetailPage() {
 
       if (error) throw error;
 
-      // Reload client data
       const { data } = await supabase
         .from('clients')
         .select('*')
@@ -302,7 +292,6 @@ export default function ClientDetailPage() {
 
       if (error) throw error;
 
-      // Reload invoices
       const { data: invoicesData } = await supabase
         .from('invoices')
         .select('*')
@@ -334,7 +323,6 @@ export default function ClientDetailPage() {
 
       if (error) throw error;
 
-      // Reload notes
       const { data: notesData } = await supabase
         .from('internal_notes')
         .select('*, profiles(full_name)')
@@ -376,8 +364,6 @@ export default function ClientDetailPage() {
         throw new Error(result.error || 'Failed to create account');
       }
 
-      console.log('Account creation result:', result);
-
       if (result.invitationLink) {
         setInvitationLink(result.invitationLink);
         
@@ -391,8 +377,6 @@ export default function ClientDetailPage() {
       }
       
       setClientHasAccount(true);
-      
-      // Reload to show account status
       await loadData();
     } catch (err: any) {
       console.error('Error creating account:', err);
@@ -455,191 +439,308 @@ export default function ClientDetailPage() {
     );
   }
 
+  const navigationItems = [
+    { id: 'overview', label: 'Overview', icon: 'overview' },
+    { id: 'projects', label: 'Projects', icon: 'projects', count: projects.length },
+    { id: 'invoices', label: 'Invoices', icon: 'invoices', count: invoices.length },
+    { id: 'files', label: 'Files', icon: 'files' },
+    { id: 'notes', label: 'Internal Notes', icon: 'notes', count: internalNotes.length },
+  ];
+
   return (
     <div className="max-w-7xl mx-auto">
-          {/* Breadcrumb */}
-          <div className="mb-6">
-            <Link
-              href="/dashboard/clients"
-              className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
+      {/* Breadcrumb */}
+      <div className="mb-6">
+        <Link
+          href="/dashboard/clients"
+          className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Clients
+        </Link>
+      </div>
+
+      {/* Client Header Card */}
+      <div className="bg-gradient-to-r from-navy-900 to-navy-800 rounded-xl shadow-lg p-8 mb-6 text-white">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-4 mb-4">
+              <h1 className="text-4xl font-bold">{client.company_name}</h1>
+              <span className={`px-4 py-1.5 text-sm font-semibold rounded-full ${
+                client.status === 'active' 
+                  ? 'bg-green-500/20 text-green-200 border border-green-400/30' 
+                  : 'bg-gray-500/20 text-gray-200 border border-gray-400/30'
+              }`}>
+                {client.status === 'active' ? '✓ Active' : '○ Inactive'}
+              </span>
+            </div>
+            <div className="flex items-center gap-6 text-white/90">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>{client.contact_person}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <a href={`mailto:${client.contact_email}`} className="hover:text-white underline">
+                  {client.contact_email}
+                </a>
+              </div>
+              {client.contact_phone && (
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <span>{client.contact_phone}</span>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleClientStatus}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-lg transition-all duration-200 border border-white/20"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back to Clients
-            </Link>
+              {client.status === 'active' ? 'Deactivate' : 'Activate'}
+            </button>
+            <button
+              onClick={deleteClient}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-all duration-200"
+            >
+              Delete
+            </button>
           </div>
+        </div>
+      </div>
 
-          {/* Client Header */}
-          <div className="bg-white p-8 mb-6 border-l-4 border-signal-red">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h1 className="text-3xl font-bold text-navy-900 mb-2">{client.company_name}</h1>
-                <p className="text-slate-700">{client.contact_person} • {client.contact_email}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={toggleClientStatus}
-                  className={`px-4 py-2 text-sm font-semibold transition-all duration-200 hover:opacity-80 ${
-                    client.status === 'active' ? 'bg-green-100 text-green-800' :
-                    client.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
-                    'bg-blue-100 text-blue-800'
-                  }`}
-                >
-                  {client.status === 'active' ? '✓ Active' : '○ Inactive'}
-                </button>
-                <button
-                  onClick={deleteClient}
-                  className="px-4 py-2 bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-all duration-200"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
+      <div className="flex gap-6">
+        {/* Sidebar Navigation */}
+        <aside className="w-64 flex-shrink-0">
+          <nav className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 sticky top-24">
+            {navigationItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveSection(item.id)}
+                className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 mb-1 ${
+                  activeSection === item.id
+                    ? 'bg-signal-red text-white shadow-md'
+                    : 'text-slate-700 hover:bg-off-white'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {item.icon === 'overview' && (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  )}
+                  {item.icon === 'projects' && (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                  )}
+                  {item.icon === 'invoices' && (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  )}
+                  {item.icon === 'files' && (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                  {item.icon === 'notes' && (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  )}
+                  <span>{item.label}</span>
+                </div>
+                {item.count !== undefined && (
+                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+                    activeSection === item.id
+                      ? 'bg-white/20 text-white'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {item.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </nav>
+        </aside>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-              <div>
-                <p className="text-slate-600 mb-1">Industry</p>
-                <p className="font-semibold text-navy-900">{client.industry || '—'}</p>
+        {/* Main Content */}
+        <main className="flex-1 min-w-0">
+          {activeSection === 'overview' && (
+            <div className="space-y-6">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Total Projects</p>
+                      <p className="text-3xl font-bold text-navy-900">{projects.length}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-off-white rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Total Invoices</p>
+                      <p className="text-3xl font-bold text-navy-900">{invoices.length}</p>
+                    </div>
+                    <div className="w-12 h-12 bg-off-white rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Client Since</p>
+                      <p className="text-lg font-bold text-navy-900">
+                        {new Date(client.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 bg-off-white rounded-lg flex items-center justify-center">
+                      <svg className="w-6 h-6 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-slate-600 mb-1">Phone</p>
-                <p className="font-semibold text-navy-900">{client.contact_phone || '—'}</p>
-              </div>
-              <div>
-                <p className="text-slate-600 mb-1">Client Since</p>
-                <p className="font-semibold text-navy-900">
-                  {new Date(client.created_at).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </div>
 
-          {/* Tabs */}
-          <div className="bg-white border-b border-gray-200 mb-6">
-            <div className="flex items-center gap-8 px-8">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
-                  activeTab === 'overview'
-                    ? 'border-signal-red text-navy-900'
-                    : 'border-transparent text-slate-700 hover:text-navy-900'
-                }`}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => setActiveTab('projects')}
-                className={`py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
-                  activeTab === 'projects'
-                    ? 'border-signal-red text-navy-900'
-                    : 'border-transparent text-slate-700 hover:text-navy-900'
-                }`}
-              >
-                Projects
-              </button>
-              <button
-                onClick={() => setActiveTab('invoices')}
-                className={`py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
-                  activeTab === 'invoices'
-                    ? 'border-signal-red text-navy-900'
-                    : 'border-transparent text-slate-700 hover:text-navy-900'
-                }`}
-              >
-                Invoices
-              </button>
-              <button
-                onClick={() => setActiveTab('files')}
-                className={`py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
-                  activeTab === 'files'
-                    ? 'border-signal-red text-navy-900'
-                    : 'border-transparent text-slate-700 hover:text-navy-900'
-                }`}
-              >
-                Files
-              </button>
-              <button
-                onClick={() => setActiveTab('notes')}
-                className={`py-4 text-sm font-medium border-b-2 transition-colors duration-200 ${
-                  activeTab === 'notes'
-                    ? 'border-signal-red text-navy-900'
-                    : 'border-transparent text-slate-700 hover:text-navy-900'
-                }`}
-              >
-                Internal Notes
-              </button>
-            </div>
-          </div>
+              {/* Quick Actions */}
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h2 className="text-xl font-bold text-navy-900 mb-4">Quick Actions</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Link 
+                    href={`/dashboard/clients/${client.id}/projects/new`}
+                    className="p-4 bg-off-white hover:bg-gray-50 rounded-lg transition-all duration-200 border border-gray-200 group"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
+                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                      </div>
+                      <p className="font-bold text-navy-900">Create Project</p>
+                    </div>
+                    <p className="text-sm text-slate-700">Start a new project</p>
+                  </Link>
+                  <Link 
+                    href={`/dashboard/clients/${client.id}/invoices/new`}
+                    className="p-4 bg-off-white hover:bg-gray-50 rounded-lg transition-all duration-200 border border-gray-200 group"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
+                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <p className="font-bold text-navy-900">New Invoice</p>
+                    </div>
+                    <p className="text-sm text-slate-700">Generate invoice</p>
+                  </Link>
+                  <Link 
+                    href={`/dashboard/clients/${client.id}/files`}
+                    className="p-4 bg-off-white hover:bg-gray-50 rounded-lg transition-all duration-200 border border-gray-200 group"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
+                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                      </div>
+                      <p className="font-bold text-navy-900">Upload Files</p>
+                    </div>
+                    <p className="text-sm text-slate-700">Share documents</p>
+                  </Link>
+                </div>
+              </div>
 
-          {/* Tab Content */}
-          <div className="bg-white p-8">
-            {activeTab === 'overview' && (
-              <div>
+              {/* Client Information */}
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-navy-900">Client Overview</h2>
+                  <h2 className="text-xl font-bold text-navy-900">Client Information</h2>
                   {!isEditing ? (
                     <button
                       onClick={startEditing}
-                      className="px-4 py-2 bg-gray-100 text-navy-900 text-sm font-semibold hover:bg-gray-200 transition-colors duration-200"
+                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-navy-900 text-sm font-semibold rounded-lg transition-colors duration-200"
                     >
-                      Edit Client
+                      Edit
                     </button>
                   ) : (
                     <div className="flex gap-2">
                       <button
                         onClick={cancelEditing}
-                        className="px-4 py-2 bg-gray-100 text-navy-900 text-sm font-semibold hover:bg-gray-200 transition-colors duration-200"
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-navy-900 text-sm font-semibold rounded-lg transition-colors duration-200"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={saveChanges}
                         disabled={saveLoading}
-                        className="px-4 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-colors duration-200 disabled:opacity-50"
+                        className="px-4 py-2 bg-signal-red text-white text-sm font-semibold rounded-lg hover:bg-signal-red/90 transition-colors duration-200 disabled:opacity-50"
                       >
-                        {saveLoading ? 'Saving...' : 'Save Changes'}
+                        {saveLoading ? 'Saving...' : 'Save'}
                       </button>
                     </div>
                   )}
                 </div>
 
                 {isEditing ? (
-                  <div className="space-y-6 mb-8">
-                    <div>
-                      <label className="block text-sm font-semibold text-navy-900 mb-2">Company Name</label>
-                      <input
-                        type="text"
-                        value={editForm.company_name}
-                        onChange={(e) => setEditForm({ ...editForm, company_name: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-navy-900 mb-2">Contact Person</label>
-                      <input
-                        type="text"
-                        value={editForm.contact_person}
-                        onChange={(e) => setEditForm({ ...editForm, contact_person: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-navy-900 mb-2">Contact Email</label>
-                      <input
-                        type="email"
-                        value={editForm.contact_email}
-                        onChange={(e) => setEditForm({ ...editForm, contact_email: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-navy-900 mb-2">Contact Phone</label>
-                      <input
-                        type="tel"
-                        value={editForm.contact_phone}
-                        onChange={(e) => setEditForm({ ...editForm, contact_phone: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                      />
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-navy-900 mb-2">Company Name</label>
+                        <input
+                          type="text"
+                          value={editForm.company_name}
+                          onChange={(e) => setEditForm({ ...editForm, company_name: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-navy-900 mb-2">Contact Person</label>
+                        <input
+                          type="text"
+                          value={editForm.contact_person}
+                          onChange={(e) => setEditForm({ ...editForm, contact_person: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-navy-900 mb-2">Email</label>
+                        <input
+                          type="email"
+                          value={editForm.contact_email}
+                          onChange={(e) => setEditForm({ ...editForm, contact_email: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-navy-900 mb-2">Phone</label>
+                        <input
+                          type="tel"
+                          value={editForm.contact_phone}
+                          onChange={(e) => setEditForm({ ...editForm, contact_phone: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                        />
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-navy-900 mb-2">Industry</label>
@@ -647,7 +748,71 @@ export default function ClientDetailPage() {
                         type="text"
                         value={editForm.industry}
                         onChange={(e) => setEditForm({ ...editForm, industry: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                        className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-navy-900 mb-2">Billing Address</label>
+                      <div className="space-y-4">
+                        <input
+                          type="text"
+                          value={editForm.address_street}
+                          onChange={(e) => setEditForm({ ...editForm, address_street: e.target.value })}
+                          placeholder="Street address"
+                          className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                        />
+                        <div className="grid grid-cols-2 gap-4">
+                          <input
+                            type="text"
+                            value={editForm.address_postal_code}
+                            onChange={(e) => setEditForm({ ...editForm, address_postal_code: e.target.value })}
+                            placeholder="Postal code"
+                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                          />
+                          <input
+                            type="text"
+                            value={editForm.address_city}
+                            onChange={(e) => setEditForm({ ...editForm, address_city: e.target.value })}
+                            placeholder="City"
+                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          value={editForm.address_country}
+                          onChange={(e) => setEditForm({ ...editForm, address_country: e.target.value })}
+                          placeholder="Country"
+                          className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-navy-900 mb-2">VAT Number</label>
+                        <input
+                          type="text"
+                          value={editForm.vat_number}
+                          onChange={(e) => setEditForm({ ...editForm, vat_number: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-navy-900 mb-2">KVK Number</label>
+                        <input
+                          type="text"
+                          value={editForm.kvk_number}
+                          onChange={(e) => setEditForm({ ...editForm, kvk_number: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-navy-900 mb-2">Customer Number</label>
+                      <input
+                        type="text"
+                        value={editForm.customer_number}
+                        onChange={(e) => setEditForm({ ...editForm, customer_number: e.target.value })}
+                        className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
                       />
                     </div>
                     <div>
@@ -656,598 +821,360 @@ export default function ClientDetailPage() {
                         rows={4}
                         value={editForm.onboarding_notes}
                         onChange={(e) => setEditForm({ ...editForm, onboarding_notes: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none resize-none"
+                        className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg resize-none"
                       />
-                    </div>
-
-                    {/* Address Section */}
-                    <div className="border-t pt-6 mt-6">
-                      <h3 className="text-lg font-semibold text-navy-900 mb-4">Billing Address</h3>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-semibold text-navy-900 mb-2">Street Address</label>
-                          <input
-                            type="text"
-                            value={editForm.address_street}
-                            onChange={(e) => setEditForm({ ...editForm, address_street: e.target.value })}
-                            placeholder="e.g., Main Street 123"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                          />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-navy-900 mb-2">Postal Code</label>
-                            <input
-                              type="text"
-                              value={editForm.address_postal_code}
-                              onChange={(e) => setEditForm({ ...editForm, address_postal_code: e.target.value })}
-                              placeholder="e.g., 1234AB"
-                              className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-semibold text-navy-900 mb-2">City</label>
-                            <input
-                              type="text"
-                              value={editForm.address_city}
-                              onChange={(e) => setEditForm({ ...editForm, address_city: e.target.value })}
-                              placeholder="e.g., Amsterdam"
-                              className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-navy-900 mb-2">Country</label>
-                          <input
-                            type="text"
-                            value={editForm.address_country}
-                            onChange={(e) => setEditForm({ ...editForm, address_country: e.target.value })}
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Legal Information Section */}
-                    <div className="border-t pt-6 mt-6">
-                      <h3 className="text-lg font-semibold text-navy-900 mb-4">Legal Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-semibold text-navy-900 mb-2">VAT Number</label>
-                          <input
-                            type="text"
-                            value={editForm.vat_number}
-                            onChange={(e) => setEditForm({ ...editForm, vat_number: e.target.value })}
-                            placeholder="e.g., NL123456789B01"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-semibold text-navy-900 mb-2">KVK / Chamber of Commerce</label>
-                          <input
-                            type="text"
-                            value={editForm.kvk_number}
-                            onChange={(e) => setEditForm({ ...editForm, kvk_number: e.target.value })}
-                            placeholder="e.g., 12345678"
-                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Customer Number */}
-                    <div className="border-t pt-6 mt-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-navy-900 mb-2">Customer Number</label>
-                        <input
-                          type="text"
-                          value={editForm.customer_number}
-                          onChange={(e) => setEditForm({ ...editForm, customer_number: e.target.value })}
-                          placeholder="e.g., 2025-001"
-                          className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                        />
-                        <p className="text-xs text-slate-500 mt-1">Used for invoice references</p>
-                      </div>
                     </div>
                   </div>
                 ) : (
-                  <>
-                    {/* Contact Information */}
-                    <div className="mb-8 p-6 bg-off-white border-l-4 border-blue-500">
-                      <h3 className="text-lg font-bold text-navy-900 mb-4">Contact Information</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="font-semibold text-slate-700">Contact Person:</span>
-                          <p className="text-navy-900">{client.contact_person}</p>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-slate-700">Email:</span>
-                          <p className="text-navy-900">{client.contact_email}</p>
-                        </div>
-                        {client.contact_phone && (
-                          <div>
-                            <span className="font-semibold text-slate-700">Phone:</span>
-                            <p className="text-navy-900">{client.contact_phone}</p>
-                          </div>
-                        )}
-                        {client.industry && (
-                          <div>
-                            <span className="font-semibold text-slate-700">Industry:</span>
-                            <p className="text-navy-900">{client.industry}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Billing Address */}
-                    {(client.address_street || client.address_city || client.address_postal_code) && (
-                      <div className="mb-8 p-6 bg-off-white border-l-4 border-green-500">
-                        <h3 className="text-lg font-bold text-navy-900 mb-4">Billing Address</h3>
-                        <div className="text-sm text-slate-700">
-                          {client.address_street && <p>{client.address_street}</p>}
-                          {(client.address_postal_code || client.address_city) && (
-                            <p>
-                              {client.address_postal_code} {client.address_city}
-                            </p>
-                          )}
-                          {client.address_country && <p>{client.address_country}</p>}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Legal Information */}
-                    {(client.vat_number || client.kvk_number) && (
-                      <div className="mb-8 p-6 bg-off-white border-l-4 border-purple-500">
-                        <h3 className="text-lg font-bold text-navy-900 mb-4">Legal Information</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          {client.vat_number && (
-                            <div>
-                              <span className="font-semibold text-slate-700">VAT Number:</span>
-                              <p className="text-navy-900">{client.vat_number}</p>
-                            </div>
-                          )}
-                          {client.kvk_number && (
-                            <div>
-                              <span className="font-semibold text-slate-700">KVK Number:</span>
-                              <p className="text-navy-900">{client.kvk_number}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Customer Number */}
-                    {client.customer_number && (
-                      <div className="mb-8 p-6 bg-off-white border-l-4 border-orange-500">
-                        <h3 className="text-lg font-bold text-navy-900 mb-2">Customer Number</h3>
-                        <p className="text-sm text-slate-700">{client.customer_number}</p>
-                      </div>
-                    )}
-
-                    {/* Onboarding Notes */}
-                    {client.onboarding_notes && (
-                      <div className="mb-8 p-6 bg-off-white border-l-4 border-signal-red">
-                        <h3 className="text-sm font-bold text-navy-900 mb-2">Onboarding Notes</h3>
-                        <p className="text-slate-700 whitespace-pre-wrap">{client.onboarding_notes}</p>
-                      </div>
-                    )}
-
-                    {/* Missing Information Warning */}
-                    {(!client.address_street || !client.vat_number) && (
-                      <div className="mb-8 p-6 bg-yellow-50 border-l-4 border-yellow-500">
-                        <h3 className="text-lg font-bold text-yellow-900 mb-2">⚠️ Missing Information</h3>
-                        <p className="text-sm text-yellow-800 mb-2">
-                          This client is missing information required for EU-compliant invoices:
-                        </p>
-                        <ul className="text-sm text-yellow-800 list-disc list-inside space-y-1">
-                          {!client.address_street && <li>Billing address</li>}
-                          {!client.vat_number && <li>VAT number</li>}
-                        </ul>
-                        <p className="text-sm text-yellow-800 mt-3">
-                          Click "Edit Client" above to add this information.
-                        </p>
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {!isEditing && (
                   <div className="space-y-6">
-                    {/* Client Portal Access */}
-                    <div className="p-6 bg-off-white border-l-4 border-blue-500">
-                      <h3 className="text-lg font-bold text-navy-900 mb-3">Client Portal Access</h3>
-                      {clientHasAccount ? (
-                        <div>
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <span className={`inline-flex items-center gap-2 px-3 py-1 text-sm font-semibold ${
-                                clientAccountActive 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {clientAccountActive ? (
-                                  <>
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Active
-                                  </>
-                                ) : (
-                                  <>
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Pending
-                                  </>
-                                )}
-                              </span>
-                              <span className="text-sm text-slate-700">
-                                {clientAccountEmail}
-                              </span>
-                            </div>
-                            <button
-                              onClick={resendInvitation}
-                              disabled={resendingInvite}
-                              className="text-sm font-semibold text-signal-red hover:text-signal-red/80 transition-colors duration-200 disabled:opacity-50"
-                            >
-                              {resendingInvite ? 'Sending...' : 'Resend Invitation'}
-                            </button>
-                          </div>
-                          <p className="text-sm text-slate-700 mb-3">
-                            {clientAccountActive ? (
-                              <>
-                                Status: <span className="font-semibold text-green-700">Account Active - Client can log in</span>
-                              </>
-                            ) : (
-                              <>
-                                Status: <span className="font-semibold text-yellow-700">Invitation Sent - Awaiting password setup</span>
-                              </>
-                            )}
-                            {' • '}
-                            <a href="/login" target="_blank" className="text-signal-red hover:underline font-semibold">
-                              Portal Login
-                            </a>
-                          </p>
-                          
-                          {invitationLink && (
-                            <div className="mt-4 p-4 bg-white border border-gray-200">
-                              <p className="text-sm font-semibold text-navy-900 mb-2">Invitation Link (share manually if needed):</p>
-                              <div className="flex gap-2">
-                                <input
-                                  type="text"
-                                  value={invitationLink}
-                                  readOnly
-                                  className="flex-1 px-3 py-2 text-xs bg-gray-50 border border-gray-300 font-mono"
-                                />
-                                <button
-                                  onClick={() => {
-                                    navigator.clipboard.writeText(invitationLink);
-                                    alert('Link copied to clipboard!');
-                                  }}
-                                  className="px-4 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-colors duration-200"
-                                >
-                                  Copy
-                                </button>
-                              </div>
-                              <p className="text-xs text-slate-600 mt-2">
-                                ⚠️ Supabase emails may not send. Share this link directly with your client via email or message.
-                              </p>
-                            </div>
-                          )}
-                          
-                          {!invitationLink && (
-                            <p className="text-xs text-slate-600 mt-2">
-                              If client hasn't received the email, click "Resend Invitation" to generate a new link
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <div>
-                          <p className="text-slate-700 mb-4">
-                            No portal account yet. Create one to give {client.contact_person} access to their project dashboard.
-                          </p>
-                          <button
-                            onClick={createClientAccount}
-                            disabled={creatingAccount}
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                            </svg>
-                            <span>{creatingAccount ? 'Creating Account...' : 'Create Portal Account & Send Invitation'}</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-bold text-navy-900 mb-4">Quick Actions</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <Link href={`/dashboard/clients/${client.id}/projects/new`} className="p-4 bg-off-white hover:bg-gray-100 text-left transition-colors duration-200">
-                        <p className="font-semibold text-navy-900 mb-1">Create Project</p>
-                        <p className="text-sm text-slate-700">Add a new project for this client</p>
-                      </Link>
-                      <Link href={`/dashboard/clients/${client.id}/invoices/new`} className="p-4 bg-off-white hover:bg-gray-100 text-left transition-colors duration-200">
-                        <p className="font-semibold text-navy-900 mb-1">Add Invoice</p>
-                        <p className="text-sm text-slate-700">Create and send an invoice</p>
-                      </Link>
-                      <Link href={`/dashboard/clients/${client.id}/files`} className="p-4 bg-off-white hover:bg-gray-100 text-left transition-colors duration-200">
-                        <p className="font-semibold text-navy-900 mb-1">Upload Files</p>
-                        <p className="text-sm text-slate-700">Share documents with client</p>
-                      </Link>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-bold text-navy-900 mb-4">Contact Information</h3>
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <p className="text-sm text-slate-600">Company</p>
+                        <p className="text-sm text-slate-600 mb-1">Company</p>
                         <p className="font-semibold text-navy-900">{client.company_name}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-slate-600">Contact Person</p>
-                        <p className="font-semibold text-navy-900">{client.contact_person}</p>
+                        <p className="text-sm text-slate-600 mb-1">Industry</p>
+                        <p className="font-semibold text-navy-900">{client.industry || '—'}</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-slate-600">Email</p>
-                        <p className="font-semibold text-navy-900">
-                          <a href={`mailto:${client.contact_email}`} className="text-signal-red hover:underline">
-                            {client.contact_email}
-                          </a>
-                        </p>
-                      </div>
-                      {client.contact_phone && (
+                      {(client.address_street || client.address_city) && (
                         <div>
-                          <p className="text-sm text-slate-600">Phone</p>
-                          <p className="font-semibold text-navy-900">{client.contact_phone}</p>
+                          <p className="text-sm text-slate-600 mb-1">Billing Address</p>
+                          <p className="font-semibold text-navy-900">
+                            {client.address_street && <>{client.address_street}<br /></>}
+                            {client.address_postal_code} {client.address_city}
+                            {client.address_country && <><br />{client.address_country}</>}
+                          </p>
                         </div>
                       )}
-                      {client.industry && (
+                      {(client.vat_number || client.kvk_number) && (
                         <div>
-                          <p className="text-sm text-slate-600">Industry</p>
-                          <p className="font-semibold text-navy-900">{client.industry}</p>
+                          <p className="text-sm text-slate-600 mb-1">Legal Info</p>
+                          <p className="font-semibold text-navy-900">
+                            {client.vat_number && <>VAT: {client.vat_number}<br /></>}
+                            {client.kvk_number && <>KVK: {client.kvk_number}</>}
+                          </p>
                         </div>
                       )}
                     </div>
-                  </div>
+                    {client.customer_number && (
+                      <div className="p-4 bg-off-white rounded-lg">
+                        <p className="text-sm text-slate-600 mb-1">Customer Number</p>
+                        <p className="font-bold text-lg text-navy-900">{client.customer_number}</p>
+                      </div>
+                    )}
+                    {client.onboarding_notes && (
+                      <div className="p-4 bg-off-white border-l-4 border-signal-red rounded-lg">
+                        <p className="text-sm font-semibold text-navy-900 mb-2">Onboarding Notes</p>
+                        <p className="text-slate-700 whitespace-pre-wrap">{client.onboarding_notes}</p>
+                      </div>
+                    )}
+                    {(!client.address_street || !client.vat_number) && (
+                      <div className="p-4 bg-off-white border-l-4 border-signal-red rounded-lg">
+                        <p className="text-sm font-semibold text-navy-900 mb-2">Missing Information</p>
+                        <p className="text-sm text-slate-700">
+                          Missing: {!client.address_street && 'Billing address'} {!client.address_street && !client.vat_number && '• '} {!client.vat_number && 'VAT number'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
 
-            {activeTab === 'projects' && (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-navy-900">Projects</h2>
-                  <Link
-                    href={`/dashboard/clients/${client.id}/projects/new`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span>New Project</span>
-                  </Link>
-                </div>
-
-                {projects.length === 0 ? (
-                  <div className="text-center py-12 bg-off-white">
-                    <p className="text-slate-700 mb-4">No projects yet.</p>
-                    <Link
-                      href={`/dashboard/clients/${client.id}/projects/new`}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200"
-                    >
-                      Create First Project
-                    </Link>
-                  </div>
-                ) : (
+              {/* Portal Access */}
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h2 className="text-xl font-bold text-navy-900 mb-4">Client Portal Access</h2>
+                {clientHasAccount ? (
                   <div className="space-y-4">
-                    {projects.map((project) => (
-                      <div key={project.id} className="p-6 bg-off-white hover:bg-gray-50 transition-colors duration-200 border-l-4 border-signal-red">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <h3 className="text-xl font-bold text-navy-900 mb-2">{project.name}</h3>
-                            {project.description && (
-                              <p className="text-slate-700 mb-3">{project.description}</p>
-                            )}
-                            <div className="flex items-center gap-4 text-sm">
-                              <span className={`px-3 py-1 font-semibold ${
-                                project.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                                project.status === 'review' ? 'bg-purple-100 text-purple-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
-                                {project.status.replace('_', ' ')}
-                              </span>
-                              <span className="text-slate-600">
-                                Created {new Date(project.created_at).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex gap-3">
-                            <Link
-                              href={`/dashboard/projects/${project.id}/milestones`}
-                              className="text-sm font-semibold text-signal-red hover:text-signal-red/80"
-                            >
-                              Milestones
-                            </Link>
-                            <span className="text-slate-300">|</span>
-                            <Link
-                              href={`/dashboard/projects/${project.id}/messages`}
-                              className="text-sm font-semibold text-signal-red hover:text-signal-red/80"
-                            >
-                              Messages
-                            </Link>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="flex-1 bg-gray-200 h-2 rounded-full overflow-hidden">
-                            <div 
-                              className="bg-signal-red h-full transition-all duration-500" 
-                              style={{ width: `${project.progress_percentage}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-sm font-semibold text-navy-900 min-w-[48px]">
-                            {project.progress_percentage}%
-                          </span>
+                    <div className="flex items-center justify-between p-4 bg-off-white rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
+                          clientAccountActive 
+                            ? 'bg-off-white text-navy-900 border border-gray-300' 
+                            : 'bg-off-white text-slate-700 border border-gray-300'
+                        }`}>
+                          {clientAccountActive ? 'Active' : 'Pending'}
+                        </span>
+                        <span className="text-slate-700">{clientAccountEmail}</span>
+                      </div>
+                      <button
+                        onClick={resendInvitation}
+                        disabled={resendingInvite}
+                        className="text-sm font-semibold text-signal-red hover:text-signal-red/80 transition-colors duration-200 disabled:opacity-50"
+                      >
+                        {resendingInvite ? 'Sending...' : 'Resend Invitation'}
+                      </button>
+                    </div>
+                    {invitationLink && (
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <p className="text-sm font-semibold text-navy-900 mb-2">Invitation Link</p>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={invitationLink}
+                            readOnly
+                            className="flex-1 px-3 py-2 text-xs bg-white border border-gray-300 rounded-lg font-mono"
+                          />
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(invitationLink);
+                              alert('Link copied!');
+                            }}
+                            className="px-4 py-2 bg-signal-red text-white text-sm font-semibold rounded-lg hover:bg-signal-red/90"
+                          >
+                            Copy
+                          </button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'invoices' && (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-navy-900">Invoices</h2>
-                  <Link
-                    href={`/dashboard/clients/${client.id}/invoices/new`}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                    <span>New Invoice</span>
-                  </Link>
-                </div>
-
-                {invoices.length === 0 ? (
-                  <div className="text-center py-12 bg-off-white">
-                    <p className="text-slate-700 mb-4">No invoices yet.</p>
-                    <Link
-                      href={`/dashboard/clients/${client.id}/invoices/new`}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200"
-                    >
-                      Create First Invoice
-                    </Link>
+                    )}
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {invoices.map((invoice) => (
-                      <div key={invoice.id} className="p-6 bg-off-white border-l-4 border-signal-red">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-4 mb-2">
-                              <h3 className="text-xl font-bold text-navy-900">{invoice.invoice_number}</h3>
-                              <span className={`px-3 py-1 text-xs font-semibold ${
-                                invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
-                                invoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
-                                'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {invoice.status.toUpperCase()}
-                              </span>
-                            </div>
-                            {invoice.description && (
-                              <p className="text-slate-700 mb-3">{invoice.description}</p>
-                            )}
-                            <div className="flex items-center gap-6 text-sm text-slate-600">
-                              <span>Issued: {new Date(invoice.issue_date).toLocaleDateString()}</span>
-                              <span>Due: {new Date(invoice.due_date).toLocaleDateString()}</span>
-                              {invoice.paid_date && (
-                                <span className="text-green-700 font-semibold">
-                                  Paid: {new Date(invoice.paid_date).toLocaleDateString()}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-bold text-navy-900">
-                              €{invoice.amount.toFixed(2)}
-                            </p>
-                            {invoice.status !== 'paid' && (
-                              <button
-                                onClick={() => markInvoiceAsPaid(invoice.id)}
-                                className="mt-3 px-4 py-2 bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors duration-200"
-                              >
-                                Mark as Paid
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'files' && (
-              <div>
-                <h2 className="text-2xl font-bold text-navy-900 mb-6">Files</h2>
-                <Link
-                  href={`/dashboard/clients/${client.id}/files`}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200"
-                >
-                  Manage Files
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </Link>
-              </div>
-            )}
-
-            {activeTab === 'notes' && (
-              <div>
-                <h2 className="text-2xl font-bold text-navy-900 mb-6">Internal Notes</h2>
-                <p className="text-sm text-slate-700 mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-500">
-                  <strong>Private:</strong> These notes are only visible to IE Global team members. Clients cannot see them.
-                </p>
-
-                {/* Add Note Form */}
-                <div className="mb-8 p-6 bg-off-white border-l-4 border-signal-red">
-                  <h3 className="text-lg font-bold text-navy-900 mb-4">Add New Note</h3>
-                  <div className="space-y-4">
-                    <textarea
-                      value={newNote}
-                      onChange={(e) => setNewNote(e.target.value)}
-                      placeholder="Add a private note about this client..."
-                      rows={4}
-                      className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none resize-none"
-                    />
+                  <div className="p-4 bg-off-white rounded-lg">
+                    <p className="text-slate-700 mb-4">No portal account yet.</p>
                     <button
-                      onClick={addInternalNote}
-                      disabled={addingNote || !newNote.trim()}
-                      className="px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={createClientAccount}
+                      disabled={creatingAccount}
+                      className="px-6 py-3 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200 disabled:opacity-50"
                     >
-                      {addingNote ? 'Adding...' : 'Add Note'}
+                      {creatingAccount ? 'Creating...' : 'Create Portal Account'}
                     </button>
                   </div>
-                </div>
-
-                {/* Notes List */}
-                {internalNotes.length === 0 ? (
-                  <div className="text-center py-12 bg-white">
-                    <p className="text-slate-700">No internal notes yet.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {internalNotes.map((note) => (
-                      <div key={note.id} className="bg-white p-6 border-l-4 border-yellow-500">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-semibold text-navy-900">
-                              {note.profiles?.full_name || 'Team Member'}
-                            </span>
-                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold">
-                              INTERNAL
-                            </span>
-                          </div>
-                          <span className="text-xs text-slate-500">
-                            {new Date(note.created_at).toLocaleString()}
-                          </span>
-                        </div>
-                        <p className="text-slate-700 whitespace-pre-wrap">{note.note_text}</p>
-                      </div>
-                    ))}
-                  </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {activeSection === 'projects' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-navy-900">Projects</h2>
+                <Link
+                  href={`/dashboard/clients/${client.id}/projects/new`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-signal-red text-white text-sm font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  New Project
+                </Link>
+              </div>
+
+              {projects.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+                  <p className="text-slate-700 mb-4">No projects yet.</p>
+                  <Link
+                    href={`/dashboard/clients/${client.id}/projects/new`}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90"
+                  >
+                    Create First Project
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {projects.map((project) => (
+                    <div key={project.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-xl font-bold text-navy-900 mb-2">{project.name}</h3>
+                          {project.description && (
+                            <p className="text-slate-700 mb-3">{project.description}</p>
+                          )}
+                          <div className="flex items-center gap-4">
+                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                              project.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                              project.status === 'review' ? 'bg-purple-100 text-purple-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {project.status.replace('_', ' ')}
+                            </span>
+                            <span className="text-sm text-slate-600">
+                              Created {new Date(project.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <Link
+                            href={`/dashboard/projects/${project.id}/milestones`}
+                            className="text-sm font-semibold text-signal-red hover:text-signal-red/80"
+                          >
+                            Milestones
+                          </Link>
+                          <span className="text-slate-300">|</span>
+                          <Link
+                            href={`/dashboard/projects/${project.id}/messages`}
+                            className="text-sm font-semibold text-signal-red hover:text-signal-red/80"
+                          >
+                            Messages
+                          </Link>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1 bg-gray-200 h-2 rounded-full overflow-hidden">
+                          <div 
+                            className="bg-signal-red h-full transition-all duration-500" 
+                            style={{ width: `${project.progress_percentage}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm font-semibold text-navy-900 min-w-[48px]">
+                          {project.progress_percentage}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeSection === 'invoices' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-navy-900">Invoices</h2>
+                <Link
+                  href={`/dashboard/clients/${client.id}/invoices/new`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-signal-red text-white text-sm font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  New Invoice
+                </Link>
+              </div>
+
+              {invoices.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+                  <p className="text-slate-700 mb-4">No invoices yet.</p>
+                  <Link
+                    href={`/dashboard/clients/${client.id}/invoices/new`}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90"
+                  >
+                    Create First Invoice
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {invoices.map((invoice) => (
+                    <div key={invoice.id} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-4 mb-2">
+                            <h3 className="text-xl font-bold text-navy-900">{invoice.invoice_number}</h3>
+                            <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                              invoice.status === 'paid' ? 'bg-green-100 text-green-800' :
+                              invoice.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {invoice.status.toUpperCase()}
+                            </span>
+                          </div>
+                          {invoice.description && (
+                            <p className="text-slate-700 mb-3">{invoice.description}</p>
+                          )}
+                          <div className="flex items-center gap-6 text-sm text-slate-600">
+                            <span>Issued: {new Date(invoice.issue_date).toLocaleDateString()}</span>
+                            <span>Due: {new Date(invoice.due_date).toLocaleDateString()}</span>
+                            {invoice.paid_date && (
+                              <span className="text-green-700 font-semibold">
+                                Paid: {new Date(invoice.paid_date).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-navy-900 mb-3">
+                            €{invoice.amount.toFixed(2)}
+                          </p>
+                          {invoice.status !== 'paid' && (
+                            <button
+                              onClick={() => markInvoiceAsPaid(invoice.id)}
+                              className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors duration-200"
+                            >
+                              Mark as Paid
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeSection === 'files' && (
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <h2 className="text-2xl font-bold text-navy-900 mb-6">Files</h2>
+              <Link
+                href={`/dashboard/clients/${client.id}/files`}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200"
+              >
+                Manage Files
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+          )}
+
+          {activeSection === 'notes' && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-navy-900 mb-2">Internal Notes</h2>
+                <p className="text-sm text-slate-700 p-4 bg-off-white border-l-4 border-signal-red rounded-lg">
+                  <strong>Private:</strong> These notes are only visible to IE Global team members.
+                </p>
+              </div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <h3 className="text-lg font-bold text-navy-900 mb-4">Add New Note</h3>
+                <div className="space-y-4">
+                  <textarea
+                    value={newNote}
+                    onChange={(e) => setNewNote(e.target.value)}
+                    placeholder="Add a private note about this client..."
+                    rows={4}
+                    className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg resize-none"
+                  />
+                  <button
+                    onClick={addInternalNote}
+                    disabled={addingNote || !newNote.trim()}
+                    className="px-6 py-3 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {addingNote ? 'Adding...' : 'Add Note'}
+                  </button>
+                </div>
+              </div>
+
+              {internalNotes.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+                  <p className="text-slate-700">No internal notes yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {internalNotes.map((note) => (
+                    <div key={note.id} className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-signal-red">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-semibold text-navy-900">
+                            {note.profiles?.full_name || 'Team Member'}
+                          </span>
+                          <span className="px-2 py-1 bg-off-white text-slate-700 border border-gray-300 text-xs font-semibold rounded-full">
+                            INTERNAL
+                          </span>
+                        </div>
+                        <span className="text-xs text-slate-500">
+                          {new Date(note.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-slate-700 whitespace-pre-wrap">{note.note_text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
-

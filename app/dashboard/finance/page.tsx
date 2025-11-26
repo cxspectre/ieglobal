@@ -96,66 +96,46 @@ export default function FinancePage() {
   const loadFinancialData = async () => {
     try {
       // Get all paid invoices for revenue
-      const { data: paidInvoices, error: invoicesError } = await (supabase as any)
+      const { data: paidInvoices } = await (supabase as any)
         .from('invoices')
         .select('amount, created_at')
         .eq('status', 'paid')
         .order('created_at', { ascending: true });
 
-      if (invoicesError) {
-        console.error('Error loading invoices:', invoicesError);
-      }
-
       const totalRev = paidInvoices?.reduce((sum: number, inv: any) => sum + (inv.amount || 0), 0) || 0;
       setTotalRevenue(totalRev);
 
       // Get all expenses
-      const { data: expensesData, error: expensesError } = await (supabase as any)
+      const { data: expensesData } = await (supabase as any)
         .from('expenses')
         .select('*')
         .order('expense_date', { ascending: false });
 
-      // If expenses table doesn't exist yet, just continue with empty expenses
-      if (expensesError) {
-        console.error('Error loading expenses (table may not exist yet):', expensesError);
-        setExpenses([]);
-        setTotalExpenses(0);
-        setMonthlyData([]);
-        setCategoryBreakdown([]);
-        setLoading(false);
-        return;
-      }
-
-      // Get creator profiles separately
-      if (expensesData && expensesData.length > 0) {
-        try {
-          const creatorIds = [...new Set(expensesData.map((e: any) => e.created_by))];
-          const { data: profilesData, error: profilesError } = await (supabase as any)
+      if (expensesData) {
+        // Get creator profiles separately
+        const creatorIds = [...new Set(expensesData.map((e: any) => e.created_by).filter(Boolean))];
+        let profilesMap = new Map();
+        
+        if (creatorIds.length > 0) {
+          const { data: profilesData } = await (supabase as any)
             .from('profiles')
             .select('id, full_name, email')
             .in('id', creatorIds);
-
-          if (profilesError) {
-            console.error('Error loading profiles:', profilesError);
+          
+          if (profilesData) {
+            profilesMap = new Map(profilesData.map((p: any) => [p.id, p]));
           }
-
-          // Map profiles to expenses
-          const profilesMap = new Map(profilesData?.map((p: any) => [p.id, p]) || []);
-          expensesData.forEach((expense: any) => {
-            expense.profiles = profilesMap.get(expense.created_by) || null;
-          });
-        } catch (err) {
-          console.error('Error mapping profiles to expenses:', err);
         }
-      }
-
-      if (expensesData) {
-        setExpenses(expensesData);
+        
+        // Map profiles to expenses
+        const expensesWithProfiles = expensesData.map((expense: any) => ({
+          ...expense,
+          profiles: profilesMap.get(expense.created_by) || null,
+        }));
+        
+        setExpenses(expensesWithProfiles);
         const totalExp = expensesData.reduce((sum: number, exp: any) => sum + (exp.amount || 0), 0);
         setTotalExpenses(totalExp);
-      } else {
-        setExpenses([]);
-        setTotalExpenses(0);
       }
 
       // Calculate monthly financial data (last 12 months)
@@ -217,11 +197,6 @@ export default function FinancePage() {
       setLoading(false);
     } catch (err) {
       console.error('Error loading financial data:', err);
-      // Set defaults on error
-      setExpenses([]);
-      setTotalExpenses(0);
-      setMonthlyData([]);
-      setCategoryBreakdown([]);
       setLoading(false);
     }
   };
@@ -238,21 +213,41 @@ export default function FinancePage() {
         return;
       }
 
-      const { error } = await (supabase as any)
+      // Validate amount
+      const amount = parseFloat(newExpense.amount);
+      if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount greater than 0.');
+        setSavingExpense(false);
+        return;
+      }
+
+      console.log('Inserting expense:', {
+        name: newExpense.name,
+        description: newExpense.description || null,
+        amount: amount,
+        category: newExpense.category || null,
+        expense_date: newExpense.expense_date,
+        created_by: session.user.id,
+      });
+
+      const { data, error } = await (supabase as any)
         .from('expenses')
         .insert({
           name: newExpense.name,
           description: newExpense.description || null,
-          amount: parseFloat(newExpense.amount),
+          amount: amount,
           category: newExpense.category || null,
           expense_date: newExpense.expense_date,
           created_by: session.user.id,
-        });
+        })
+        .select();
 
       if (error) {
         console.error('Error adding expense:', error);
-        alert(`Failed to add expense: ${error.message}`);
+        console.error('Error details:', JSON.stringify(error, null, 2));
+        alert(`Failed to add expense: ${error.message || 'Unknown error'}`);
       } else {
+        console.log('Expense added successfully:', data);
         setNewExpense({
           name: '',
           description: '',
@@ -265,7 +260,8 @@ export default function FinancePage() {
       }
     } catch (err: any) {
       console.error('Error adding expense:', err);
-      alert(`Failed to add expense: ${err.message}`);
+      console.error('Error stack:', err.stack);
+      alert(`Failed to add expense: ${err.message || 'Unknown error'}`);
     } finally {
       setSavingExpense(false);
     }

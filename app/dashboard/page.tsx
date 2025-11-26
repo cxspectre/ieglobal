@@ -59,10 +59,14 @@ export default function DashboardPage() {
   const supabase = createBrowserClient();
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkUser = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         
+        if (!isMounted) return;
+
         if (!session) {
           router.push('/login');
           return;
@@ -74,6 +78,8 @@ export default function DashboardPage() {
           .select('*')
           .eq('id', session.user.id)
           .single();
+
+        if (!isMounted) return;
 
         if (error) {
           console.error('Profile fetch error:', error);
@@ -101,17 +107,29 @@ export default function DashboardPage() {
         }
 
         // Load dashboard stats
-        await loadStats();
+        try {
+          await loadStats();
+        } catch (statsError) {
+          console.error('Error loading stats:', statsError);
+        }
         
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       } catch (err) {
         console.error('Auth check error:', err);
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     checkUser();
-  }, []); // Remove dependencies to prevent re-checking
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Keep empty deps to run once
 
   const loadStats = async () => {
     // Get active clients count
