@@ -5,6 +5,7 @@ const navyBlue = [11, 25, 48];
 const signalRed = [230, 57, 70];
 const lightGray = [245, 245, 245];
 const darkGray = [100, 100, 100];
+const footerY = 275; // Reserve space for footer
 
 const services = [
   {
@@ -163,12 +164,22 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
   const contentWidth = pageWidth - marginLeft - marginRight;
   let currentY = marginTop;
 
+  // Helper function to check if we need a new page
+  const checkPageBreak = (requiredSpace: number) => {
+    if (currentY + requiredSpace > footerY) {
+      doc.addPage();
+      currentY = marginTop;
+      return true;
+    }
+    return false;
+  };
+
   // Header with colored background
   const headerHeight = 35;
   doc.setFillColor(navyBlue[0], navyBlue[1], navyBlue[2]);
   doc.rect(0, 0, pageWidth, headerHeight, 'F');
   
-  // Logo placeholder (text-based for now)
+  // Logo
   doc.setFontSize(28);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
@@ -190,35 +201,41 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
 
   // Introduction box
   doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-  const introBoxHeight = 20;
-  doc.roundedRect(marginLeft, currentY - 5, contentWidth, introBoxHeight, 2, 2, 'F');
+  const introText = 'From strategy to scale. Seven capabilities that work together to build digital systems that are fast, reliable, and built to last.';
+  const introLines = doc.splitTextToSize(introText, contentWidth - 10);
+  const introBoxHeight = introLines.length * 5 + 8;
+  
+  checkPageBreak(introBoxHeight + 10);
+  doc.roundedRect(marginLeft, currentY, contentWidth, introBoxHeight, 2, 2, 'F');
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
-  const introText = 'From strategy to scale. Seven capabilities that work together to build digital systems that are fast, reliable, and built to last.';
-  doc.text(doc.splitTextToSize(introText, contentWidth - 10), marginLeft + 5, currentY + 3);
+  doc.text(introLines, marginLeft + 5, currentY + 5);
   currentY += introBoxHeight + 15;
 
   // Services Overview - Visual Grid
+  checkPageBreak(50);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
   doc.text('Our Services at a Glance', marginLeft, currentY);
-  currentY += 8;
+  currentY += 10;
 
   // Create visual service boxes
   const boxWidth = (contentWidth - 10) / 3;
-  const boxHeight = 25;
+  const boxHeight = 28;
   let boxX = marginLeft;
   let boxY = currentY;
   let serviceCount = 0;
+  let maxBoxY = boxY;
 
   services.forEach(category => {
     category.services.forEach(service => {
       if (serviceCount > 0 && serviceCount % 3 === 0) {
         boxX = marginLeft;
         boxY += boxHeight + 5;
+        maxBoxY = Math.max(maxBoxY, boxY);
       }
       
       // Service box with colored border
@@ -232,7 +249,7 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
       doc.rect(boxX, boxY, boxWidth - 2, 3, 'F');
       
       // Service title
-      doc.setFontSize(8);
+      doc.setFontSize(7.5);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
       const titleLines = doc.splitTextToSize(service.title, boxWidth - 6);
@@ -243,78 +260,73 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
       doc.setFont('helvetica', 'italic');
       doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
       const taglineLines = doc.splitTextToSize(service.tagline, boxWidth - 6);
-      doc.text(taglineLines, boxX + 3, boxY + 15);
+      doc.text(taglineLines, boxX + 3, boxY + 16);
       
       boxX += boxWidth;
       serviceCount++;
     });
   });
 
-  currentY = boxY + boxHeight + 15;
+  currentY = maxBoxY + boxHeight + 15;
+  checkPageBreak(20);
 
   // Decorative separator
   doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
   doc.rect(marginLeft, currentY, contentWidth, 1, 'F');
   doc.setFillColor(navyBlue[0], navyBlue[1], navyBlue[2]);
   doc.rect(marginLeft, currentY + 1, contentWidth, 0.5, 'F');
-  currentY += 8;
+  currentY += 10;
 
   // Detailed Services Header
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
   doc.text('Detailed Service Information', marginLeft, currentY);
-  currentY += 10;
+  currentY += 12;
 
   // Services by Category
   services.forEach((category, catIndex) => {
-    // Check if we need a new page
-    if (currentY > 250) {
-      doc.addPage();
-      currentY = marginTop;
-    }
+    checkPageBreak(30);
 
     // Category Header with colored background
     const categoryHeaderHeight = 8;
     doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
-    doc.roundedRect(marginLeft, currentY - 5, contentWidth, categoryHeaderHeight, 2, 2, 'F');
+    doc.roundedRect(marginLeft, currentY, contentWidth, categoryHeaderHeight, 2, 2, 'F');
     
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text(category.category.toUpperCase(), marginLeft + 5, currentY);
+    doc.text(category.category.toUpperCase(), marginLeft + 5, currentY + 6);
     
     // Decorative accent line
     doc.setDrawColor(navyBlue[0], navyBlue[1], navyBlue[2]);
     doc.setLineWidth(0.5);
-    doc.line(marginLeft, currentY + 4, pageWidth - marginRight, currentY + 4);
+    doc.line(marginLeft, currentY + categoryHeaderHeight, pageWidth - marginRight, currentY + categoryHeaderHeight);
     
-    currentY += 12;
+    currentY += categoryHeaderHeight + 10;
 
     category.services.forEach((service, svcIndex) => {
-      // Check if we need a new page
-      if (currentY > 240) {
-        doc.addPage();
-        currentY = marginTop;
-      }
+      // Estimate space needed for service card
+      const estimatedSpace = 80; // Rough estimate
+      checkPageBreak(estimatedSpace);
 
-      // Service card with border
+      // Service card start position
       const serviceStartY = currentY;
-      const cardPadding = 5;
       
-      // Left accent bar
-      doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
-      doc.rect(marginLeft, currentY - 2, 3, 60, 'F');
+      // Left accent bar (will be drawn after we know the height)
+      const accentBarX = marginLeft;
+      const accentBarY = currentY;
       
       // Service Title with background
       doc.setFillColor(navyBlue[0], navyBlue[1], navyBlue[2]);
-      doc.roundedRect(marginLeft + 6, currentY - 2, contentWidth - 6, 6, 1, 1, 'F');
+      const titleBarHeight = 7;
+      doc.roundedRect(marginLeft + 6, currentY, contentWidth - 6, titleBarHeight, 1, 1, 'F');
       
-      doc.setFontSize(13);
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(255, 255, 255);
-      doc.text(service.title, marginLeft + 8, currentY + 2);
-      currentY += 8;
+      doc.text(service.title, marginLeft + 8, currentY + 5);
+      currentY += titleBarHeight + 5;
 
       // Tagline
       doc.setFontSize(9);
@@ -325,32 +337,33 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
 
       // Description box
       doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-      const descBoxHeight = 12;
-      doc.roundedRect(marginLeft + 6, currentY - 2, contentWidth - 6, descBoxHeight, 2, 2, 'F');
+      const descLines = doc.splitTextToSize(service.description, contentWidth - 12);
+      const descBoxHeight = descLines.length * 4.5 + 4;
+      doc.roundedRect(marginLeft + 6, currentY, contentWidth - 6, descBoxHeight, 2, 2, 'F');
       
       doc.setFontSize(8.5);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
-      const descLines = doc.splitTextToSize(service.description, contentWidth - 12);
-      doc.text(descLines, marginLeft + 8, currentY + 2);
-      currentY += descLines.length * 4 + 4;
+      doc.text(descLines, marginLeft + 8, currentY + 3);
+      currentY += descBoxHeight + 5;
 
       // Features section with visual separator
       doc.setDrawColor(signalRed[0], signalRed[1], signalRed[2]);
       doc.setLineWidth(0.5);
       doc.line(marginLeft + 6, currentY, pageWidth - marginRight, currentY);
-      currentY += 4;
+      currentY += 5;
       
       doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
       doc.text('What\'s Included:', marginLeft + 6, currentY);
-      currentY += 5;
+      currentY += 6;
 
       doc.setFontSize(7.5);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
-      service.features.forEach((feature, idx) => {
+      service.features.forEach((feature) => {
+        checkPageBreak(5);
         // Checkbox-style bullet with color
         doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
         doc.circle(marginLeft + 8, currentY - 1.5, 1.5, 'F');
@@ -358,9 +371,10 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
         doc.text(feature, marginLeft + 12, currentY);
         currentY += 4.5;
       });
-      currentY += 3;
+      currentY += 4;
 
-      // Pricing Table with enhanced styling
+      // Pricing Table
+      checkPageBreak(25);
       const pricingData = service.pricing.map(p => [p.tier, p.duration, p.price]);
       
       autoTable(doc, {
@@ -396,44 +410,48 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
 
       currentY = (doc as any).lastAutoTable.finalY + 5;
       
+      // Draw left accent bar now that we know the height
+      const cardHeight = currentY - accentBarY;
+      doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
+      doc.rect(accentBarX, accentBarY, 3, cardHeight, 'F');
+      
       // Service card border
-      const cardHeight = currentY - serviceStartY + 2;
       doc.setDrawColor(navyBlue[0], navyBlue[1], navyBlue[2]);
       doc.setLineWidth(0.5);
-      doc.roundedRect(marginLeft, serviceStartY - 2, contentWidth, cardHeight, 3, 3, 'D');
+      doc.roundedRect(marginLeft, serviceStartY, contentWidth, cardHeight, 3, 3, 'D');
       
-      currentY += 8;
+      currentY += 10;
     });
 
     // Add spacing between categories
     if (catIndex < services.length - 1) {
-      currentY += 5;
+      currentY += 8;
     }
   });
 
   // Enhanced Footer on each page
   const addFooter = (pageNum: number, totalPages: number) => {
-    const footerY = 280;
+    const footerStartY = footerY;
     
     // Footer background with accent
     doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-    doc.rect(0, footerY, pageWidth, 17, 'F');
+    doc.rect(0, footerStartY, pageWidth, 17, 'F');
     
     // Red accent line
     doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
-    doc.rect(0, footerY, pageWidth, 2, 'F');
+    doc.rect(0, footerStartY, pageWidth, 2, 'F');
 
     doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-    doc.text('IE GLOBAL | ODER 20 Box 66193, 2491DC Den Haag, Netherlands', marginLeft, footerY + 6);
-    doc.text('KvK: 97185515 | BTW: NL737599054B02', marginLeft, footerY + 11);
-    doc.text('Contact: Cassian Drefke | +31 6 27 20 71 08 | cdrefke@ie-global.net', marginLeft, footerY + 16);
+    doc.text('IE GLOBAL | ODER 20 Box 66193, 2491DC Den Haag, Netherlands', marginLeft, footerStartY + 6);
+    doc.text('KvK: 97185515 | BTW: NL737599054B02', marginLeft, footerStartY + 11);
+    doc.text('Contact: Cassian Drefke | +31 6 27 20 71 08 | cdrefke@ie-global.net', marginLeft, footerStartY + 16);
     
     // Page number
     doc.setFontSize(7);
     doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-    doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth - marginRight, footerY + 16, { align: 'right' });
+    doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth - marginRight, footerStartY + 16, { align: 'right' });
   };
 
   // Add footer to all pages
@@ -445,4 +463,3 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
 
   return doc.output('blob');
 }
-
