@@ -163,23 +163,108 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
   const contentWidth = pageWidth - marginLeft - marginRight;
   let currentY = marginTop;
 
-  // Header
-  doc.setFontSize(24);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
-  doc.text('IE Global', marginLeft, currentY);
-  doc.setFontSize(18);
-  doc.text('Service Overview', marginLeft, currentY + 10);
+  // Header with colored background
+  const headerHeight = 35;
+  doc.setFillColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+  doc.rect(0, 0, pageWidth, headerHeight, 'F');
   
-  currentY += 25;
+  // Logo placeholder (text-based for now)
+  doc.setFontSize(28);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text('IE', marginLeft, currentY + 8);
+  doc.setTextColor(signalRed[0], signalRed[1], signalRed[2]);
+  doc.text('Global', marginLeft + 15, currentY + 8);
+  
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(255, 255, 255);
+  doc.text('Service Overview', marginLeft, currentY + 18);
+  
+  // Decorative line
+  doc.setDrawColor(signalRed[0], signalRed[1], signalRed[2]);
+  doc.setLineWidth(2);
+  doc.line(marginLeft, currentY + 22, pageWidth - marginRight, currentY + 22);
+  
+  currentY = headerHeight + 15;
 
-  // Introduction
+  // Introduction box
+  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+  const introBoxHeight = 20;
+  doc.roundedRect(marginLeft, currentY - 5, contentWidth, introBoxHeight, 2, 2, 'F');
+  
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(0, 0, 0);
   const introText = 'From strategy to scale. Seven capabilities that work together to build digital systems that are fast, reliable, and built to last.';
-  doc.text(doc.splitTextToSize(introText, contentWidth), marginLeft, currentY);
-  currentY += 15;
+  doc.text(doc.splitTextToSize(introText, contentWidth - 10), marginLeft + 5, currentY + 3);
+  currentY += introBoxHeight + 15;
+
+  // Services Overview - Visual Grid
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+  doc.text('Our Services at a Glance', marginLeft, currentY);
+  currentY += 8;
+
+  // Create visual service boxes
+  const boxWidth = (contentWidth - 10) / 3;
+  const boxHeight = 25;
+  let boxX = marginLeft;
+  let boxY = currentY;
+  let serviceCount = 0;
+
+  services.forEach(category => {
+    category.services.forEach(service => {
+      if (serviceCount > 0 && serviceCount % 3 === 0) {
+        boxX = marginLeft;
+        boxY += boxHeight + 5;
+      }
+      
+      // Service box with colored border
+      doc.setFillColor(255, 255, 255);
+      doc.setDrawColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(boxX, boxY, boxWidth - 2, boxHeight, 2, 2, 'FD');
+      
+      // Colored accent bar
+      doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
+      doc.rect(boxX, boxY, boxWidth - 2, 3, 'F');
+      
+      // Service title
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+      const titleLines = doc.splitTextToSize(service.title, boxWidth - 6);
+      doc.text(titleLines, boxX + 3, boxY + 8);
+      
+      // Tagline
+      doc.setFontSize(6.5);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+      const taglineLines = doc.splitTextToSize(service.tagline, boxWidth - 6);
+      doc.text(taglineLines, boxX + 3, boxY + 15);
+      
+      boxX += boxWidth;
+      serviceCount++;
+    });
+  });
+
+  currentY = boxY + boxHeight + 15;
+
+  // Decorative separator
+  doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
+  doc.rect(marginLeft, currentY, contentWidth, 1, 'F');
+  doc.setFillColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+  doc.rect(marginLeft, currentY + 1, contentWidth, 0.5, 'F');
+  currentY += 8;
+
+  // Detailed Services Header
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+  doc.text('Detailed Service Information', marginLeft, currentY);
+  currentY += 10;
 
   // Services by Category
   services.forEach((category, catIndex) => {
@@ -189,12 +274,22 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
       currentY = marginTop;
     }
 
-    // Category Header
-    doc.setFontSize(12);
+    // Category Header with colored background
+    const categoryHeaderHeight = 8;
+    doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
+    doc.roundedRect(marginLeft, currentY - 5, contentWidth, categoryHeaderHeight, 2, 2, 'F');
+    
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(signalRed[0], signalRed[1], signalRed[2]);
-    doc.text(category.category.toUpperCase(), marginLeft, currentY);
-    currentY += 8;
+    doc.setTextColor(255, 255, 255);
+    doc.text(category.category.toUpperCase(), marginLeft + 5, currentY);
+    
+    // Decorative accent line
+    doc.setDrawColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+    doc.setLineWidth(0.5);
+    doc.line(marginLeft, currentY + 4, pageWidth - marginRight, currentY + 4);
+    
+    currentY += 12;
 
     category.services.forEach((service, svcIndex) => {
       // Check if we need a new page
@@ -203,45 +298,69 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
         currentY = marginTop;
       }
 
-      // Service Title
-      doc.setFontSize(14);
+      // Service card with border
+      const serviceStartY = currentY;
+      const cardPadding = 5;
+      
+      // Left accent bar
+      doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
+      doc.rect(marginLeft, currentY - 2, 3, 60, 'F');
+      
+      // Service Title with background
+      doc.setFillColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+      doc.roundedRect(marginLeft + 6, currentY - 2, contentWidth - 6, 6, 1, 1, 'F');
+      
+      doc.setFontSize(13);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
-      doc.text(service.title, marginLeft, currentY);
-      currentY += 7;
+      doc.setTextColor(255, 255, 255);
+      doc.text(service.title, marginLeft + 8, currentY + 2);
+      currentY += 8;
 
       // Tagline
       doc.setFontSize(9);
       doc.setFont('helvetica', 'italic');
-      doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-      doc.text(service.tagline, marginLeft, currentY);
+      doc.setTextColor(signalRed[0], signalRed[1], signalRed[2]);
+      doc.text(service.tagline, marginLeft + 6, currentY);
       currentY += 6;
 
-      // Description
-      doc.setFontSize(9);
+      // Description box
+      doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+      const descBoxHeight = 12;
+      doc.roundedRect(marginLeft + 6, currentY - 2, contentWidth - 6, descBoxHeight, 2, 2, 'F');
+      
+      doc.setFontSize(8.5);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
-      const descLines = doc.splitTextToSize(service.description, contentWidth);
-      doc.text(descLines, marginLeft, currentY);
-      currentY += descLines.length * 5 + 3;
+      const descLines = doc.splitTextToSize(service.description, contentWidth - 12);
+      doc.text(descLines, marginLeft + 8, currentY + 2);
+      currentY += descLines.length * 4 + 4;
 
-      // Features
+      // Features section with visual separator
+      doc.setDrawColor(signalRed[0], signalRed[1], signalRed[2]);
+      doc.setLineWidth(0.5);
+      doc.line(marginLeft + 6, currentY, pageWidth - marginRight, currentY);
+      currentY += 4;
+      
       doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
-      doc.text('What\'s Included:', marginLeft, currentY);
+      doc.text('What\'s Included:', marginLeft + 6, currentY);
       currentY += 5;
 
-      doc.setFontSize(8);
+      doc.setFontSize(7.5);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(0, 0, 0);
-      service.features.forEach(feature => {
-        doc.text(`• ${feature}`, marginLeft + 3, currentY);
+      service.features.forEach((feature, idx) => {
+        // Checkbox-style bullet with color
+        doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
+        doc.circle(marginLeft + 8, currentY - 1.5, 1.5, 'F');
+        doc.setTextColor(0, 0, 0);
+        doc.text(feature, marginLeft + 12, currentY);
         currentY += 4.5;
       });
-      currentY += 2;
+      currentY += 3;
 
-      // Pricing Table
+      // Pricing Table with enhanced styling
       const pricingData = service.pricing.map(p => [p.tier, p.duration, p.price]);
       
       autoTable(doc, {
@@ -250,24 +369,40 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
         body: pricingData,
         theme: 'grid',
         headStyles: {
-          fillColor: signalRed as any,
+          fillColor: navyBlue as any,
           textColor: [255, 255, 255] as any,
           fontSize: 8,
           fontStyle: 'bold',
+          halign: 'left',
         },
         bodyStyles: {
-          fontSize: 7,
+          fontSize: 7.5,
           textColor: [0, 0, 0],
         },
-        columnStyles: {
-          0: { cellWidth: 60 },
-          1: { cellWidth: 50 },
-          2: { cellWidth: 40, halign: 'right' },
+        alternateRowStyles: {
+          fillColor: [250, 250, 250] as any,
         },
-        margin: { left: marginLeft, right: marginRight },
+        columnStyles: {
+          0: { cellWidth: 65, fontStyle: 'bold' },
+          1: { cellWidth: 45 },
+          2: { cellWidth: 40, halign: 'right', fontStyle: 'bold', textColor: signalRed as any },
+        },
+        margin: { left: marginLeft + 6, right: marginRight },
+        styles: {
+          lineColor: [200, 200, 200],
+          lineWidth: 0.3,
+        },
       });
 
-      currentY = (doc as any).lastAutoTable.finalY + 8;
+      currentY = (doc as any).lastAutoTable.finalY + 5;
+      
+      // Service card border
+      const cardHeight = currentY - serviceStartY + 2;
+      doc.setDrawColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(marginLeft, serviceStartY - 2, contentWidth, cardHeight, 3, 3, 'D');
+      
+      currentY += 8;
     });
 
     // Add spacing between categories
@@ -276,17 +411,37 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
     }
   });
 
-  // Footer
-  const footerY = 280;
-  doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
-  doc.rect(0, footerY, pageWidth, 17, 'F');
+  // Enhanced Footer on each page
+  const addFooter = (pageNum: number, totalPages: number) => {
+    const footerY = 280;
+    
+    // Footer background with accent
+    doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
+    doc.rect(0, footerY, pageWidth, 17, 'F');
+    
+    // Red accent line
+    doc.setFillColor(signalRed[0], signalRed[1], signalRed[2]);
+    doc.rect(0, footerY, pageWidth, 2, 'F');
 
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-  doc.text('IE GLOBAL | ODER 20 Box 66193, 2491DC Den Haag, Netherlands', marginLeft, footerY + 6);
-  doc.text('KvK: 97185515 | BTW: NL737599054B02', marginLeft, footerY + 11);
-  doc.text('Contact: Cassian Drefke | +31 6 27 20 71 08 | cdrefke@ie-global.net', marginLeft, footerY + 16);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+    doc.text('IE GLOBAL | ODER 20 Box 66193, 2491DC Den Haag, Netherlands', marginLeft, footerY + 6);
+    doc.text('KvK: 97185515 | BTW: NL737599054B02', marginLeft, footerY + 11);
+    doc.text('Contact: Cassian Drefke | +31 6 27 20 71 08 | cdrefke@ie-global.net', marginLeft, footerY + 16);
+    
+    // Page number
+    doc.setFontSize(7);
+    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+    doc.text(`Page ${pageNum} of ${totalPages}`, pageWidth - marginRight, footerY + 16, { align: 'right' });
+  };
+
+  // Add footer to all pages
+  const totalPages = doc.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    addFooter(i, totalPages);
+  }
 
   return doc.output('blob');
 }
