@@ -12,6 +12,8 @@ type Client = {
   contact_email: string;
   industry: string | null;
   status: string;
+  onboarding_status: string | null;
+  priority_level: string | null;
   created_at: string;
 };
 
@@ -74,15 +76,26 @@ export default function ClientsPage() {
               <h1 className="text-3xl font-bold text-navy-900 mb-2">Clients</h1>
               <p className="text-slate-700">Manage all your client accounts and projects</p>
             </div>
-            <Link
-              href="/dashboard/clients/new"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              <span>Add Client</span>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/dashboard/clients/new"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-signal-red text-signal-red font-semibold hover:bg-signal-red hover:text-white transition-all duration-200"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Add Client</span>
+              </Link>
+              <Link
+                href="/dashboard/clients/onboard"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Onboard Client</span>
+              </Link>
+            </div>
           </div>
 
           {/* Search */}
@@ -129,6 +142,9 @@ export default function ClientsPage() {
                       <th className="px-6 py-4 text-left text-xs font-bold text-navy-900 uppercase tracking-wider">
                         Status
                       </th>
+                      <th className="px-6 py-4 text-left text-xs font-bold text-navy-900 uppercase tracking-wider">
+                        Onboarding
+                      </th>
                       <th className="px-6 py-4 text-right text-xs font-bold text-navy-900 uppercase tracking-wider">
                         Actions
                       </th>
@@ -151,10 +167,37 @@ export default function ClientsPage() {
                           <span className={`inline-flex px-3 py-1 text-xs font-semibold ${
                             client.status === 'active' ? 'bg-green-100 text-green-800' :
                             client.status === 'inactive' ? 'bg-gray-100 text-gray-800' :
-                            'bg-blue-100 text-blue-800'
+                            'bg-slate-100 text-slate-800'
                           }`}>
                             {client.status}
                           </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          {client.onboarding_status && client.onboarding_status !== 'not_started' ? (
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex px-3 py-1 text-xs font-semibold ${
+                                client.onboarding_status === 'completed' ? 'bg-green-100 text-green-800' :
+                                client.onboarding_status === 'in_progress' ? 'bg-orange-100 text-orange-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {client.onboarding_status === 'completed' ? '✓ Completed' : 
+                                 client.onboarding_status === 'in_progress' ? 'In Progress' : 
+                                 client.onboarding_status}
+                              </span>
+                              {client.priority_level && (
+                                <span className={`inline-flex px-2 py-1 text-xs font-semibold ${
+                                  client.priority_level === 'critical' ? 'bg-red-100 text-red-800' :
+                                  client.priority_level === 'high' ? 'bg-orange-100 text-orange-800' :
+                                  client.priority_level === 'medium' ? 'bg-slate-100 text-slate-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {client.priority_level}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-slate-500">—</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <Link

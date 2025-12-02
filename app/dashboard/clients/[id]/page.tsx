@@ -21,6 +21,13 @@ type Client = {
   vat_number: string | null;
   kvk_number: string | null;
   customer_number: string | null;
+  website: string | null;
+  onboarding_status: string | null;
+  onboarding_step: number | null;
+  priority_level: string | null;
+  expected_timeline: string | null;
+  service_category: string | null;
+  estimated_scope: string | null;
   created_at: string;
 };
 
@@ -622,6 +629,79 @@ export default function ClientDetailPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Onboarding Status (if applicable) */}
+              {client.onboarding_status && client.onboarding_status !== 'not_started' && (
+                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                  <h2 className="text-xl font-bold text-navy-900 mb-4 flex items-center gap-2">
+                    <svg className="w-6 h-6 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Onboarding Information
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-4 bg-off-white rounded-lg">
+                      <p className="text-sm text-slate-600 mb-1">Onboarding Status</p>
+                      <p className={`text-lg font-bold ${
+                        client.onboarding_status === 'completed' ? 'text-green-600' : 
+                        client.onboarding_status === 'in_progress' ? 'text-orange-600' : 
+                        'text-gray-600'
+                      }`}>
+                        {client.onboarding_status === 'completed' ? '✓ Completed' : 
+                         client.onboarding_status === 'in_progress' ? '⋯ In Progress' : 
+                         'Not Started'}
+                      </p>
+                    </div>
+                    {client.priority_level && (
+                      <div className="p-4 bg-off-white rounded-lg">
+                        <p className="text-sm text-slate-600 mb-1">Priority Level</p>
+                        <p className="text-lg font-bold text-navy-900 capitalize">
+                          {client.priority_level}
+                        </p>
+                      </div>
+                    )}
+                    {client.expected_timeline && (
+                      <div className="p-4 bg-off-white rounded-lg">
+                        <p className="text-sm text-slate-600 mb-1">Expected Timeline</p>
+                        <p className="text-lg font-bold text-navy-900">
+                          {client.expected_timeline}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {(client.service_category || client.website) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      {client.service_category && (
+                        <div className="p-4 bg-off-white rounded-lg">
+                          <p className="text-sm text-slate-600 mb-1">Primary Service</p>
+                          <p className="text-base font-semibold text-navy-900">
+                            {client.service_category}
+                          </p>
+                        </div>
+                      )}
+                      {client.website && (
+                        <div className="p-4 bg-off-white rounded-lg">
+                          <p className="text-sm text-slate-600 mb-1">Website</p>
+                          <a 
+                            href={client.website.startsWith('http') ? client.website : `https://${client.website}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-base font-semibold text-signal-red hover:underline"
+                          >
+                            {client.website}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {client.estimated_scope && (
+                    <div className="mt-4 p-4 bg-off-white border-l-4 border-signal-red rounded-lg">
+                      <p className="text-sm font-semibold text-navy-900 mb-2">Project Scope</p>
+                      <p className="text-slate-700 whitespace-pre-wrap">{client.estimated_scope}</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Quick Actions */}
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
