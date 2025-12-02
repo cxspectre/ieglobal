@@ -16,7 +16,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const [heroIsDark, setHeroIsDark] = useState(true);
 
   // Pages without nav/footer (portal pages)
-  const noLayoutPages = ['/login', '/dashboard', '/portal', '/reset-password', '/auth'];
+  const noLayoutPages = ['/login', '/dashboard', '/portal', '/reset-password', '/auth', '/upload'];
   const hideLayout = noLayoutPages.some(path => pathname?.startsWith(path));
 
   // Pages without dark heroes (always use white navbar)
