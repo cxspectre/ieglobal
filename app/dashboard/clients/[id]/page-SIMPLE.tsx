@@ -115,7 +115,7 @@ export default function ClientDetailPageRedesign() {
           .select('full_name')
           .eq('id', onboarding.project_lead_id)
           .single();
-        if (lead) setProjectLead(lead.full_name);
+        if (lead) setProjectLead((lead as { full_name: string }).full_name);
       }
 
       if (onboarding.technical_lead_id) {
@@ -124,7 +124,7 @@ export default function ClientDetailPageRedesign() {
           .select('full_name')
           .eq('id', onboarding.technical_lead_id)
           .single();
-        if (tech) setTechnicalLead(tech.full_name);
+        if (tech) setTechnicalLead((tech as { full_name: string }).full_name);
       }
     }
 
