@@ -115,7 +115,7 @@ export default function ClientDetailPageRedesign() {
           .select('full_name')
           .eq('id', onboarding.project_lead_id)
           .single();
-        if (lead) setProjectLead(lead.full_name);
+        if (lead) setProjectLead((lead as { full_name: string }).full_name);
       }
 
       if (onboarding.technical_lead_id) {
@@ -124,7 +124,7 @@ export default function ClientDetailPageRedesign() {
           .select('full_name')
           .eq('id', onboarding.technical_lead_id)
           .single();
-        if (tech) setTechnicalLead(tech.full_name);
+        if (tech) setTechnicalLead((tech as { full_name: string }).full_name);
       }
       }
 
@@ -135,7 +135,7 @@ export default function ClientDetailPageRedesign() {
         .eq('client_id', params.id)
         .order('created_at', { ascending: false });
 
-    if (projectsData) setProjects(projectsData);
+    if (projectsData) setProjects(projectsData as Project[]);
 
     // Load uploaded files
     const { data: filesData } = await supabase
@@ -147,8 +147,9 @@ export default function ClientDetailPageRedesign() {
     if (filesData) setUploadedFiles(filesData);
 
     // Load recent messages from all client projects
-    if (projectsData && projectsData.length > 0) {
-      const projectIds = projectsData.map(p => p.id);
+    const typedProjectsData = projectsData as Project[] | null;
+    if (typedProjectsData && typedProjectsData.length > 0) {
+      const projectIds = typedProjectsData.map(p => p.id);
       const { data: messagesData } = await supabase
         .from('messages')
         .select('id, message_text, created_at, sender_id, is_internal, profiles(full_name, role)')

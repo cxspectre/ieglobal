@@ -114,12 +114,13 @@ export default function FinancePage() {
       .select('amount, created_at, paid_date')
       .eq('status', 'paid');
 
-    const totalRev = paidInvoices?.reduce((sum, inv) => sum + inv.amount, 0) || 0;
+    const typedPaidInvoices = paidInvoices as Array<{ amount: number; created_at: string; paid_date: string | null }> | null;
+    const totalRev = typedPaidInvoices?.reduce((sum, inv) => sum + inv.amount, 0) || 0;
     setTotalRevenue(totalRev);
 
     // This month revenue
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const monthRev = paidInvoices?.filter(inv => 
+    const monthRev = typedPaidInvoices?.filter(inv => 
       new Date(inv.paid_date || inv.created_at) >= startOfMonth
     ).reduce((sum, inv) => sum + inv.amount, 0) || 0;
     setThisMonthRevenue(monthRev);
@@ -131,19 +132,20 @@ export default function FinancePage() {
       .order('expense_date', { ascending: false });
 
     if (expensesData) {
-      setExpenses(expensesData as any);
-      const totalExp = expensesData.reduce((sum, exp) => sum + exp.amount, 0);
+      const typedExpensesData = expensesData as Array<{ amount: number; expense_date: string; cost_type: string | null; [key: string]: any }>;
+      setExpenses(typedExpensesData as any);
+      const totalExp = typedExpensesData.reduce((sum, exp) => sum + exp.amount, 0);
       setTotalExpenses(totalExp);
 
       // This month expenses
-      const monthExp = expensesData.filter(exp => 
+      const monthExp = typedExpensesData.filter(exp => 
         new Date(exp.expense_date) >= startOfMonth
       ).reduce((sum, exp) => sum + exp.amount, 0);
       setThisMonthExpenses(monthExp);
 
       // Fixed vs Variable
-      const fixed = expensesData.filter(e => e.cost_type === 'fixed').reduce((sum, e) => sum + e.amount, 0);
-      const variable = expensesData.filter(e => e.cost_type === 'variable' || !e.cost_type).reduce((sum, e) => sum + e.amount, 0);
+      const fixed = typedExpensesData.filter(e => e.cost_type === 'fixed').reduce((sum, e) => sum + e.amount, 0);
+      const variable = typedExpensesData.filter(e => e.cost_type === 'variable' || !e.cost_type).reduce((sum, e) => sum + e.amount, 0);
       setFixedVsVariable([
         { name: 'Fixed Costs', value: fixed, color: '#3b82f6' },
         { name: 'Variable Costs', value: variable, color: '#ef4444' },
@@ -154,12 +156,12 @@ export default function FinancePage() {
       for (let i = 11; i >= 0; i--) {
         const date = new Date();
         date.setMonth(date.getMonth() - i);
-        const key = date.toLocaleDateString('en-US', { month: 'short', year: 'yy' });
+        const key = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
         monthlyMap.set(key, { revenue: 0, expenses: 0, cash_in: 0, cash_out: 0 });
       }
 
-      paidInvoices?.forEach(inv => {
-        const key = new Date(inv.paid_date || inv.created_at).toLocaleDateString('en-US', { month: 'short', year: 'yy' });
+      typedPaidInvoices?.forEach(inv => {
+        const key = new Date(inv.paid_date || inv.created_at).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
         if (monthlyMap.has(key)) {
           const data = monthlyMap.get(key);
           data.revenue += inv.amount;
@@ -167,8 +169,8 @@ export default function FinancePage() {
         }
       });
 
-      expensesData.forEach(exp => {
-        const key = new Date(exp.expense_date).toLocaleDateString('en-US', { month: 'short', year: 'yy' });
+      typedExpensesData.forEach(exp => {
+        const key = new Date(exp.expense_date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
         if (monthlyMap.has(key)) {
           const data = monthlyMap.get(key);
           data.expenses += exp.amount;
@@ -626,7 +628,7 @@ export default function FinancePage() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name.split(' ')[0]}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name?.split(' ')[0] || ''}: ${((percent || 0) * 100).toFixed(0)}%`}
                       outerRadius={80}
                       dataKey="value"
                     >
