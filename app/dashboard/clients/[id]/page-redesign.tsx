@@ -46,33 +46,14 @@ type UploadedFile = {
   created_at: string;
 };
 
-type Message = {
-  id: string;
-  message_text: string;
-  created_at: string;
-  sender_id: string;
-  is_internal: boolean;
-  profiles: {
-    full_name: string;
-    role: string;
-  };
-};
-
 export default function ClientDetailPageRedesign() {
   const [loading, setLoading] = useState(true);
   const [client, setClient] = useState<Client | null>(null);
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
   const [projectLead, setProjectLead] = useState<string>('');
   const [technicalLead, setTechnicalLead] = useState<string>('');
-  const [clientHasAccount, setClientHasAccount] = useState(false);
-  const [clientAccountEmail, setClientAccountEmail] = useState('');
-  const [clientAccountActive, setClientAccountActive] = useState(false);
-  const [invitationLink, setInvitationLink] = useState('');
-  const [creatingAccount, setCreatingAccount] = useState(false);
-  const [resendingInvite, setResendingInvite] = useState(false);
   
   const params = useParams();
   const router = useRouter();
@@ -84,17 +65,17 @@ export default function ClientDetailPageRedesign() {
 
   const loadData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
-        return;
-      }
+    if (!session) {
+      router.push('/login');
+      return;
+    }
 
-      // Load client
+    // Load client
     const { data: clientData } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('id', params.id)
-        .single();
+      .from('clients')
+      .select('*')
+      .eq('id', params.id)
+      .single();
 
     if (clientData) setClient(clientData);
 
@@ -126,14 +107,14 @@ export default function ClientDetailPageRedesign() {
           .single();
         if (tech) setTechnicalLead(tech.full_name);
       }
-      }
+    }
 
-      // Load projects
-      const { data: projectsData } = await supabase
-        .from('projects')
+    // Load projects
+    const { data: projectsData } = await supabase
+      .from('projects')
       .select('id, name, status, progress_percentage')
-        .eq('client_id', params.id)
-        .order('created_at', { ascending: false });
+      .eq('client_id', params.id)
+      .order('created_at', { ascending: false });
 
     if (projectsData) setProjects(projectsData);
 
@@ -141,192 +122,12 @@ export default function ClientDetailPageRedesign() {
     const { data: filesData } = await supabase
       .from('files')
       .select('file_name, storage_path, created_at')
-        .eq('client_id', params.id)
+      .eq('client_id', params.id)
       .order('created_at', { ascending: false });
 
     if (filesData) setUploadedFiles(filesData);
 
-    // Load recent messages from all client projects
-    if (projectsData && projectsData.length > 0) {
-      const projectIds = projectsData.map(p => p.id);
-      const { data: messagesData } = await supabase
-        .from('messages')
-        .select('id, message_text, created_at, sender_id, is_internal, profiles(full_name, role)')
-        .in('project_id', projectIds)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (messagesData) setMessages(messagesData as any);
-      }
-
-      // Check if client has a user account
-      const { data: clientProfile } = await (supabase as any)
-        .from('profiles')
-        .select('id, email')
-        .eq('client_id', params.id)
-        .eq('role', 'client')
-        .maybeSingle();
-
-      if (clientProfile) {
-        setClientHasAccount(true);
-        setClientAccountEmail(clientProfile.email);
-
-        try {
-          const statusResponse = await fetch('/api/check-user-status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: clientProfile.email }),
-          });
-
-          const statusResult = await statusResponse.json();
-          if (statusResult.active) {
-            setClientAccountActive(true);
-          }
-        } catch (err) {
-          console.error('Failed to check user status:', err);
-        }
-      }
-      
-      setLoading(false);
-  };
-
-  const createClientAccount = async () => {
-    if (!confirm(`Create a portal account for ${client?.contact_person}? They will receive an email invitation to set their password.`)) {
-      return;
-    }
-
-    setCreatingAccount(true);
-    try {
-      const response = await fetch('/api/create-client-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clientId: params.id,
-          email: client?.contact_email,
-          fullName: client?.contact_person,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to create account');
-      }
-
-      if (result.invitationLink) {
-        setInvitationLink(result.invitationLink);
-        
-        const message = result.emailSent
-          ? `✅ Account created! Invitation email sent to ${client?.contact_email}\n\nBackup: The invitation link is shown below if needed.`
-          : `⚠️ Account created but email may not have sent.\n\nPlease copy the invitation link below and share it with ${client?.contact_person} directly.`;
-        
-        alert(message);
-      } else {
-        alert(`Account created for ${client?.contact_email}`);
-      }
-      
-      setClientHasAccount(true);
-      await loadData();
-    } catch (err: any) {
-      console.error('Error creating account:', err);
-      alert('Failed to create account: ' + err.message);
-    }
-    setCreatingAccount(false);
-  };
-
-  const resendInvitation = async () => {
-    setResendingInvite(true);
-    try {
-      const response = await fetch('/api/resend-client-invite', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: clientAccountEmail,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to resend invitation');
-      }
-
-      if (result.invitationLink) {
-        setInvitationLink(result.invitationLink);
-        alert('New invitation link generated! Copy it from below.');
-      } else {
-        alert(`Invitation resent to ${clientAccountEmail}`);
-      }
-    } catch (err: any) {
-      console.error('Error resending invitation:', err);
-      alert('Failed to resend: ' + err.message);
-    }
-    setResendingInvite(false);
-  };
-
-  const toggleClientStatus = async () => {
-    if (!client) return;
-    
-    const newStatus = client.status === 'active' ? 'inactive' : 'active';
-    const action = newStatus === 'inactive' ? 'retire' : 'reactivate';
-    
-    if (!confirm(`${action === 'retire' ? '⚠️' : '✓'} ${action.charAt(0).toUpperCase() + action.slice(1)} ${client.company_name}?`)) {
-      return;
-    }
-    
-    try {
-      const { error } = await (supabase as any)
-        .from('clients')
-        .update({ status: newStatus })
-        .eq('id', params.id);
-
-      if (error) throw error;
-      await loadData();
-      alert(`✅ Client ${action}d successfully`);
-    } catch (err: any) {
-      console.error('Error updating status:', err);
-      alert('Failed to update status: ' + err.message);
-    }
-  };
-
-  const deleteClient = async () => {
-    if (!client) return;
-
-    const confirmDelete = confirm(
-      `⚠️ DELETE ${client.company_name}?\n\n` +
-      `This will PERMANENTLY delete:\n` +
-      `• Client record\n` +
-      `• All projects\n` +
-      `• All milestones\n` +
-      `• All invoices\n` +
-      `• All files\n` +
-      `• All messages\n\n` +
-      `⚠️ THIS ACTION CANNOT BE UNDONE.\n\n` +
-      `Type the company name to confirm.`
-    );
-
-    if (!confirmDelete) return;
-
-    const userInput = prompt(`Type "${client.company_name}" to confirm deletion:`);
-    
-    if (userInput !== client.company_name) {
-      alert('❌ Deletion cancelled - company name did not match.');
-      return;
-    }
-
-    try {
-      const { error } = await (supabase as any)
-        .from('clients')
-        .delete()
-        .eq('id', params.id);
-
-      if (error) throw error;
-      alert(`✅ ${client.company_name} has been permanently deleted.`);
-      router.push('/dashboard/clients');
-    } catch (err: any) {
-      console.error('Error deleting client:', err);
-      alert('Failed to delete client: ' + err.message);
-    }
+    setLoading(false);
   };
 
   if (loading) {
@@ -363,15 +164,15 @@ export default function ClientDetailPageRedesign() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Breadcrumb */}
-        <Link
-          href="/dashboard/clients"
+      <Link
+        href="/dashboard/clients"
         className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-signal-red mb-6 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Clients
-        </Link>
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to Clients
+      </Link>
 
       {/* Header Section */}
       <motion.div
@@ -384,8 +185,8 @@ export default function ClientDetailPageRedesign() {
             <div className="flex items-center gap-4 mb-3">
               <h1 className="text-4xl font-bold text-white">{client.company_name}</h1>
               <span className={`px-4 py-1.5 text-sm font-semibold rounded-full ${
-                client.status === 'active' 
-                  ? 'bg-green-500/20 text-green-200 border border-green-400/30' 
+                client.status === 'active'
+                  ? 'bg-green-500/20 text-green-200 border border-green-400/30'
                   : 'bg-gray-500/20 text-gray-200 border border-gray-400/30'
               }`}>
                 {client.status === 'active' ? '✓ Active' : '○ Inactive'}
@@ -443,18 +244,6 @@ export default function ClientDetailPageRedesign() {
             >
               + New Invoice
             </Link>
-            <button
-              onClick={toggleClientStatus}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-lg transition-all duration-200 border border-white/20"
-            >
-              {client.status === 'active' ? 'Retire' : 'Reactivate'}
-            </button>
-            <button
-              onClick={deleteClient}
-              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-all duration-200"
-            >
-              Delete
-            </button>
           </div>
         </div>
       </motion.div>
@@ -464,61 +253,51 @@ export default function ClientDetailPageRedesign() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6"
+        className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
       >
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-600">Projects</span>
             <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                </div>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+          </div>
           <div className="text-3xl font-bold text-navy-900">{projects.length}</div>
         </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-slate-600">Messages</span>
-            <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                    </div>
-          <div className="text-3xl font-bold text-navy-900">{messages.length}</div>
-                  </div>
-
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-600">Documents</span>
             <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
           <div className="text-3xl font-bold text-navy-900">{uploadedFiles.length}</div>
-                  </div>
+        </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-600">Timeline</span>
             <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
+            </svg>
+          </div>
           <div className="text-lg font-bold text-navy-900">
             {client.expected_timeline || 'Not set'}
-                </div>
-              </div>
+          </div>
+        </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-600">Client Since</span>
             <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
+            </svg>
+          </div>
           <div className="text-lg font-bold text-navy-900">
             {new Date(client.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                    </div>
-                      </div>
+          </div>
+        </div>
       </motion.div>
 
       {/* Main Content Grid */}
@@ -533,11 +312,11 @@ export default function ClientDetailPageRedesign() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-                  >
+            >
               <h2 className="text-xl font-bold text-navy-900 mb-4 flex items-center gap-2">
                 <svg className="w-6 h-6 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                </svg>
                 Onboarding Information
               </h2>
 
@@ -545,8 +324,8 @@ export default function ClientDetailPageRedesign() {
                 <div className="mb-4 p-4 bg-off-white rounded-lg border-l-4 border-signal-red">
                   <p className="text-sm font-semibold text-navy-900 mb-1">Project Scope</p>
                   <p className="text-slate-700">{client.estimated_scope}</p>
-                    </div>
-                  )}
+                </div>
+              )}
 
               {onboardingData?.service_categories && onboardingData.service_categories.length > 0 && (
                 <div className="mb-4">
@@ -557,24 +336,24 @@ export default function ClientDetailPageRedesign() {
                         {service}
                       </span>
                     ))}
-                      </div>
-                      </div>
+                  </div>
+                </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 {projectLead && (
-                      <div>
+                  <div>
                     <p className="text-sm text-slate-600 mb-1">Project Lead</p>
                     <p className="font-semibold text-navy-900">{projectLead}</p>
-                      </div>
+                  </div>
                 )}
                 {technicalLead && (
-                      <div>
+                  <div>
                     <p className="text-sm text-slate-600 mb-1">Technical Lead</p>
                     <p className="font-semibold text-navy-900">{technicalLead}</p>
-                      </div>
+                  </div>
                 )}
-                    </div>
+              </div>
             </motion.div>
           )}
 
@@ -593,12 +372,12 @@ export default function ClientDetailPageRedesign() {
               >
                 + New Project
               </Link>
-                    </div>
+            </div>
 
             {projects.length === 0 ? (
               <div className="text-center py-8 text-slate-600">
                 <p>No projects yet</p>
-                        </div>
+              </div>
             ) : (
               <div className="space-y-3">
                 {projects.slice(0, 3).map((project) => (
@@ -612,19 +391,19 @@ export default function ClientDetailPageRedesign() {
                       }`}>
                         {project.status.replace('_', ' ')}
                       </span>
-                      </div>
+                    </div>
                     <div className="flex items-center gap-3">
                       <div className="flex-1 bg-gray-200 h-2 rounded-full overflow-hidden">
                         <div
                           className="bg-signal-red h-full transition-all duration-500"
                           style={{ width: `${project.progress_percentage}%` }}
                         ></div>
-                    </div>
+                      </div>
                       <span className="text-sm font-semibold text-navy-900">
                         {project.progress_percentage}%
                       </span>
-                      </div>
-                      </div>
+                    </div>
+                  </div>
                 ))}
                 {projects.length > 3 && (
                   <Link
@@ -634,100 +413,15 @@ export default function ClientDetailPageRedesign() {
                     View all {projects.length} projects →
                   </Link>
                 )}
-                    </div>
+              </div>
             )}
-          </motion.div>
-
-          {/* Recent Messages */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-navy-900 flex items-center gap-2">
-                <svg className="w-6 h-6 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                Recent Messages
-              </h2>
-              {projects.length > 0 && (
-                <Link
-                  href={`/dashboard/projects/${projects[0].id}/messages`}
-                  className="text-sm font-semibold text-signal-red hover:text-signal-red/80"
-                >
-                  View All →
-                </Link>
-              )}
-                    </div>
-
-            {projects.length === 0 ? (
-              <div className="text-center py-8 text-slate-600">
-                <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-                <p className="mb-3">Create a project first to start messaging</p>
-                <Link
-                  href={`/dashboard/clients/${client.id}/projects/new`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-signal-red text-white text-sm font-semibold rounded-lg hover:bg-signal-red/90"
-                >
-                  Create Project
-                </Link>
-                    </div>
-            ) : messages.length === 0 ? (
-              <div className="text-center py-8 text-slate-600">
-                <p className="mb-3">No messages yet</p>
-                <Link
-                  href={`/dashboard/projects/${projects[0].id}/messages`}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-signal-red text-white text-sm font-semibold rounded-lg hover:bg-signal-red/90"
-                >
-                  Start Conversation
-                </Link>
-                  </div>
-                ) : (
-              <div className="space-y-3">
-                {messages.map((message) => (
-                  <div key={message.id} className={`p-4 rounded-lg border ${
-                    message.is_internal 
-                      ? 'bg-orange-50 border-orange-200' 
-                      : 'bg-off-white border-gray-200'
-                  }`}>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-navy-900">
-                          {message.profiles?.full_name || 'Team Member'}
-                        </span>
-                        {message.is_internal && (
-                          <span className="px-2 py-0.5 bg-orange-200 text-orange-900 text-xs font-bold rounded-full">
-                            INTERNAL
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs text-slate-500">
-                        {new Date(message.created_at).toLocaleDateString()}
-                      </span>
-                      </div>
-                    <p className="text-sm text-slate-700 line-clamp-2">
-                      {message.message_text}
-                    </p>
-                  </div>
-                ))}
-                <Link
-                  href={`/dashboard/projects/${projects[0].id}/messages`}
-                  className="block text-center py-3 bg-signal-red text-white text-sm font-semibold rounded-lg hover:bg-signal-red/90 transition-colors"
-                >
-                  View All Messages & Reply
-                </Link>
-                        </div>
-                      )}
           </motion.div>
 
           {/* Uploaded Documents */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.4 }}
             className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
           >
             <div className="flex items-center justify-between mb-4">
@@ -755,135 +449,59 @@ export default function ClientDetailPageRedesign() {
                       <svg className="w-5 h-5 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                        <div>
+                      <div>
                         <p className="text-sm font-semibold text-navy-900">{file.file_name}</p>
                         <p className="text-xs text-slate-600">
                           {new Date(file.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                    </div>
+                        </p>
                       </div>
+                    </div>
+                  </div>
                 ))}
                 {uploadedFiles.length > 5 && (
                   <p className="text-center text-sm text-slate-600 pt-2">
                     + {uploadedFiles.length - 5} more files
                   </p>
-                    )}
-                  </div>
                 )}
-          </motion.div>
               </div>
+            )}
+          </motion.div>
+        </div>
 
         {/* Right Column - Sidebar */}
         <div className="space-y-6">
-          {/* Portal Access Status */}
+          {/* Quick Actions */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
             className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
           >
-            <h3 className="text-lg font-bold text-navy-900 mb-4 flex items-center gap-2">
-              <svg className="w-5 h-5 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-              </svg>
-              Portal Access
-            </h3>
-            
-                {clientHasAccount ? (
-              <div className="space-y-3">
-                <div className="p-4 bg-off-white rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-                          clientAccountActive 
-                        ? 'bg-green-100 text-green-800 border border-green-200'
-                        : 'bg-orange-100 text-orange-800 border border-orange-200'
-                        }`}>
-                      {clientAccountActive ? '✓ ACTIVE' : '⋯ PENDING'}
-                        </span>
-                      </div>
-                  <p className="text-sm text-slate-700">{clientAccountEmail}</p>
-                </div>
-                
-                {!clientAccountActive && (
-                      <button
-                        onClick={resendInvitation}
-                        disabled={resendingInvite}
-                    className="w-full px-4 py-2 bg-signal-red text-white text-sm font-semibold rounded-lg hover:bg-signal-red/90 transition-colors disabled:opacity-50"
-                      >
-                        {resendingInvite ? 'Sending...' : 'Resend Invitation'}
-                      </button>
-                )}
-
-                    {invitationLink && (
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-xs font-semibold text-navy-900 mb-2">Invitation Link</p>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={invitationLink}
-                            readOnly
-                        className="flex-1 px-2 py-1 text-xs bg-white border border-gray-300 rounded font-mono"
-                          />
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(invitationLink);
-                              alert('Link copied!');
-                            }}
-                        className="px-3 py-1 bg-signal-red text-white text-xs font-semibold rounded hover:bg-signal-red/90"
-                          >
-                            Copy
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-slate-700 mb-3">No portal account yet. Create one to give them access to projects, files, and invoices.</p>
-                    <button
-                      onClick={createClientAccount}
-                      disabled={creatingAccount}
-                  className="w-full px-4 py-3 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200 disabled:opacity-50"
-                    >
-                  {creatingAccount ? 'Creating Account...' : 'Create Portal Account'}
-                    </button>
-                  </div>
-                )}
-          </motion.div>
-
-          {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.25 }}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-          >
             <h3 className="text-lg font-bold text-navy-900 mb-4">Quick Actions</h3>
             <div className="space-y-2">
-                <Link
-                  href={`/dashboard/clients/${client.id}/projects/new`}
+              <Link
+                href={`/dashboard/clients/${client.id}/projects/new`}
                 className="flex items-center gap-3 p-3 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
-                >
+              >
                 <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
-              </div>
+                </div>
                 <span className="font-semibold text-navy-900">New Project</span>
-                  </Link>
+              </Link>
 
-                <Link
-                  href={`/dashboard/clients/${client.id}/invoices/new`}
+              <Link
+                href={`/dashboard/clients/${client.id}/invoices/new`}
                 className="flex items-center gap-3 p-3 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
-                >
+              >
                 <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-              </div>
+                </div>
                 <span className="font-semibold text-navy-900">New Invoice</span>
-                  </Link>
+              </Link>
 
               <Link
                 href={`/upload/${client.id}`}
@@ -892,7 +510,7 @@ export default function ClientDetailPageRedesign() {
                 <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
+                  </svg>
                 </div>
                 <span className="font-semibold text-navy-900">Upload Portal</span>
               </Link>
@@ -917,7 +535,7 @@ export default function ClientDetailPageRedesign() {
                 <a href={`mailto:${client.contact_email}`} className="font-semibold text-signal-red hover:underline">
                   {client.contact_email}
                 </a>
-                </div>
+              </div>
               {client.contact_phone && (
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Phone</p>
@@ -930,8 +548,8 @@ export default function ClientDetailPageRedesign() {
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Industry</p>
                   <p className="font-semibold text-navy-900">{client.industry}</p>
-            </div>
-          )}
+                </div>
+              )}
             </div>
           </motion.div>
         </div>

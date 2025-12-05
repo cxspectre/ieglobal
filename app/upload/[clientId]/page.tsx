@@ -47,6 +47,7 @@ export default function ClientUploadPage() {
   const [uploadedFiles, setUploadedFiles] = useState<Record<string, string[]>>({});
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [dragOver, setDragOver] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     loadClientData();
@@ -78,16 +79,22 @@ export default function ClientUploadPage() {
       // Load already uploaded files
       const { data: existingFiles } = await supabase
         .from('files')
-        .select('file_name, category')
+        .select('file_name, storage_path')
         .eq('client_id', params.clientId);
 
       if (existingFiles) {
         const filesByCategory: Record<string, string[]> = {};
         existingFiles.forEach((file: any) => {
-          if (!filesByCategory[file.category]) {
-            filesByCategory[file.category] = [];
+          // Extract document type from storage path (e.g., "client-id/discovery/file.pdf" -> "discovery")
+          const pathParts = file.storage_path.split('/');
+          const docType = pathParts[1]; // The folder name is the document type
+          
+          if (docType) {
+            if (!filesByCategory[docType]) {
+              filesByCategory[docType] = [];
+            }
+            filesByCategory[docType].push(file.file_name);
           }
-          filesByCategory[file.category].push(file.file_name);
         });
         setUploadedFiles(filesByCategory);
       }
@@ -108,6 +115,18 @@ export default function ClientUploadPage() {
     setSuccessMessage('');
 
     try {
+      // Map document types to valid database categories
+      const categoryMap: Record<string, string> = {
+        'discovery': 'document',
+        'access': 'document',
+        'brand': 'design',
+        'technical': 'document',
+        'nda': 'document',
+        'other': 'other',
+      };
+      
+      const dbCategory = categoryMap[docType] || 'document';
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const fileExt = file.name.split('.').pop();
@@ -139,7 +158,7 @@ export default function ClientUploadPage() {
             file_size: file.size,
             file_url: urlData.publicUrl,
             storage_path: filePath,
-            category: docType,
+            category: dbCategory,
           });
 
         if (dbError) throw dbError;
@@ -164,6 +183,29 @@ export default function ClientUploadPage() {
 
   const downloadTemplate = async (templateUrl: string) => {
     window.open(templateUrl, '_blank');
+  };
+
+  const handleDragOver = (e: React.DragEvent, docType: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver({ ...dragOver, [docType]: true });
+  };
+
+  const handleDragLeave = (e: React.DragEvent, docType: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver({ ...dragOver, [docType]: false });
+  };
+
+  const handleDrop = async (e: React.DragEvent, docType: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver({ ...dragOver, [docType]: false });
+    
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      await handleFileUpload(docType, files);
+    }
   };
 
   if (loading) {
@@ -325,13 +367,24 @@ export default function ClientUploadPage() {
                     <label 
                       htmlFor={`file-${docType}`}
                       className="block"
+                      onDragOver={(e) => handleDragOver(e, docType)}
+                      onDragLeave={(e) => handleDragLeave(e, docType)}
+                      onDrop={(e) => handleDrop(e, docType)}
                     >
-                      <div className="border-2 border-dashed border-gray-300 hover:border-signal-red rounded-lg p-6 text-center cursor-pointer transition-colors duration-200">
-                        <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <div className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all duration-200 ${
+                        dragOver[docType]
+                          ? 'border-signal-red bg-red-50 scale-105'
+                          : 'border-gray-300 hover:border-signal-red'
+                      }`}>
+                        <svg className={`w-12 h-12 mx-auto mb-3 transition-colors duration-200 ${
+                          dragOver[docType] ? 'text-signal-red' : 'text-gray-400'
+                        }`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
                         <p className="text-sm font-semibold text-navy-900 mb-1">
-                          {isUploading ? 'Uploading...' : 'Click to choose files or drag and drop'}
+                          {isUploading ? 'Uploading...' : 
+                           dragOver[docType] ? 'Drop files here!' :
+                           'Click to choose files or drag and drop'}
                         </p>
                         <p className="text-xs text-slate-600">
                           PDF, Word, Excel, Images (Max 10MB per file)

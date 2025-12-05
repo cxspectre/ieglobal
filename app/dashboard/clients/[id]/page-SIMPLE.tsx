@@ -84,17 +84,17 @@ export default function ClientDetailPageRedesign() {
 
   const loadData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
-        return;
-      }
+    if (!session) {
+      router.push('/login');
+      return;
+    }
 
-      // Load client
+    // Load client
     const { data: clientData } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('id', params.id)
-        .single();
+      .from('clients')
+      .select('*')
+      .eq('id', params.id)
+      .single();
 
     if (clientData) setClient(clientData);
 
@@ -126,14 +126,14 @@ export default function ClientDetailPageRedesign() {
           .single();
         if (tech) setTechnicalLead(tech.full_name);
       }
-      }
+    }
 
-      // Load projects
-      const { data: projectsData } = await supabase
-        .from('projects')
+    // Load projects
+    const { data: projectsData } = await supabase
+      .from('projects')
       .select('id, name, status, progress_percentage')
-        .eq('client_id', params.id)
-        .order('created_at', { ascending: false });
+      .eq('client_id', params.id)
+      .order('created_at', { ascending: false });
 
     if (projectsData) setProjects(projectsData);
 
@@ -141,7 +141,7 @@ export default function ClientDetailPageRedesign() {
     const { data: filesData } = await supabase
       .from('files')
       .select('file_name, storage_path, created_at')
-        .eq('client_id', params.id)
+      .eq('client_id', params.id)
       .order('created_at', { ascending: false });
 
     if (filesData) setUploadedFiles(filesData);
@@ -157,37 +157,37 @@ export default function ClientDetailPageRedesign() {
         .limit(5);
 
       if (messagesData) setMessages(messagesData as any);
-      }
+    }
 
-      // Check if client has a user account
-      const { data: clientProfile } = await (supabase as any)
-        .from('profiles')
-        .select('id, email')
-        .eq('client_id', params.id)
-        .eq('role', 'client')
-        .maybeSingle();
+    // Check if client has a user account
+    const { data: clientProfile } = await (supabase as any)
+      .from('profiles')
+      .select('id, email')
+      .eq('client_id', params.id)
+      .eq('role', 'client')
+      .maybeSingle();
 
-      if (clientProfile) {
-        setClientHasAccount(true);
-        setClientAccountEmail(clientProfile.email);
+    if (clientProfile) {
+      setClientHasAccount(true);
+      setClientAccountEmail(clientProfile.email);
 
-        try {
-          const statusResponse = await fetch('/api/check-user-status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: clientProfile.email }),
-          });
+      try {
+        const statusResponse = await fetch('/api/check-user-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: clientProfile.email }),
+        });
 
-          const statusResult = await statusResponse.json();
-          if (statusResult.active) {
-            setClientAccountActive(true);
-          }
-        } catch (err) {
-          console.error('Failed to check user status:', err);
+        const statusResult = await statusResponse.json();
+        if (statusResult.active) {
+          setClientAccountActive(true);
         }
+      } catch (err) {
+        console.error('Failed to check user status:', err);
       }
-      
-      setLoading(false);
+    }
+
+    setLoading(false);
   };
 
   const createClientAccount = async () => {
@@ -363,15 +363,15 @@ export default function ClientDetailPageRedesign() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Breadcrumb */}
-        <Link
-          href="/dashboard/clients"
+      <Link
+        href="/dashboard/clients"
         className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-signal-red mb-6 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Clients
-        </Link>
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Back to Clients
+      </Link>
 
       {/* Header Section */}
       <motion.div
@@ -384,8 +384,8 @@ export default function ClientDetailPageRedesign() {
             <div className="flex items-center gap-4 mb-3">
               <h1 className="text-4xl font-bold text-white">{client.company_name}</h1>
               <span className={`px-4 py-1.5 text-sm font-semibold rounded-full ${
-                client.status === 'active' 
-                  ? 'bg-green-500/20 text-green-200 border border-green-400/30' 
+                client.status === 'active'
+                  ? 'bg-green-500/20 text-green-200 border border-green-400/30'
                   : 'bg-gray-500/20 text-gray-200 border border-gray-400/30'
               }`}>
                 {client.status === 'active' ? '✓ Active' : '○ Inactive'}
@@ -470,55 +470,55 @@ export default function ClientDetailPageRedesign() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-600">Projects</span>
             <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                </div>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+          </div>
           <div className="text-3xl font-bold text-navy-900">{projects.length}</div>
         </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-600">Messages</span>
             <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                    </div>
+            </svg>
+          </div>
           <div className="text-3xl font-bold text-navy-900">{messages.length}</div>
-                  </div>
+        </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-600">Documents</span>
             <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
           <div className="text-3xl font-bold text-navy-900">{uploadedFiles.length}</div>
-                  </div>
+        </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-600">Timeline</span>
             <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
+            </svg>
+          </div>
           <div className="text-lg font-bold text-navy-900">
             {client.expected_timeline || 'Not set'}
-                </div>
-              </div>
+          </div>
+        </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-600">Client Since</span>
             <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
+            </svg>
+          </div>
           <div className="text-lg font-bold text-navy-900">
             {new Date(client.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-                    </div>
-                      </div>
+          </div>
+        </div>
       </motion.div>
 
       {/* Main Content Grid */}
@@ -533,11 +533,11 @@ export default function ClientDetailPageRedesign() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-                  >
+            >
               <h2 className="text-xl font-bold text-navy-900 mb-4 flex items-center gap-2">
                 <svg className="w-6 h-6 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                </svg>
                 Onboarding Information
               </h2>
 
@@ -545,8 +545,8 @@ export default function ClientDetailPageRedesign() {
                 <div className="mb-4 p-4 bg-off-white rounded-lg border-l-4 border-signal-red">
                   <p className="text-sm font-semibold text-navy-900 mb-1">Project Scope</p>
                   <p className="text-slate-700">{client.estimated_scope}</p>
-                    </div>
-                  )}
+                </div>
+              )}
 
               {onboardingData?.service_categories && onboardingData.service_categories.length > 0 && (
                 <div className="mb-4">
@@ -557,24 +557,24 @@ export default function ClientDetailPageRedesign() {
                         {service}
                       </span>
                     ))}
-                      </div>
-                      </div>
+                  </div>
+                </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 {projectLead && (
-                      <div>
+                  <div>
                     <p className="text-sm text-slate-600 mb-1">Project Lead</p>
                     <p className="font-semibold text-navy-900">{projectLead}</p>
-                      </div>
+                  </div>
                 )}
                 {technicalLead && (
-                      <div>
+                  <div>
                     <p className="text-sm text-slate-600 mb-1">Technical Lead</p>
                     <p className="font-semibold text-navy-900">{technicalLead}</p>
-                      </div>
+                  </div>
                 )}
-                    </div>
+              </div>
             </motion.div>
           )}
 
@@ -593,12 +593,12 @@ export default function ClientDetailPageRedesign() {
               >
                 + New Project
               </Link>
-                    </div>
+            </div>
 
             {projects.length === 0 ? (
               <div className="text-center py-8 text-slate-600">
                 <p>No projects yet</p>
-                        </div>
+              </div>
             ) : (
               <div className="space-y-3">
                 {projects.slice(0, 3).map((project) => (
@@ -612,19 +612,19 @@ export default function ClientDetailPageRedesign() {
                       }`}>
                         {project.status.replace('_', ' ')}
                       </span>
-                      </div>
+                    </div>
                     <div className="flex items-center gap-3">
                       <div className="flex-1 bg-gray-200 h-2 rounded-full overflow-hidden">
                         <div
                           className="bg-signal-red h-full transition-all duration-500"
                           style={{ width: `${project.progress_percentage}%` }}
                         ></div>
-                    </div>
+                      </div>
                       <span className="text-sm font-semibold text-navy-900">
                         {project.progress_percentage}%
                       </span>
-                      </div>
-                      </div>
+                    </div>
+                  </div>
                 ))}
                 {projects.length > 3 && (
                   <Link
@@ -634,7 +634,7 @@ export default function ClientDetailPageRedesign() {
                     View all {projects.length} projects →
                   </Link>
                 )}
-                    </div>
+              </div>
             )}
           </motion.div>
 
@@ -660,7 +660,7 @@ export default function ClientDetailPageRedesign() {
                   View All →
                 </Link>
               )}
-                    </div>
+            </div>
 
             {projects.length === 0 ? (
               <div className="text-center py-8 text-slate-600">
@@ -674,7 +674,7 @@ export default function ClientDetailPageRedesign() {
                 >
                   Create Project
                 </Link>
-                    </div>
+              </div>
             ) : messages.length === 0 ? (
               <div className="text-center py-8 text-slate-600">
                 <p className="mb-3">No messages yet</p>
@@ -684,8 +684,8 @@ export default function ClientDetailPageRedesign() {
                 >
                   Start Conversation
                 </Link>
-                  </div>
-                ) : (
+              </div>
+            ) : (
               <div className="space-y-3">
                 {messages.map((message) => (
                   <div key={message.id} className={`p-4 rounded-lg border ${
@@ -707,7 +707,7 @@ export default function ClientDetailPageRedesign() {
                       <span className="text-xs text-slate-500">
                         {new Date(message.created_at).toLocaleDateString()}
                       </span>
-                      </div>
+                    </div>
                     <p className="text-sm text-slate-700 line-clamp-2">
                       {message.message_text}
                     </p>
@@ -719,8 +719,8 @@ export default function ClientDetailPageRedesign() {
                 >
                   View All Messages & Reply
                 </Link>
-                        </div>
-                      )}
+              </div>
+            )}
           </motion.div>
 
           {/* Uploaded Documents */}
@@ -755,24 +755,24 @@ export default function ClientDetailPageRedesign() {
                       <svg className="w-5 h-5 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                        <div>
+                      <div>
                         <p className="text-sm font-semibold text-navy-900">{file.file_name}</p>
                         <p className="text-xs text-slate-600">
                           {new Date(file.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                    </div>
+                        </p>
                       </div>
+                    </div>
+                  </div>
                 ))}
                 {uploadedFiles.length > 5 && (
                   <p className="text-center text-sm text-slate-600 pt-2">
                     + {uploadedFiles.length - 5} more files
                   </p>
-                    )}
-                  </div>
                 )}
-          </motion.div>
               </div>
+            )}
+          </motion.div>
+        </div>
 
         {/* Right Column - Sidebar */}
         <div className="space-y-6">
@@ -790,66 +790,66 @@ export default function ClientDetailPageRedesign() {
               Portal Access
             </h3>
             
-                {clientHasAccount ? (
+            {clientHasAccount ? (
               <div className="space-y-3">
                 <div className="p-4 bg-off-white rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <span className={`px-3 py-1 text-xs font-bold rounded-full ${
-                          clientAccountActive 
+                      clientAccountActive
                         ? 'bg-green-100 text-green-800 border border-green-200'
                         : 'bg-orange-100 text-orange-800 border border-orange-200'
-                        }`}>
+                    }`}>
                       {clientAccountActive ? '✓ ACTIVE' : '⋯ PENDING'}
-                        </span>
-                      </div>
+                    </span>
+                  </div>
                   <p className="text-sm text-slate-700">{clientAccountEmail}</p>
                 </div>
                 
                 {!clientAccountActive && (
-                      <button
-                        onClick={resendInvitation}
-                        disabled={resendingInvite}
+                  <button
+                    onClick={resendInvitation}
+                    disabled={resendingInvite}
                     className="w-full px-4 py-2 bg-signal-red text-white text-sm font-semibold rounded-lg hover:bg-signal-red/90 transition-colors disabled:opacity-50"
-                      >
-                        {resendingInvite ? 'Sending...' : 'Resend Invitation'}
-                      </button>
+                  >
+                    {resendingInvite ? 'Sending...' : 'Resend Invitation'}
+                  </button>
                 )}
 
-                    {invitationLink && (
+                {invitationLink && (
                   <div className="p-3 bg-gray-50 rounded-lg">
                     <p className="text-xs font-semibold text-navy-900 mb-2">Invitation Link</p>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={invitationLink}
-                            readOnly
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={invitationLink}
+                        readOnly
                         className="flex-1 px-2 py-1 text-xs bg-white border border-gray-300 rounded font-mono"
-                          />
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(invitationLink);
-                              alert('Link copied!');
-                            }}
+                      />
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(invitationLink);
+                          alert('Link copied!');
+                        }}
                         className="px-3 py-1 bg-signal-red text-white text-xs font-semibold rounded hover:bg-signal-red/90"
-                          >
-                            Copy
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-slate-700 mb-3">No portal account yet. Create one to give them access to projects, files, and invoices.</p>
-                    <button
-                      onClick={createClientAccount}
-                      disabled={creatingAccount}
-                  className="w-full px-4 py-3 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200 disabled:opacity-50"
-                    >
-                  {creatingAccount ? 'Creating Account...' : 'Create Portal Account'}
-                    </button>
+                      >
+                        Copy
+                      </button>
+                    </div>
                   </div>
                 )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-slate-700 mb-3">No portal account yet. Create one to give them access to projects, files, and invoices.</p>
+                <button
+                  onClick={createClientAccount}
+                  disabled={creatingAccount}
+                  className="w-full px-4 py-3 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200 disabled:opacity-50"
+                >
+                  {creatingAccount ? 'Creating Account...' : 'Create Portal Account'}
+                </button>
+              </div>
+            )}
           </motion.div>
 
           {/* Quick Actions */}
@@ -861,29 +861,29 @@ export default function ClientDetailPageRedesign() {
           >
             <h3 className="text-lg font-bold text-navy-900 mb-4">Quick Actions</h3>
             <div className="space-y-2">
-                <Link
-                  href={`/dashboard/clients/${client.id}/projects/new`}
+              <Link
+                href={`/dashboard/clients/${client.id}/projects/new`}
                 className="flex items-center gap-3 p-3 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
-                >
+              >
                 <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
-              </div>
+                </div>
                 <span className="font-semibold text-navy-900">New Project</span>
-                  </Link>
+              </Link>
 
-                <Link
-                  href={`/dashboard/clients/${client.id}/invoices/new`}
+              <Link
+                href={`/dashboard/clients/${client.id}/invoices/new`}
                 className="flex items-center gap-3 p-3 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
-                >
+              >
                 <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-              </div>
+                </div>
                 <span className="font-semibold text-navy-900">New Invoice</span>
-                  </Link>
+              </Link>
 
               <Link
                 href={`/upload/${client.id}`}
@@ -892,7 +892,7 @@ export default function ClientDetailPageRedesign() {
                 <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
+                  </svg>
                 </div>
                 <span className="font-semibold text-navy-900">Upload Portal</span>
               </Link>
@@ -917,7 +917,7 @@ export default function ClientDetailPageRedesign() {
                 <a href={`mailto:${client.contact_email}`} className="font-semibold text-signal-red hover:underline">
                   {client.contact_email}
                 </a>
-                </div>
+              </div>
               {client.contact_phone && (
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Phone</p>
@@ -930,8 +930,8 @@ export default function ClientDetailPageRedesign() {
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Industry</p>
                   <p className="font-semibold text-navy-900">{client.industry}</p>
-            </div>
-          )}
+                </div>
+              )}
             </div>
           </motion.div>
         </div>
