@@ -29,6 +29,7 @@ const heroSlides = [
       href: '/case-studies',
     },
     backgroundImage: '/finger-pointing-at-javascript-code.jpg',
+    imageOverlay: 'bg-black/70',
     isDark: true,
   },
   {
@@ -50,7 +51,7 @@ const heroSlides = [
       text: 'Start a Project',
       href: '/contact',
     },
-    backgroundPattern: 'gradient' as const,
+    backgroundImage: '/portrait-of-illuminated-laptop.jpg',
     isDark: true,
   },
 ];

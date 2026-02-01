@@ -36,9 +36,23 @@ export default function Footer() {
                 className="h-12 w-auto brightness-0 invert"
               />
             </Link>
-            <p className="text-gray-300 leading-relaxed">
+            <p className="text-gray-300 leading-relaxed mb-6">
               Digital engineering that creates momentum—not friction.
             </p>
+            <div className="space-y-2">
+              <a
+                href="mailto:hello@ie-global.net"
+                className="block text-gray-300 hover:text-signal-red transition-colors duration-200"
+              >
+                hello@ie-global.net
+              </a>
+              <a
+                href="tel:+31621902015"
+                className="block text-gray-300 hover:text-signal-red transition-colors duration-200"
+              >
+                +31 6 21 90 20 15
+              </a>
+            </div>
           </div>
 
           {/* Company Column */}

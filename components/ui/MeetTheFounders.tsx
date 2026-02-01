@@ -8,12 +8,14 @@ const founders = [
   {
     name: { first: 'Cassian', last: 'Drefke' },
     role: 'Founder',
+    email: 'cdrefke@ie-global.net',
     image: '/IMG_0342.jpg',
     imagePosition: '50% 35%', // center face in circular crop
   },
   {
     name: { first: 'Wessel', last: 'Gederblom' },
     role: 'Co-Founder',
+    email: 'wgelderblom@ie-global.net',
     image: '/7e204664-ee6f-4b20-853e-476fc98fc899.jpg',
     imagePosition: '50% 35%', // center face in circular crop
   },
@@ -65,9 +67,15 @@ export default function MeetTheFounders({ variant = 'home', embed = false }: Mee
                 <span className="font-bold">{founder.name.first}</span>{' '}
                 <span className="font-normal">{founder.name.last}</span>
               </h3>
-              <p className="text-sm font-semibold text-signal-red uppercase tracking-wider">
+              <p className="text-sm font-semibold text-signal-red uppercase tracking-wider mb-2">
                 {founder.role}
               </p>
+              <a
+                href={`mailto:${founder.email}`}
+                className={`text-sm hover:text-signal-red transition-colors duration-200 ${isAbout ? 'text-gray-300' : 'text-slate-600'}`}
+              >
+                {founder.email}
+              </a>
             </motion.div>
           ))}
       </div>

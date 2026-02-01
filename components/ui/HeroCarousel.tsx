@@ -15,6 +15,8 @@ type HeroSlide = {
   };
   backgroundPattern?: 'gradient' | 'mesh' | 'dark-gradient' | 'purple-gradient';
   backgroundImage?: string;
+  /** Override default image overlay (e.g. 'bg-black/70' for darker overlay when text needs more contrast) */
+  imageOverlay?: string;
   isDark: boolean;
 };
 
@@ -98,7 +100,7 @@ export default function HeroCarousel({
                 priority={index === 0}
                 quality={90}
               />
-              <div className="absolute inset-0 bg-black/50" />
+              <div className={`absolute inset-0 ${slide.imageOverlay ?? 'bg-black/50'}`} />
             </>
           ) : (
             <>
