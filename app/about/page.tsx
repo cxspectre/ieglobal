@@ -6,7 +6,13 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'About IE Global',
-  description: 'The story behind IE Global. We exist to build digital systems that create momentum—not friction.',
+  description: 'The story behind IE Global. We exist to build digital systems that create momentum—not friction. Meet the founders, our values, and how we work.',
+  openGraph: {
+    title: 'About IE Global | Building Systems That Last',
+    description: 'The story behind IE Global. We exist to build digital systems that create momentum—not friction.',
+    url: 'https://ie-global.net/about',
+  },
+  alternates: { canonical: 'https://ie-global.net/about' },
 };
 
 export default function AboutPage() {

@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import ClientLayout from '@/components/layout/ClientLayout';
+import JsonLd from '@/components/seo/JsonLd';
 
 const outfit = Outfit({
   subsets: ['latin'],
@@ -26,14 +27,17 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://ie-global.net'),
   title: {
-    default: 'IE Global | Customer-Led Growth & AI Execution',
+    default: 'IE Global | Digital Agency — Websites, Apps & Systems',
     template: '%s | IE Global',
   },
-  description: 'We help enterprises turn AI and customer insight into measurable growth within 90 days.',
-  keywords: ['AI strategy', 'customer experience', 'digital transformation', 'consulting', 'data analytics'],
-  authors: [{ name: 'IE Global' }],
+  description: 'IE Global is a digital agency that builds high-performance websites, platforms, and systems. Strategy, design, and engineering in one team. Based in the Netherlands.',
+  keywords: ['digital agency', 'web development', 'website design', 'digital transformation', 'software development', 'IE Global', 'Next.js', 'React', 'Netherlands'],
+  authors: [{ name: 'IE Global', url: 'https://ie-global.net' }],
   creator: 'IE Global',
   publisher: 'IE Global',
+  alternates: {
+    canonical: 'https://ie-global.net',
+  },
   formatDetection: {
     email: false,
     address: false,
@@ -43,15 +47,24 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://ie-global.net',
-    title: 'IE Global | Customer-Led Growth & AI Execution',
-    description: 'We help enterprises turn AI and customer insight into measurable growth within 90 days.',
+    title: 'IE Global | Digital Agency — Websites, Apps & Systems',
+    description: 'IE Global builds high-performance websites, platforms, and systems. Strategy, design, and engineering in one team.',
     siteName: 'IE Global',
+    images: [
+      {
+        url: '/hero-1.png',
+        width: 1200,
+        height: 630,
+        alt: 'IE Global - Digital Agency',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'IE Global | Customer-Led Growth & AI Execution',
-    description: 'We help enterprises turn AI and customer insight into measurable growth within 90 days.',
+    title: 'IE Global | Digital Agency — Websites, Apps & Systems',
+    description: 'IE Global builds high-performance websites, platforms, and systems. Strategy, design, and engineering in one team.',
     creator: '@ieglobal',
+    images: ['/hero-1.png'],
   },
   robots: {
     index: true,
@@ -86,6 +99,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#0B1930" />
       </head>
       <body>
+        <JsonLd />
         <ClientLayout>{children}</ClientLayout>
         <Analytics />
         <SpeedInsights />

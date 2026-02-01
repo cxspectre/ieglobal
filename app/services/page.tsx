@@ -5,7 +5,13 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Services',
-  description: 'From strategy to scale. We build digital systems that are fast, reliable, and built to last.',
+  description: 'From strategy to scale. We build digital systems that are fast, reliable, and built to last. Websites, apps, AI, and ongoing support.',
+  openGraph: {
+    title: 'Services | IE Global',
+    description: 'From strategy to scale. We build digital systems that are fast, reliable, and built to last.',
+    url: 'https://ie-global.net/services',
+  },
+  alternates: { canonical: 'https://ie-global.net/services' },
 };
 
 const serviceCategories = [
