@@ -132,18 +132,22 @@ export default function InvoicesPage() {
     setDeletingId(invoiceId);
 
     try {
-      // Get invoice to check for file
+      // Get invoice to check for file (invoice PDFs live in client-files bucket)
       const { data: invoice } = await (supabase as any)
         .from('invoices')
         .select('storage_path, file_url')
         .eq('id', invoiceId)
         .single();
 
-      // Delete file from storage if exists
-      if (invoice?.storage_path) {
+      // Derive storage path: invoices are stored in client-files bucket (path like clientId/invoices/file.pdf)
+      const storagePath =
+        invoice?.storage_path ||
+        (invoice?.file_url?.match(/\/client-files\/(.+)$/)?.[1] ?? null);
+
+      if (storagePath) {
         const { error: storageError } = await supabase.storage
-          .from('invoices')
-          .remove([invoice.storage_path]);
+          .from('client-files')
+          .remove([storagePath]);
 
         if (storageError) {
           console.error('Error deleting file from storage:', storageError);

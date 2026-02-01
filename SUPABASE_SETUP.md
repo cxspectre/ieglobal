@@ -136,6 +136,21 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...your-service-role-key
 
 ---
 
+## ⚠️ Production: Create Storage Bucket (fixes "Bucket not found")
+
+If your **live site** shows `{"statusCode":"404","error":"Bucket not found","message":"Bucket not found"}` when viewing invoices or files, the **production** Supabase project is missing the Storage bucket. Do this in the **same** Supabase project that your production site uses (the one whose URL is in `NEXT_PUBLIC_SUPABASE_URL`):
+
+1. Open your **production** Supabase project at [supabase.com/dashboard](https://supabase.com/dashboard).
+2. Go to **Storage** in the sidebar.
+3. Click **"New bucket"**.
+4. **Name**: `client-files` (must be exactly this).
+5. **Public bucket**: Turn **on** — the app uses direct "View" links for invoice PDFs, so the bucket must be public for those links to work.
+6. Click **"Create bucket"**.
+
+Then add a policy so files can be read (e.g. **Policies** → **New policy** → use the SELECT policy from Step 4 above). After the bucket exists, invoice and file viewing on the live site should work.
+
+---
+
 ## Step 7: Create Your First Admin User (2 minutes)
 
 ### 1. Go to Authentication
