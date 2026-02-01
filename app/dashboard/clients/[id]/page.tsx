@@ -467,15 +467,18 @@ export default function ClientDetailPageRedesign() {
         transition={{ delay: 0.1 }}
         className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6"
       >
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <Link
+          href={`/dashboard/projects?client=${client.id}`}
+          className="block bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-signal-red/50 hover:shadow-md transition-all duration-200"
+        >
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-600">Projects</span>
             <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                    </svg>
-                </div>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+          </div>
           <div className="text-3xl font-bold text-navy-900">{projects.length}</div>
-        </div>
+        </Link>
 
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
@@ -487,15 +490,18 @@ export default function ClientDetailPageRedesign() {
           <div className="text-3xl font-bold text-navy-900">{messages.length}</div>
                   </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <Link
+          href={`/dashboard/clients/${client.id}/files`}
+          className="block bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-signal-red/50 hover:shadow-md transition-all duration-200"
+        >
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-slate-600">Documents</span>
             <svg className="w-5 h-5 text-navy-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
           <div className="text-3xl font-bold text-navy-900">{uploadedFiles.length}</div>
-                  </div>
+        </Link>
 
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center justify-between mb-2">
@@ -875,7 +881,7 @@ export default function ClientDetailPageRedesign() {
                   </Link>
 
                 <Link
-                  href={`/dashboard/clients/${client.id}/invoices/new`}
+                  href={`/dashboard/invoices?client=${client.id}`}
                 className="flex items-center gap-3 p-3 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
                 >
                 <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
@@ -883,8 +889,32 @@ export default function ClientDetailPageRedesign() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
               </div>
-                <span className="font-semibold text-navy-900">New Invoice</span>
+                <span className="font-semibold text-navy-900">View Invoices</span>
                   </Link>
+
+                <Link
+                  href={`/dashboard/clients/${client.id}/files`}
+                className="flex items-center gap-3 p-3 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
+                >
+                <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+              </div>
+                <span className="font-semibold text-navy-900">View Files</span>
+                  </Link>
+
+              <Link
+                href={`/dashboard/clients/${client.id}/invoices/new`}
+                className="flex items-center gap-3 p-3 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
+              >
+                <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <span className="font-semibold text-navy-900">New Invoice</span>
+              </Link>
 
               <Link
                 href={`/upload/${client.id}`}

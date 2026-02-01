@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Link from 'next/link';
 
 type Invoice = {
   id: string;
@@ -20,6 +19,7 @@ type Invoice = {
 export default function ClientInvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [profile, setProfile] = useState<{ client_id?: string } | null>(null);
   const router = useRouter();
   const supabase = createBrowserClient();
 
@@ -42,8 +42,10 @@ export default function ClientInvoicesPage() {
       .eq('id', session.user.id)
       .single();
 
+    setProfile(profile);
     if (!profile?.client_id) {
       setLoading(false);
+      setInvoices([]);
       return;
     }
 
@@ -59,11 +61,6 @@ export default function ClientInvoicesPage() {
     setLoading(false);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-off-white">
@@ -76,47 +73,14 @@ export default function ClientInvoicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-off-white">
-      {/* Top Bar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/portal" className="font-bold text-xl text-navy-900">
-              Portal
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/portal" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Overview
-              </Link>
-              <Link href="/portal/milestones" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Milestones
-              </Link>
-              <Link href="/portal/invoices" className="text-sm font-medium text-navy-900 border-b-2 border-signal-red pb-0.5">
-                Invoices
-              </Link>
-              <Link href="/portal/files" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Files
-              </Link>
-              <Link href="/portal/messages" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Messages
-              </Link>
-            </nav>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
-          >
-            Sign Out
-          </button>
+    <div className="max-w-5xl mx-auto">
+      <h1 className="text-3xl font-bold text-navy-900 mb-8">Invoices</h1>
+
+      {!profile?.client_id ? (
+        <div className="bg-white p-12 text-center rounded-lg border border-gray-200">
+          <p className="text-slate-700">Your account is not yet linked to a client. Please contact hello@ie-global.net if you need access.</p>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="p-8">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold text-navy-900 mb-8">Invoices</h1>
-
-          {invoices.length === 0 ? (
+      ) : invoices.length === 0 ? (
             <div className="bg-white p-12 text-center">
               <p className="text-slate-700">No invoices yet.</p>
             </div>
@@ -179,8 +143,6 @@ export default function ClientInvoicesPage() {
               ))}
             </div>
           )}
-        </div>
-      </main>
     </div>
   );
 }

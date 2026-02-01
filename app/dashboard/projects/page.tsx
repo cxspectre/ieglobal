@@ -24,17 +24,17 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [clientFilter, setClientFilter] = useState<string>('all');
   const router = useRouter();
   const supabase = createBrowserClient();
 
   useEffect(() => {
-    // Check for status in URL
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const status = params.get('status');
-      if (status) {
-        setStatusFilter(status);
-      }
+      const client = params.get('client');
+      if (status) setStatusFilter(status);
+      if (client) setClientFilter(client);
     }
     checkAuth();
   }, []);
@@ -43,7 +43,7 @@ export default function ProjectsPage() {
     if (projects.length > 0) {
       applyFilters();
     }
-  }, [statusFilter, projects]);
+  }, [statusFilter, clientFilter, projects]);
 
   const checkAuth = async () => {
     try {
@@ -100,9 +100,11 @@ export default function ProjectsPage() {
   const applyFilters = () => {
     let filtered = [...projects];
 
-    // Filter by status
     if (statusFilter !== 'all') {
       filtered = filtered.filter(proj => proj.status === statusFilter);
+    }
+    if (clientFilter !== 'all' && clientFilter) {
+      filtered = filtered.filter(proj => proj.clients?.id === clientFilter);
     }
 
     setFilteredProjects(filtered);

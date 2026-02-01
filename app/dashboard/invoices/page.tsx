@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 
@@ -33,7 +33,15 @@ export default function InvoicesPage() {
   const [clients, setClients] = useState<any[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createBrowserClient();
+
+  useEffect(() => {
+    const clientParam = searchParams.get('client');
+    if (clientParam) {
+      setClientFilter(clientParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     checkAuth();

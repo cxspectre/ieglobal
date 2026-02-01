@@ -66,6 +66,7 @@ export default function DashboardPage() {
   const [recentClients, setRecentClients] = useState<RecentClient[]>([]);
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
   const [upcomingMilestones, setUpcomingMilestones] = useState<UpcomingMilestone[]>([]);
+  const [error, setError] = useState<string | null>(null);
   
   const router = useRouter();
   const supabase = createBrowserClient();
@@ -75,79 +76,82 @@ export default function DashboardPage() {
   }, []);
 
   const loadDashboard = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
+    setError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
 
-        if (!session) {
-          router.push('/login');
-          return;
-        }
+      if (!session) {
+        router.push('/login');
+        return;
+      }
 
-        // Get profile
-    const { data: profile } = await (supabase as any)
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
+      const { data: profile } = await (supabase as any)
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
 
-        if (profile?.role !== 'admin' && profile?.role !== 'employee') {
-          router.push('/portal');
-          return;
-        }
+      if (profile?.role !== 'admin' && profile?.role !== 'employee') {
+        router.push('/portal');
+        return;
+      }
 
-        setUser({ ...session.user, profile });
+      setUser({ ...session.user, profile });
 
-    // Load all stats in parallel
-    const [
-      activeClientsResult,
-      totalClientsResult,
-      projectsResult,
-      inProgressResult,
-      completedResult,
-      pendingInvoicesResult,
-      overdueResult,
-      paidInvoicesResult,
-      onboardedResult
-    ] = await Promise.all([
-      supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active'),
-      supabase.from('clients').select('*', { count: 'exact', head: true }),
-      supabase.from('projects').select('*', { count: 'exact', head: true }),
-      supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'in_progress'),
-      supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
-      supabase.from('invoices').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('invoices').select('*', { count: 'exact', head: true }).lt('due_date', new Date().toISOString().split('T')[0]).neq('status', 'paid'),
-      supabase.from('invoices').select('amount').eq('status', 'paid'),
-      supabase.from('clients').select('*', { count: 'exact', head: true }).eq('onboarding_status', 'completed'),
-    ]);
+      const today = new Date().toISOString().split('T')[0];
+      const [
+        activeClientsResult,
+        totalClientsResult,
+        projectsResult,
+        inProgressResult,
+        completedResult,
+        pendingInvoicesResult,
+        overdueResult,
+        paidInvoicesResult,
+        onboardedResult
+      ] = await Promise.all([
+        supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('clients').select('*', { count: 'exact', head: true }),
+        supabase.from('projects').select('*', { count: 'exact', head: true }),
+        supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'in_progress'),
+        supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
+        supabase.from('invoices').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('invoices').select('*', { count: 'exact', head: true }).in('status', ['pending', 'overdue']).lt('due_date', today),
+        supabase.from('invoices').select('amount').eq('status', 'paid'),
+        supabase.from('clients').select('*', { count: 'exact', head: true }).eq('onboarding_status', 'completed'),
+      ]);
 
-    const totalRevenue = paidInvoicesResult.data?.reduce((sum: number, inv: any) => sum + inv.amount, 0) || 0;
+      const totalRevenue = paidInvoicesResult.data?.reduce((sum: number, inv: any) => sum + inv.amount, 0) || 0;
 
-    setStats({
-      activeClients: activeClientsResult.count || 0,
-      totalClients: totalClientsResult.count || 0,
-      totalProjects: projectsResult.count || 0,
-      inProgressProjects: inProgressResult.count || 0,
-      completedProjects: completedResult.count || 0,
-      pendingInvoices: pendingInvoicesResult.count || 0,
-      overdueInvoices: overdueResult.count || 0,
-      totalRevenue,
-      onboardedClients: onboardedResult.count || 0,
-    });
+      setStats({
+        activeClients: activeClientsResult.count || 0,
+        totalClients: totalClientsResult.count || 0,
+        totalProjects: projectsResult.count || 0,
+        inProgressProjects: inProgressResult.count || 0,
+        completedProjects: completedResult.count || 0,
+        pendingInvoices: pendingInvoicesResult.count || 0,
+        overdueInvoices: overdueResult.count || 0,
+        totalRevenue,
+        onboardedClients: onboardedResult.count || 0,
+      });
 
-    // Load recent data
-    const [clientsData, projectsData, milestonesData] = await Promise.all([
-      supabase.from('clients').select('id, company_name, contact_person, priority_level, created_at').order('created_at', { ascending: false }).limit(4),
-      supabase.from('projects').select('id, name, status, progress_percentage, clients(company_name)').in('status', ['in_progress', 'planning', 'review']).order('created_at', { ascending: false }).limit(4),
-      supabase.from('milestones').select('id, title, expected_date, projects(name, clients(company_name))').gte('expected_date', new Date().toISOString().split('T')[0]).neq('status', 'completed').order('expected_date', { ascending: true }).limit(3),
-    ]);
+      const [clientsData, projectsData, milestonesData] = await Promise.all([
+        supabase.from('clients').select('id, company_name, contact_person, priority_level, created_at').order('created_at', { ascending: false }).limit(4),
+        supabase.from('projects').select('id, name, status, progress_percentage, clients(company_name)').in('status', ['in_progress', 'planning', 'review']).order('created_at', { ascending: false }).limit(4),
+        supabase.from('milestones').select('id, title, expected_date, projects(name, clients(company_name))').gte('expected_date', today).neq('status', 'completed').order('expected_date', { ascending: true }).limit(3),
+      ]);
 
-    if (clientsData.data) setRecentClients(clientsData.data);
-    if (projectsData.data) setRecentProjects(projectsData.data as any);
-    if (milestonesData.data) setUpcomingMilestones(milestonesData.data as any);
-
-    setLoading(false);
+      if (clientsData.data) setRecentClients(clientsData.data);
+      if (projectsData.data) setRecentProjects(projectsData.data as any);
+      if (milestonesData.data) setUpcomingMilestones(milestonesData.data as any);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load dashboard');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (loading) {
+  if (loading && !error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-off-white">
         <div className="text-center">
@@ -162,7 +166,7 @@ export default function DashboardPage() {
   const firstName = user?.profile?.full_name?.split(' ')[0] || 'there';
 
   return (
-    <div className="max-w-[1600px] mx-auto -m-8">
+    <div className="max-w-[1600px] mx-auto -mx-8 -mt-8 mb-0">
       {/* Hero Banner with Background Image */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -184,13 +188,36 @@ export default function DashboardPage() {
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
             </p>
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div>
+              <div className="flex-1">
+                {error && (
+                  <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center justify-between gap-4">
+                    <p className="text-red-100 text-sm">{error}</p>
+                    <button
+                      onClick={() => { setLoading(true); loadDashboard(); }}
+                      className="px-4 py-2 bg-red-500/50 hover:bg-red-500/70 text-white text-sm font-semibold rounded transition-colors"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                )}
                 <h1 className="text-3xl md:text-4xl font-bold text-white mb-1">
                   {greeting}, {firstName}
                 </h1>
                 <p className="text-gray-200">Here&apos;s your command center</p>
               </div>
-              <Link
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => { setLoading(true); loadDashboard(); }}
+                  disabled={loading}
+                  className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+                  title="Refresh"
+                  aria-label="Refresh dashboard"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+                <Link
                 href="/dashboard/clients/onboard"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 shadow-lg w-fit"
               >
@@ -199,6 +226,7 @@ export default function DashboardPage() {
                 </svg>
                 <span>Onboard Client</span>
               </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -329,7 +357,7 @@ export default function DashboardPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-navy-900 truncate">{milestone.title}</p>
                       <p className="text-sm text-slate-600 truncate">
-                        {milestone.projects.clients.company_name} • {milestone.projects.name}
+                        {milestone.projects?.clients?.company_name ?? 'Unknown'} • {milestone.projects?.name ?? 'Unknown'}
                       </p>
                     </div>
                     <span className="text-sm font-bold text-orange-700 ml-3 flex-shrink-0">
@@ -392,10 +420,10 @@ export default function DashboardPage() {
                       <div className="flex-1 bg-gray-200 h-2 rounded-full overflow-hidden">
                         <div
                           className="bg-signal-red h-full transition-all duration-500"
-                          style={{ width: `${project.progress_percentage}%` }}
+                          style={{ width: `${project.progress_percentage ?? 0}%` }}
                         ></div>
                       </div>
-                      <span className="text-sm font-semibold text-navy-900">{project.progress_percentage}%</span>
+                      <span className="text-sm font-semibold text-navy-900">{project.progress_percentage ?? 0}%</span>
                   </div>
                   </Link>
                 ))}
@@ -414,7 +442,7 @@ export default function DashboardPage() {
             className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-navy-900">Recent</h2>
+              <h2 className="text-lg font-bold text-navy-900">Recent Clients</h2>
                 <Link
                 href="/dashboard/clients"
                 className="text-sm font-semibold text-signal-red hover:text-signal-red/80 transition-colors"
@@ -485,7 +513,7 @@ export default function DashboardPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                           </svg>
                 </div>
-                <span className="font-semibold text-navy-900 text-sm">Find Client</span>
+                <span className="font-semibold text-navy-900 text-sm">Find Project</span>
               </Link>
 
               <Link

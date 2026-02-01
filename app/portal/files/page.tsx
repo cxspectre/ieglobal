@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Link from 'next/link';
 
 type FileItem = {
   id: string;
@@ -18,6 +17,7 @@ type FileItem = {
 export default function ClientFilesPage() {
   const [loading, setLoading] = useState(true);
   const [files, setFiles] = useState<FileItem[]>([]);
+  const [profile, setProfile] = useState<{ client_id?: string } | null>(null);
   const router = useRouter();
   const supabase = createBrowserClient();
 
@@ -40,8 +40,10 @@ export default function ClientFilesPage() {
       .eq('id', session.user.id)
       .single();
 
+    setProfile(profile);
     if (!profile?.client_id) {
       setLoading(false);
+      setFiles([]);
       return;
     }
 
@@ -81,14 +83,10 @@ export default function ClientFilesPage() {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+    const b = bytes ?? 0;
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   if (loading) {
@@ -103,47 +101,14 @@ export default function ClientFilesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-off-white">
-      {/* Top Bar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/portal" className="font-bold text-xl text-navy-900">
-              Portal
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/portal" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Overview
-              </Link>
-              <Link href="/portal/milestones" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Milestones
-              </Link>
-              <Link href="/portal/invoices" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Invoices
-              </Link>
-              <Link href="/portal/files" className="text-sm font-medium text-navy-900 border-b-2 border-signal-red pb-0.5">
-                Files
-              </Link>
-              <Link href="/portal/messages" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Messages
-              </Link>
-            </nav>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
-          >
-            Sign Out
-          </button>
+    <div className="max-w-5xl mx-auto">
+      <h1 className="text-3xl font-bold text-navy-900 mb-8">Files & Documents</h1>
+
+      {!profile?.client_id ? (
+        <div className="bg-white p-12 text-center rounded-lg border border-gray-200">
+          <p className="text-slate-700">Your account is not yet linked to a client. Please contact hello@ie-global.net if you need access.</p>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="p-8">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold text-navy-900 mb-8">Files & Documents</h1>
-
-          {files.length === 0 ? (
+      ) : files.length === 0 ? (
             <div className="bg-white p-12 text-center">
               <p className="text-slate-700">No files available yet. Your IE Global team will share files here as they become available.</p>
             </div>
@@ -179,7 +144,7 @@ export default function ClientFilesPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-slate-700">{formatFileSize(file.file_size)}</span>
+                          <span className="text-sm text-slate-700">{formatFileSize(file.file_size ?? 0)}</span>
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-sm text-slate-700">
@@ -204,8 +169,6 @@ export default function ClientFilesPage() {
               </div>
             </div>
           )}
-        </div>
-      </main>
     </div>
   );
 }

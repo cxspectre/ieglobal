@@ -185,9 +185,10 @@ export default function FilesPage() {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    const b = bytes ?? 0;
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   if (loading) {
@@ -290,7 +291,7 @@ export default function FilesPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-slate-700">{formatFileSize(file.file_size)}</span>
+                          <span className="text-sm text-slate-700">{formatFileSize(file.file_size ?? 0)}</span>
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-sm text-slate-700">
