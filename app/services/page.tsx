@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
@@ -72,7 +73,7 @@ export default function ServicesPage() {
 
       {/* Introduction */}
       <section className="py-20 bg-white">
-        <div className="container-wide max-w-5xl">
+        <div className="container-wide max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-navy-900 mb-6 leading-tight">
@@ -81,17 +82,26 @@ export default function ServicesPage() {
               <p className="text-lg text-slate-700 leading-relaxed mb-6">
                 We don't just build features—we engineer complete systems. From strategic planning to ongoing support, every service is designed to work together.
               </p>
-              <p className="text-base text-slate-700 leading-relaxed">
+              <p className="text-base text-slate-700 leading-relaxed mb-6">
                 Whether you need a single service or end-to-end support, we bring clarity, technical excellence, and long-term thinking to every engagement.
               </p>
+              <div className="bg-off-white p-6 border-l-4 border-signal-red">
+                <p className="text-lg text-navy-900 font-semibold mb-3">
+                  Our Philosophy
+                </p>
+                <p className="text-base text-slate-700 leading-relaxed">
+                  Technology should accelerate growth—not slow it down. We build systems that are fast, maintainable, and ready to evolve with your business.
+                </p>
+              </div>
             </div>
-            <div className="bg-off-white p-10 border-l-4 border-signal-red">
-              <p className="text-lg text-navy-900 font-semibold mb-4">
-                Our Philosophy
-              </p>
-              <p className="text-base text-slate-700 leading-relaxed">
-                Technology should accelerate growth—not slow it down. We build systems that are fast, maintainable, and ready to evolve with your business.
-              </p>
+            <div className="relative aspect-[4/3] rounded-lg overflow-hidden shadow-xl">
+              <Image
+                src="/portrait-of-illuminated-laptop.jpg"
+                alt="Focused work with modern tools—where ideas become systems"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 500px"
+              />
             </div>
           </div>
         </div>

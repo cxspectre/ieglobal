@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
@@ -125,6 +126,15 @@ export default function ApproachPage() {
                     <li>• Integrations (APIs, automations, tracking)</li>
                     <li>• Staging & preview environments</li>
                   </ul>
+                </div>
+                <div className="relative aspect-video rounded-lg overflow-hidden mt-8 shadow-lg">
+                  <Image
+                    src="/finger-pointing-at-javascript-code.jpg"
+                    alt="Hands-on development—code review and precision engineering"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 700px"
+                  />
                 </div>
               </div>
             </div>

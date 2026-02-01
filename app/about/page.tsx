@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Hero from '@/components/ui/Hero';
+import MeetTheFounders from '@/components/ui/MeetTheFounders';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
@@ -72,8 +74,41 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Our Values - Grid */}
+      {/* How We Work - Workspace */}
       <section className="section bg-white">
+        <div className="container-wide max-w-5xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center">
+            <div className="lg:col-span-5 order-2 lg:order-1">
+              <div className="relative aspect-[4/3] rounded-lg overflow-hidden shadow-xl">
+                <Image
+                  src="/pexels-xexusdesigner-777001.jpg"
+                  alt="Modern development workspace with dual monitors and focused setup"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 500px"
+                />
+              </div>
+            </div>
+            <div className="lg:col-span-7 order-1 lg:order-2">
+              <h2 className="text-sm font-bold text-signal-red uppercase tracking-wider mb-4">
+                How We Work
+              </h2>
+              <h3 className="text-3xl md:text-4xl font-bold text-navy-900 mb-6 leading-tight">
+                A focused setup for focused work
+              </h3>
+              <p className="text-lg text-slate-700 leading-relaxed mb-6">
+                No corporate cubicles. No distraction. We build in environments designed for deep work—dual monitors, clean desks, and the tools that let us ship fast and reliably.
+              </p>
+              <p className="text-base text-slate-700 leading-relaxed">
+                The people you meet are the people who code, design, and architect. We stay small by choice so we can stay sharp.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Our Values - Grid */}
+      <section className="section bg-off-white">
         <div className="container-wide">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-navy-900">
@@ -145,12 +180,8 @@ export default function AboutPage() {
                   The people you meet are the people who build.
                 </p>
               </div>
-              <div className="text-center py-12">
-                <p className="text-base text-gray-300 mb-4">Led by:</p>
-                <p className="text-4xl font-bold text-white mb-6">Cassian & Wessel</p>
-                <p className="text-base text-gray-300 italic">
-                  We believe in building systems we are proud to put our names behind.
-                </p>
+              <div className="pt-8">
+                <MeetTheFounders variant="about" embed />
               </div>
             </div>
           </div>

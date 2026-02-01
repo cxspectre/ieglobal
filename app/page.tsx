@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import HeroCarousel from '@/components/ui/HeroCarousel';
 import HowWeCanHelp from '@/components/ui/HowWeCanHelp';
+import MeetTheFounders from '@/components/ui/MeetTheFounders';
 import Link from 'next/link';
 
 const heroSlides = [
@@ -15,7 +17,7 @@ const heroSlides = [
       text: 'Explore How We Work',
       href: '/about',
     },
-    backgroundImage: '/hero-1.png',
+    backgroundImage: '/pexels-themob000-28428592.jpg',
     isDark: true,
   },
   {
@@ -26,7 +28,7 @@ const heroSlides = [
       text: 'See Our Work',
       href: '/case-studies',
     },
-    backgroundImage: '/hero-2.png',
+    backgroundImage: '/finger-pointing-at-javascript-code.jpg',
     isDark: true,
   },
   {
@@ -37,7 +39,7 @@ const heroSlides = [
       text: 'View Services',
       href: '/services/data-ai-automation',
     },
-    backgroundImage: '/hero-3.png',
+    backgroundImage: '/pexels-pachon-in-motion-426015731-30547584.jpg',
     isDark: true,
   },
   {
@@ -144,8 +146,31 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Meet the Founders */}
+      <MeetTheFounders />
+
       {/* How We Can Help - Interactive Sidebar Design */}
       <HowWeCanHelp />
+
+      {/* Behind the Code - Visual Strip */}
+      <section className="relative overflow-hidden">
+        <div className="relative h-64 md:h-80 w-full">
+          <Image
+            src="/pexels-markusspiske-1089438.jpg"
+            alt="Code and data in motion—where systems come to life"
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority={false}
+          />
+          <div className="absolute inset-0 bg-navy-900/60" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-xl md:text-2xl font-bold text-white text-center max-w-2xl px-6">
+              Where clarity meets code. Every system we build starts with understanding—and ends with impact.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Measurable Outcomes */}
       <section className="section bg-white">

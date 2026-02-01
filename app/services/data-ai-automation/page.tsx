@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
@@ -19,14 +20,25 @@ export default function DataAIAutomationPage() {
 
       {/* Description */}
       <section className="section bg-white">
-        <div className="container-narrow">
-          <div className="prose prose-lg max-w-none">
-            <p className="text-xl text-slate-700 leading-relaxed mb-6">
-              We help companies automate workflows, integrate systems, and implement AI features that unlock efficiency, accuracy, and speed.
-            </p>
-            <p className="text-lg text-slate-700 leading-relaxed">
-              Your business becomes smarter — and your team becomes faster.
-            </p>
+        <div className="container-wide max-w-6xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="prose prose-lg max-w-none">
+              <p className="text-xl text-slate-700 leading-relaxed mb-6">
+                We help companies automate workflows, integrate systems, and implement AI features that unlock efficiency, accuracy, and speed.
+              </p>
+              <p className="text-lg text-slate-700 leading-relaxed">
+                Your business becomes smarter — and your team becomes faster.
+              </p>
+            </div>
+            <div className="relative aspect-[4/3] rounded-lg overflow-hidden shadow-xl">
+              <Image
+                src="/pexels-themob000-28428588.jpg"
+                alt="Data networks and digital transformation—systems that connect and evolve"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 500px"
+              />
+            </div>
           </div>
         </div>
       </section>
