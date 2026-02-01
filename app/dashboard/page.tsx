@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 type DashboardStats = {
@@ -161,34 +162,49 @@ export default function DashboardPage() {
   const firstName = user?.profile?.full_name?.split(' ')[0] || 'there';
 
   return (
-    <div className="max-w-[1600px] mx-auto">
-      {/* Header */}
+    <div className="max-w-[1600px] mx-auto -m-8">
+      {/* Hero Banner with Background Image */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="relative overflow-hidden rounded-b-2xl mb-8"
       >
-              <p className="text-sm text-slate-600 mb-2">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-              </p>
-        <div className="flex items-end justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-navy-900 mb-1">
-              {greeting}, {firstName}
-              </h1>
-            <p className="text-lg text-slate-700">Here's your command center</p>
-            </div>
+        <div className="relative h-48 md:h-56">
+          <Image
+            src="/pexels-xexusdesigner-777001.jpg"
+            alt=""
+            fill
+            className="object-cover object-center"
+            sizes="(max-width: 1600px) 1600px, 100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-navy-900/70" />
+          <div className="absolute inset-0 p-8 flex flex-col justify-end">
+            <p className="text-sm text-gray-300 mb-1">
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+            </p>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-1">
+                  {greeting}, {firstName}
+                </h1>
+                <p className="text-gray-200">Here&apos;s your command center</p>
+              </div>
               <Link
-            href="/dashboard/clients/onboard"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 shadow-lg"
+                href="/dashboard/clients/onboard"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 shadow-lg w-fit"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-            <span>Onboard Client</span>
+                <span>Onboard Client</span>
               </Link>
             </div>
+          </div>
+        </div>
       </motion.div>
+
+      <div className="px-8">
 
       {/* Primary Metrics Row */}
       <motion.div
@@ -486,6 +502,7 @@ export default function DashboardPage() {
             </div>
           </motion.div>
         </div>
+      </div>
       </div>
     </div>
   );
