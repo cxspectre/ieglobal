@@ -41,7 +41,7 @@ export default function MeetTheFounders({ variant = 'home', embed = false }: Mee
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-start max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-start max-w-3xl mx-auto">
           {founders.map((founder, index) => (
             <motion.div
               key={founder.name.last}
