@@ -15,7 +15,7 @@ const heroSlides = [
     subtitle: 'We align technology with your business goals, clarify what matters, and design a roadmap you can trust.',
     primaryCTA: {
       text: 'Explore How We Work',
-      href: '/about',
+      href: '/the-team',
     },
     backgroundImage: '/pexels-themob000-28428592.jpg',
     isDark: true,

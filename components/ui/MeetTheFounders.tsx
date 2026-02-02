@@ -23,7 +23,7 @@ const founders = [
 
 type MeetTheFoundersProps = {
   variant?: 'home' | 'about';
-  /** When true, render only the founder cards (no section wrapper, title, or link). For embedding in About page. */
+  /** When true, render only the founder cards (no section wrapper, title, or link). For embedding in The Team page. */
   embed?: boolean;
 };
 
@@ -83,7 +83,7 @@ export default function MeetTheFounders({ variant = 'home', embed = false }: Mee
       {!embed && !isAbout && (
         <div className="text-center mt-12">
           <Link
-            href="/about"
+            href="/the-team"
             className="inline-flex items-center gap-2 text-base font-semibold text-signal-red hover:gap-3 transition-all duration-200"
           >
             <span>Learn more about us</span>
