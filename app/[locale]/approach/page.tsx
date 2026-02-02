@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import { useLocale } from 'next-intl';
 import Hero from '@/components/ui/Hero';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 export const metadata: Metadata = {
   title: 'Our Approach',
@@ -9,6 +10,133 @@ export const metadata: Metadata = {
 };
 
 export default function ApproachPage() {
+  const locale = useLocale();
+  const isDe = locale === 'de';
+
+  if (isDe) {
+    return (
+      <>
+        <Hero
+          eyebrow="Vorgehen"
+          title="Wie wir Ideen in Systeme mit Bestand verwandeln"
+          subtitle="Klarheit zuerst, Engineering danach – von der Strategie bis zum Launch und darüber hinaus."
+          backgroundPattern="gradient"
+        />
+
+        {/* Einfache Einleitung */}
+        <section className="section bg-white">
+          <div className="container-narrow text-center">
+            <p className="text-2xl text-navy-900 leading-relaxed max-w-3xl mx-auto">
+              Wir bauen keine Einmal-Projekte, sondern digitale Systeme, die schnell, zuverlässig
+              und mit Ihrem Unternehmen mitwachsen.
+            </p>
+          </div>
+        </section>
+
+        {/* Drei komprimierte Schritte */}
+        <section className="section bg-off-white">
+          <div className="container-wide max-w-6xl space-y-16">
+            {/* Schritt 1 */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
+              <div className="lg:col-span-3">
+                <div className="lg:sticky lg:top-32">
+                  <div className="text-6xl font-bold font-mono text-signal-red/30 mb-4">01</div>
+                  <h2 className="text-2xl font-bold text-navy-900">Verstehen</h2>
+                </div>
+              </div>
+              <div className="lg:col-span-9">
+                <p className="text-xl text-navy-900 font-semibold mb-6">
+                  Geschäft vor Technologie
+                </p>
+                <p className="text-lg text-slate-700 leading-relaxed mb-6">
+                  Wir klären zuerst Ziele, Engpässe, Nutzer und Erfolgskriterien – bevor wir über
+                  Tech-Stacks sprechen. So stellen wir sicher, dass wir das Richtige bauen, nicht
+                  nur irgendetwas.
+                </p>
+              </div>
+            </div>
+
+            {/* Schritt 2 */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
+              <div className="lg:col-span-3">
+                <div className="lg:sticky lg:top-32">
+                  <div className="text-6xl font-bold font-mono text-signal-red/30 mb-4">02</div>
+                  <h2 className="text-2xl font-bold text-navy-900">Architektur</h2>
+                </div>
+              </div>
+              <div className="lg:col-span-9">
+                <p className="text-xl text-navy-900 font-semibold mb-6">
+                  Systeme, die Druck aushalten
+                </p>
+                <p className="text-lg text-slate-700 leading-relaxed mb-6">
+                  Wir entwerfen eine Architektur, die Performance, Skalierung, Sicherheit und
+                  Wartbarkeit ausbalanciert – und sich sauber in Ihre bestehende Landschaft
+                  einfügt.
+                </p>
+              </div>
+            </div>
+
+            {/* Schritt 3 */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
+              <div className="lg:col-span-3">
+                <div className="lg:sticky lg:top-32">
+                  <div className="text-6xl font-bold font-mono text-signal-red/30 mb-4">03</div>
+                  <h2 className="text-2xl font-bold text-navy-900">Bauen & begleiten</h2>
+                </div>
+              </div>
+              <div className="lg:col-span-9 space-y-6">
+                <p className="text-xl text-navy-900 font-semibold">
+                  Umsetzung mit engem Feedback
+                </p>
+                <p className="text-lg text-slate-700 leading-relaxed">
+                  Wir entwickeln iterativ, testen früh und bleiben nach dem Launch an Ihrer Seite –
+                  mit Monitoring, Verbesserungen und neuen Features.
+                </p>
+                <div className="relative aspect-video rounded-lg overflow-hidden mt-4 shadow-lg">
+                  <Image
+                    src="/finger-pointing-at-javascript-code.jpg"
+                    alt="Fokussierte Entwicklungsarbeit am Code"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 700px"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Abschluss-CTA */}
+        <section className="section bg-white">
+          <div className="container-wide text-center max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 text-navy-900">
+              Wollen Sie Ihre Systeme auf das nächste Level bringen?
+            </h2>
+            <p className="text-lg text-slate-700 mb-8">
+              Erzählen Sie uns, wo Sie heute stehen – wir zeigen Ihnen, wie der nächste
+              sinnvolle Schritt aussehen kann.
+            </p>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200 group"
+            >
+              <span>Gespräch starten</span>
+              <svg
+                className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </div>
+        </section>
+      </>
+    );
+  }
+
   return (
     <>
       <Hero

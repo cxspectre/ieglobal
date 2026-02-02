@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import { useLocale } from 'next-intl';
 import Hero from '@/components/ui/Hero';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 
 export const metadata: Metadata = {
   title: 'Services',
@@ -14,66 +15,134 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://ie-global.net/services' },
 };
 
-const serviceCategories = [
-  {
-    category: 'Strategy & Planning',
-    services: [
-      {
-        title: 'Strategy & Direction',
-        description: 'Technical assessments, product roadmaps, and strategic planning before any code is written.',
-        href: '/services/strategy-and-direction',
-      },
-    ],
-  },
-  {
-    category: 'Build & Deploy',
-    services: [
-      {
-        title: 'Websites & Platforms',
-        description: 'High-performance websites and web applications built with Next.js.',
-        href: '/services/websites-and-platforms',
-      },
-      {
-        title: 'Mobile Apps',
-        description: 'Cross-platform iOS and Android apps with React Native.',
-        href: '/services/mobile',
-      },
-      {
-        title: 'Cloud & Security',
-        description: 'Scalable cloud architecture and security infrastructure.',
-        href: '/services/cloud-and-security',
-      },
-    ],
-  },
-  {
-    category: 'Scale & Optimize',
-    services: [
-      {
-        title: 'Data, AI & Automation',
-        description: 'Integrations, AI workflows, and intelligent automation.',
-        href: '/services/data-ai-automation',
-      },
-      {
-        title: 'Growth & Marketing',
-        description: 'SEO, performance optimization, and conversion tracking.',
-        href: '/services/growth-and-marketing',
-      },
-      {
-        title: 'Ongoing Support',
-        description: 'Long-term maintenance and continuous improvement.',
-        href: '/services/ongoing-support',
-      },
-    ],
-  },
-];
-
 export default function ServicesPage() {
+  const locale = useLocale();
+  const isDe = locale === 'de';
+
+  const serviceCategories = isDe
+    ? [
+        {
+          category: 'Strategie & Planung',
+          services: [
+            {
+              title: 'Strategy & Direction',
+              description:
+                'Technische Bestandsaufnahme, Produkt-Roadmaps und klare Prioritäten – bevor Code geschrieben wird.',
+              href: '/services/strategy-and-direction',
+            },
+          ],
+        },
+        {
+          category: 'Aufbauen & Ausrollen',
+          services: [
+            {
+              title: 'Websites & Platforms',
+              description:
+                'Schnelle, moderne Websites und Web-Plattformen auf Basis von Next.js.',
+              href: '/services/websites-and-platforms',
+            },
+            {
+              title: 'Mobile Apps',
+              description:
+                'Cross-Platform Apps für iOS und Android mit React Native.',
+              href: '/services/mobile',
+            },
+            {
+              title: 'Cloud & Security',
+              description:
+                'Skalierbare Cloud-Architektur und saubere Sicherheitsgrundlagen.',
+              href: '/services/cloud-and-security',
+            },
+          ],
+        },
+        {
+          category: 'Skalieren & Optimieren',
+          services: [
+            {
+              title: 'Data, AI & Automation',
+              description:
+                'Integrationen, Automatisierung und KI-gestützte Workflows.',
+              href: '/services/data-ai-automation',
+            },
+            {
+              title: 'Growth & Marketing',
+              description:
+                'SEO, Performance-Optimierung und Tracking für besseres Wachstum.',
+              href: '/services/growth-and-marketing',
+            },
+            {
+              title: 'Ongoing Support',
+              description:
+                'Laufende Wartung, Weiterentwicklung und technische Begleitung.',
+              href: '/services/ongoing-support',
+            },
+          ],
+        },
+      ]
+    : [
+        {
+          category: 'Strategy & Planning',
+          services: [
+            {
+              title: 'Strategy & Direction',
+              description:
+                'Technical assessments, product roadmaps, and strategic planning before any code is written.',
+              href: '/services/strategy-and-direction',
+            },
+          ],
+        },
+        {
+          category: 'Build & Deploy',
+          services: [
+            {
+              title: 'Websites & Platforms',
+              description: 'High-performance websites and web applications built with Next.js.',
+              href: '/services/websites-and-platforms',
+            },
+            {
+              title: 'Mobile Apps',
+              description: 'Cross-platform iOS and Android apps with React Native.',
+              href: '/services/mobile',
+            },
+            {
+              title: 'Cloud & Security',
+              description: 'Scalable cloud architecture and security infrastructure.',
+              href: '/services/cloud-and-security',
+            },
+          ],
+        },
+        {
+          category: 'Scale & Optimize',
+          services: [
+            {
+              title: 'Data, AI & Automation',
+              description: 'Integrations, AI workflows, and intelligent automation.',
+              href: '/services/data-ai-automation',
+            },
+            {
+              title: 'Growth & Marketing',
+              description: 'SEO, performance optimization, and conversion tracking.',
+              href: '/services/growth-and-marketing',
+            },
+            {
+              title: 'Ongoing Support',
+              description: 'Long-term maintenance and continuous improvement.',
+              href: '/services/ongoing-support',
+            },
+          ],
+        },
+      ];
+
   return (
     <>
       <Hero
-        eyebrow="Services"
-        title="What We Build"
-        subtitle="From strategy to scale. Seven capabilities that work together."
+        eyebrow={isDe ? 'Leistungen' : 'Services'}
+        title={isDe ? 'Was wir für Sie bauen' : 'What We Build'}
+        subtitle={
+          isDe
+            ? 'Von Strategie bis Skalierung. Sieben Bausteine, die zusammen ein System ergeben.'
+            : 'From strategy to scale. Seven capabilities that work together.'
+        }
         backgroundPattern="gradient"
       />
 
@@ -83,20 +152,28 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-navy-900 mb-6 leading-tight">
-                Seven Services. One Integrated Approach.
+                {isDe
+                  ? 'Sieben Leistungen. Ein integrierter Ansatz.'
+                  : 'Seven Services. One Integrated Approach.'}
               </h2>
               <p className="text-lg text-slate-700 leading-relaxed mb-6">
-                We don't just build features—we engineer complete systems. From strategic planning to ongoing support, every service is designed to work together.
+                {isDe
+                  ? 'Wir bauen nicht nur einzelne Features, sondern komplette Systeme. Von der Strategie bis zur laufenden Betreuung greifen alle Leistungen ineinander.'
+                  : "We don't just build features—we engineer complete systems. From strategic planning to ongoing support, every service is designed to work together."}
               </p>
               <p className="text-base text-slate-700 leading-relaxed mb-6">
-                Whether you need a single service or end-to-end support, we bring clarity, technical excellence, and long-term thinking to every engagement.
+                {isDe
+                  ? 'Ob Sie mit einem Projekt starten oder eine End-to-End-Begleitung suchen – wir bringen Klarheit, technisches Niveau und langfristiges Denken mit.'
+                  : 'Whether you need a single service or end-to-end support, we bring clarity, technical excellence, and long-term thinking to every engagement.'}
               </p>
               <div className="bg-off-white p-6 border-l-4 border-signal-red">
                 <p className="text-lg text-navy-900 font-semibold mb-3">
-                  Our Philosophy
+                  {isDe ? 'Unsere Philosophie' : 'Our Philosophy'}
                 </p>
                 <p className="text-base text-slate-700 leading-relaxed">
-                  Technology should accelerate growth—not slow it down. We build systems that are fast, maintainable, and ready to evolve with your business.
+                  {isDe
+                    ? 'Technologie sollte Wachstum beschleunigen – nicht bremsen. Wir entwickeln Systeme, die schnell, wartbar und bereit für den nächsten Schritt sind.'
+                    : 'Technology should accelerate growth—not slow it down. We build systems that are fast, maintainable, and ready to evolve with your business.'}
                 </p>
               </div>
             </div>
