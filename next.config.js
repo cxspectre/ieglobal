@@ -1,10 +1,14 @@
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   async redirects() {
     return [
-      { source: '/about', destination: '/the-team', permanent: true },
+      { source: '/about', destination: '/en/the-team', permanent: true },
     ];
   },
   images: {
@@ -60,5 +64,5 @@ const nextConfig = {
   }
 };
 
-module.exports = nextConfig;
+module.exports = withNextIntl(nextConfig);
 

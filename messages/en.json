@@ -1,0 +1,89 @@
+{
+  "nav": {
+    "work": "Work",
+    "services": "Services",
+    "viewAllServices": "View All Services",
+    "approach": "Approach",
+    "theTeam": "The Team",
+    "careers": "Careers",
+    "startProject": "Start a Project",
+    "signIn": "Sign In"
+  },
+  "footer": {
+    "tagline": "Digital engineering that creates momentum—not friction.",
+    "company": "Company",
+    "legal": "Legal",
+    "theTeam": "The Team",
+    "approach": "Approach",
+    "work": "Work",
+    "services": "Services",
+    "careers": "Careers",
+    "contact": "Contact",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "imprint": "Imprint",
+    "copyright": "© {year} IE Global, Inc. All rights reserved.",
+    "builtFor": "Built for performance",
+    "designedFor": "Designed for growth"
+  },
+  "home": {
+    "hero": {
+      "strategy": {
+        "eyebrow": "Strategy & Direction",
+        "title": "Build the right thing. Not just anything.",
+        "subtitle": "We align technology with your business goals, clarify what matters, and design a roadmap you can trust.",
+        "cta": "Explore How We Work"
+      },
+      "websites": {
+        "eyebrow": "Websites & Platforms",
+        "title": "High-performance digital experiences, built to last.",
+        "subtitle": "We design and develop websites, platforms, and internal systems that feel fast, intuitive, and reliable.",
+        "cta": "See Our Work"
+      },
+      "data": {
+        "eyebrow": "Data, AI & Integration",
+        "title": "Your systems, finally connected.",
+        "subtitle": "We integrate your tools, automate workflows, and apply practical AI - so your business moves smarter, not harder.",
+        "cta": "View Services"
+      },
+      "partnership": {
+        "eyebrow": "Long-Term Partnership",
+        "title": "We don't just build. We stay.",
+        "subtitle": "Ongoing performance reviews, improvements, scaling support, security - a relationship that grows with your business.",
+        "cta": "Start a Project"
+      }
+    },
+    "builtForPerformance": "Built for Performance",
+    "builtForPerformanceDesc": "We design, build, and operate high-performance digital systems—websites, apps, and platforms—engineered to scale smoothly and evolve with your business.",
+    "buildFast": "Build Fast",
+    "buildFastDesc": "We ship modern, intuitive, high-performance experiences that feel fast everywhere—mobile, web, and internal tools included.",
+    "scaleSmoothly": "Scale Smoothly",
+    "scaleSmoothlyDesc": "We architect systems that integrate cleanly and grow with your needs, from APIs and workflows to cloud environments and deployment pipelines.",
+    "operateReliably": "Operate Reliably",
+    "operateReliablyDesc": "We stay with you after launch, continuously improving performance, security, and functionality as your business evolves.",
+    "learnMore": "Learn more",
+    "exploreOurWork": "Explore Our Work",
+    "meetTheFounders": "Meet the Founders",
+    "learnMoreAboutUs": "Learn more about us",
+    "behindTheCode": "Where clarity meets code. Every system we build starts with understanding—and ends with impact.",
+    "measurableOutcomes": "Measurable Outcomes",
+    "measurableOutcomesLead": "Engineering isn't just about shipping—it's about impact.",
+    "measurableOutcomesDesc": "Your digital systems should create momentum—not friction. We measure success in business outcomes, not just technical metrics.",
+    "viewCaseStudies": "View Case Studies",
+    "fasterLoadTimes": "Faster load times",
+    "conversionIncrease": "Conversion increase",
+    "uptimeAchieved": "Uptime achieved",
+    "costReduction": "Cost reduction",
+    "performanceGains": "Performance gains you can feel—and measure.",
+    "recentWork": "Recent Work",
+    "recentWorkDesc": "Real projects. Real outcomes. Real impact.",
+    "viewProject": "View project",
+    "viewAllWork": "View All Work",
+    "ctaTitle": "Let's map your 90-day value plan",
+    "ctaDesc": "Have a complex stack or ambitious growth target? We turn it into a fast, connected, intelligent system.",
+    "startConversation": "Start a conversation"
+  },
+  "common": {
+    "skipToContent": "Skip to main content"
+  }
+}

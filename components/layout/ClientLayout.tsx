@@ -1,27 +1,28 @@
 'use client';
 
 import { ReactNode, useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
 import Navigation from './Navigation';
 import Footer from './Footer';
 import CookieConsent from '@/components/ui/CookieConsent';
 
 type ClientLayoutProps = {
   children: ReactNode;
+  locale?: string;
 };
 
-export default function ClientLayout({ children }: ClientLayoutProps) {
+export default function ClientLayout({ children, locale }: ClientLayoutProps) {
   const pathname = usePathname();
   const [isHeroVisible, setIsHeroVisible] = useState(true);
   const [heroIsDark, setHeroIsDark] = useState(true);
 
-  // Pages without nav/footer (portal pages)
+  // Pages without nav/footer (portal pages) — pathname may include locale prefix e.g. /en/dashboard
   const noLayoutPages = ['/login', '/dashboard', '/portal', '/reset-password', '/auth', '/upload'];
-  const hideLayout = noLayoutPages.some(path => pathname?.startsWith(path));
+  const hideLayout = noLayoutPages.some(path => pathname?.includes(path));
 
-  // Pages without dark heroes (always use white navbar)
+  // Pages without dark heroes (always use white navbar) — pathname may be /privacy or /en/privacy
   const whiteBackgroundPages = ['/privacy', '/terms', '/imprint'];
-  const isWhiteBackgroundPage = whiteBackgroundPages.includes(pathname);
+  const isWhiteBackgroundPage = whiteBackgroundPages.some(p => pathname?.endsWith(p) || pathname === p);
 
   useEffect(() => {
     const handleScroll = () => {

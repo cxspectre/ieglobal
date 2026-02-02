@@ -1,25 +1,26 @@
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
-
-const footerLinks = {
-  company: [
-    { title: 'The Team', href: '/the-team' },
-    { title: 'Approach', href: '/approach' },
-    { title: 'Work', href: '/case-studies' },
-    { title: 'Services', href: '/services' },
-    { title: 'Careers', href: '/careers' },
-    { title: 'Contact', href: '/contact' },
-  ],
-  legal: [
-    { title: 'Privacy Policy', href: '/privacy' },
-    { title: 'Terms of Service', href: '/terms' },
-    { title: 'Imprint', href: '/imprint' },
-  ],
-};
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 
 export default function Footer() {
+  const t = useTranslations('footer');
+
+  const companyLinks = [
+    { key: 'theTeam', href: '/the-team' },
+    { key: 'approach', href: '/approach' },
+    { key: 'work', href: '/case-studies' },
+    { key: 'services', href: '/services' },
+    { key: 'careers', href: '/careers' },
+    { key: 'contact', href: '/contact' },
+  ];
+  const legalLinks = [
+    { key: 'privacyPolicy', href: '/privacy' },
+    { key: 'termsOfService', href: '/terms' },
+    { key: 'imprint', href: '/imprint' },
+  ];
+
   return (
     <footer className="bg-navy-900 text-white no-print" role="contentinfo">
       {/* Main Footer Content */}
@@ -37,7 +38,7 @@ export default function Footer() {
               />
             </Link>
             <p className="text-gray-300 leading-relaxed mb-6">
-              Digital engineering that creates momentum—not friction.
+              {t('tagline')}
             </p>
             <div className="space-y-2">
               <a
@@ -57,15 +58,15 @@ export default function Footer() {
 
           {/* Company Column */}
           <div>
-            <h4 className="font-bold text-lg mb-6">Company</h4>
+            <h4 className="font-bold text-lg mb-6">{t('company')}</h4>
             <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
+              {companyLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className="text-gray-300 hover:text-signal-red transition-colors duration-200"
                   >
-                    {link.title}
+                    {t(link.key)}
                   </Link>
                 </li>
               ))}
@@ -74,15 +75,15 @@ export default function Footer() {
 
           {/* Legal Column */}
           <div>
-            <h4 className="font-bold text-lg mb-6">Legal</h4>
+            <h4 className="font-bold text-lg mb-6">{t('legal')}</h4>
             <ul className="space-y-3">
-              {footerLinks.legal.map((link) => (
+              {legalLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className="text-gray-300 hover:text-signal-red transition-colors duration-200"
                   >
-                    {link.title}
+                    {t(link.key)}
                   </Link>
                 </li>
               ))}
@@ -96,12 +97,12 @@ export default function Footer() {
         <div className="container-wide py-6">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <p className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} IE Global, Inc. All rights reserved.
+              {t('copyright', { year: new Date().getFullYear() })}
             </p>
             <div className="flex items-center space-x-6 text-sm text-gray-400">
-              <span>Built for performance</span>
+              <span>{t('builtFor')}</span>
               <span>•</span>
-              <span>Designed for growth</span>
+              <span>{t('designedFor')}</span>
             </div>
           </div>
         </div>

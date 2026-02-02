@@ -1,9 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
+import { Link, useRouter, usePathname } from '@/i18n/navigation';
+import { routing } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 
 const servicesMenu = [
@@ -86,6 +89,10 @@ type NavigationProps = {
 };
 
 export default function Navigation({ isHeroVisible = false, heroIsDark = true }: NavigationProps) {
+  const t = useTranslations('nav');
+  const locale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
@@ -167,7 +174,7 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
                 href="/case-studies"
                 className={cn("text-sm font-medium transition-all duration-200", textColor)}
               >
-                Work
+                {t('work')}
               </Link>
 
               {/* Services Mega Menu */}
@@ -181,7 +188,7 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
                   aria-expanded={isServicesOpen}
                   aria-haspopup="true"
                 >
-                  <span>Services</span>
+                  <span>{t('services')}</span>
                   <span className="text-xs">▼</span>
                 </button>
 
@@ -230,7 +237,7 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
                                   href="/services"
                                   className="text-xs font-semibold text-signal-red hover:underline uppercase tracking-wide"
                                 >
-                                  View All Services
+                                  {t('viewAllServices')}
                                 </Link>
                               </div>
                             </div>
@@ -276,22 +283,39 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
                 href="/approach"
                 className={cn("text-sm font-medium transition-all duration-200", textColor)}
               >
-                Approach
+                {t('approach')}
               </Link>
 
               <Link
                 href="/the-team"
                 className={cn("text-sm font-medium transition-all duration-200", textColor)}
               >
-                The Team
+                {t('theTeam')}
               </Link>
 
               <Link
                 href="/careers"
                 className={cn("text-sm font-medium transition-all duration-200", textColor)}
               >
-                Careers
+                {t('careers')}
               </Link>
+
+              {/* Language switcher */}
+              <div className="flex items-center gap-1 text-sm">
+                {routing.locales.map((loc) => (
+                  <button
+                    key={loc}
+                    onClick={() => router.replace(pathname, { locale: loc })}
+                    className={cn(
+                      "px-2 py-1 rounded font-medium transition-colors",
+                      locale === loc ? "text-signal-red" : textColor
+                    )}
+                    aria-label={loc === 'en' ? 'English' : 'Deutsch'}
+                  >
+                    {loc.toUpperCase()}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -301,17 +325,17 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
               href="/contact"
               className="hidden lg:inline-flex items-center px-6 py-2.5 bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 transition-all duration-200"
             >
-              Start a Project
+              {t('startProject')}
             </Link>
             <Link
               href="/login"
               className={cn("flex items-center gap-2 transition-colors duration-500", textColor)}
-              aria-label="Sign In"
+              aria-label={t('signIn')}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
-              <span className="text-sm font-medium hidden lg:inline">Sign In</span>
+              <span className="text-sm font-medium hidden lg:inline">{t('signIn')}</span>
             </Link>
           </div>
         </div>
@@ -363,11 +387,11 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
                   className="block py-3 text-navy-900 hover:text-signal-red font-medium text-lg border-b border-gray-100"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Work
+                  {t('work')}
                 </Link>
 
                 <div className="space-y-3 border-b border-gray-100 pb-4">
-                  <div className="font-semibold text-navy-900 text-lg mb-3">Services</div>
+                  <div className="font-semibold text-navy-900 text-lg mb-3">{t('services')}</div>
                   {servicesMenu.map((service, idx) => (
                     <Link
                       key={idx}
@@ -385,7 +409,7 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
                   className="block py-3 text-navy-900 hover:text-signal-red font-medium text-lg border-b border-gray-100"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Approach
+                  {t('approach')}
                 </Link>
 
                 <Link
@@ -393,7 +417,7 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
                   className="block py-3 text-navy-900 hover:text-signal-red font-medium text-lg border-b border-gray-100"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  The Team
+                  {t('theTeam')}
                 </Link>
 
                 <Link
@@ -401,15 +425,27 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
                   className="block py-3 text-navy-900 hover:text-signal-red font-medium text-lg border-b border-gray-100"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Careers
+                  {t('careers')}
                 </Link>
+
+                <div className="flex gap-2 py-3 border-b border-gray-100">
+                  {routing.locales.map((loc) => (
+                    <button
+                      key={loc}
+                      onClick={() => { setIsMobileMenuOpen(false); router.replace(pathname, { locale: loc }); }}
+                      className={cn("px-3 py-1 rounded font-medium", locale === loc ? "bg-signal-red text-white" : "text-navy-900 hover:bg-gray-100")}
+                    >
+                      {loc.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
 
                 <Link
                   href="/contact"
                   className="btn-primary w-full mt-4"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Start a Project
+                  {t('startProject')}
                 </Link>
               </div>
             </motion.div>

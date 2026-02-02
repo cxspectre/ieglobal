@@ -1,0 +1,89 @@
+{
+  "nav": {
+    "work": "Arbeit",
+    "services": "Leistungen",
+    "viewAllServices": "Alle Leistungen",
+    "approach": "Vorgehen",
+    "theTeam": "Das Team",
+    "careers": "Karriere",
+    "startProject": "Projekt starten",
+    "signIn": "Anmelden"
+  },
+  "footer": {
+    "tagline": "Digitale Technik, die Schwung erzeugt—keine Reibung.",
+    "company": "Unternehmen",
+    "legal": "Rechtliches",
+    "theTeam": "Das Team",
+    "approach": "Vorgehen",
+    "work": "Arbeit",
+    "services": "Leistungen",
+    "careers": "Karriere",
+    "contact": "Kontakt",
+    "privacyPolicy": "Datenschutz",
+    "termsOfService": "AGB",
+    "imprint": "Impressum",
+    "copyright": "© {year} IE Global, Inc. Alle Rechte vorbehalten.",
+    "builtFor": "Für Leistung gebaut",
+    "designedFor": "Für Wachstum konzipiert"
+  },
+  "home": {
+    "hero": {
+      "strategy": {
+        "eyebrow": "Strategie & Richtung",
+        "title": "Das Richtige bauen. Nicht irgendetwas.",
+        "subtitle": "Wir richten Technologie auf Ihre Geschäftsziele aus, schaffen Klarheit und entwerfen eine Roadmap, der Sie vertrauen können.",
+        "cta": "So arbeiten wir"
+      },
+      "websites": {
+        "eyebrow": "Websites & Plattformen",
+        "title": "Hochperformante digitale Erlebnisse, gebaut für die Dauer.",
+        "subtitle": "Wir entwerfen und entwickeln Websites, Plattformen und interne Systeme—schnell, intuitiv und zuverlässig.",
+        "cta": "Unsere Arbeit"
+      },
+      "data": {
+        "eyebrow": "Daten, KI & Integration",
+        "title": "Ihre Systeme endlich verbunden.",
+        "subtitle": "Wir verbinden Ihre Tools, automatisieren Abläufe und setzen praktische KI ein—damit Ihr Business smarter läuft.",
+        "cta": "Leistungen"
+      },
+      "partnership": {
+        "eyebrow": "Langfristige Partnerschaft",
+        "title": "Wir bauen nicht nur. Wir bleiben.",
+        "subtitle": "Laufende Reviews, Verbesserungen, Skalierung, Support und Sicherheit—eine Beziehung, die mitwächst.",
+        "cta": "Projekt starten"
+      }
+    },
+    "builtForPerformance": "Für Leistung gebaut",
+    "builtForPerformanceDesc": "Wir entwerfen, bauen und betreiben hochperformante digitale Systeme—Websites, Apps und Plattformen—die mit Ihrem Business skalieren und sich weiterentwickeln.",
+    "buildFast": "Schnell bauen",
+    "buildFastDesc": "Wir liefern moderne, intuitive und performante Erlebnisse—schnell auf allen Kanälen: mobil, Web und interne Tools.",
+    "scaleSmoothly": "Sauber skalieren",
+    "scaleSmoothlyDesc": "Wir architektieren Systeme, die sich nahtlos integrieren und mit Ihren Anforderungen wachsen—von APIs und Workflows bis Cloud und Deployment.",
+    "operateReliably": "Zuverlässig betreiben",
+    "operateReliablyDesc": "Wir bleiben nach dem Launch an Ihrer Seite und verbessern kontinuierlich Performance, Sicherheit und Funktionalität.",
+    "learnMore": "Mehr erfahren",
+    "exploreOurWork": "Unsere Arbeit",
+    "meetTheFounders": "Die Gründer",
+    "learnMoreAboutUs": "Mehr über uns",
+    "behindTheCode": "Wo Klarheit auf Code trifft. Jedes System beginnt mit Verständnis—und endet mit Wirkung.",
+    "measurableOutcomes": "Messbare Ergebnisse",
+    "measurableOutcomesLead": "Technik ist mehr als Ausliefern—es geht um Wirkung.",
+    "measurableOutcomesDesc": "Ihre digitalen Systeme sollen Schwung erzeugen—keine Reibung. Wir messen Erfolg an Geschäftsergebnissen, nicht nur an Kennzahlen.",
+    "viewCaseStudies": "Fallstudien",
+    "fasterLoadTimes": "Schnellere Ladezeiten",
+    "conversionIncrease": "Mehr Konversionen",
+    "uptimeAchieved": "Verfügbarkeit erreicht",
+    "costReduction": "Kostenreduktion",
+    "performanceGains": "Leistungsgewinne, die Sie spüren—und messen.",
+    "recentWork": "Aktuelle Arbeit",
+    "recentWorkDesc": "Echte Projekte. Echte Ergebnisse. Echte Wirkung.",
+    "viewProject": "Projekt ansehen",
+    "viewAllWork": "Alle Arbeit",
+    "ctaTitle": "Ihren 90-Tage-Wertplan gemeinsam gestalten",
+    "ctaDesc": "Komplexer Stack oder ambitioniertes Wachstumsziel? Wir machen daraus ein schnelles, vernetztes, intelligentes System.",
+    "startConversation": "Gespräch starten"
+  },
+  "common": {
+    "skipToContent": "Zum Inhalt springen"
+  }
+}

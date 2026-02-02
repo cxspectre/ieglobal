@@ -3,61 +3,51 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import HeroCarousel from '@/components/ui/HeroCarousel';
 import HowWeCanHelp from '@/components/ui/HowWeCanHelp';
 import MeetTheFounders from '@/components/ui/MeetTheFounders';
-import Link from 'next/link';
-
-const heroSlides = [
-  {
-    eyebrow: 'Strategy & Direction',
-    title: 'Build the right thing. Not just anything.',
-    subtitle: 'We align technology with your business goals, clarify what matters, and design a roadmap you can trust.',
-    primaryCTA: {
-      text: 'Explore How We Work',
-      href: '/the-team',
-    },
-    backgroundImage: '/pexels-themob000-28428592.jpg',
-    isDark: true,
-  },
-  {
-    eyebrow: 'Websites & Platforms',
-    title: 'High-performance digital experiences, built to last.',
-    subtitle: 'We design and develop websites, platforms, and internal systems that feel fast, intuitive, and reliable.',
-    primaryCTA: {
-      text: 'See Our Work',
-      href: '/case-studies',
-    },
-    backgroundImage: '/finger-pointing-at-javascript-code.jpg',
-    imageOverlay: 'bg-black/70',
-    isDark: true,
-  },
-  {
-    eyebrow: 'Data, AI & Integration',
-    title: 'Your systems, finally connected.',
-    subtitle: 'We integrate your tools, automate workflows, and apply practical AI - so your business moves smarter, not harder.',
-    primaryCTA: {
-      text: 'View Services',
-      href: '/services/data-ai-automation',
-    },
-    backgroundImage: '/pexels-pachon-in-motion-426015731-30547584.jpg',
-    isDark: true,
-  },
-  {
-    eyebrow: 'Long-Term Partnership',
-    title: "We don't just build. We stay.",
-    subtitle: 'Ongoing performance reviews, improvements, scaling support, security - a relationship that grows with your business.',
-    primaryCTA: {
-      text: 'Start a Project',
-      href: '/contact',
-    },
-    backgroundImage: '/portrait-of-illuminated-laptop.jpg',
-    isDark: true,
-  },
-];
+import { Link } from '@/i18n/navigation';
 
 export default function HomePage() {
+  const t = useTranslations('home');
   const [heroIsDark, setHeroIsDark] = useState(true);
+
+  const heroSlides = [
+    {
+      eyebrow: t('hero.strategy.eyebrow'),
+      title: t('hero.strategy.title'),
+      subtitle: t('hero.strategy.subtitle'),
+      primaryCTA: { text: t('hero.strategy.cta'), href: '/the-team' },
+      backgroundImage: '/pexels-themob000-28428592.jpg',
+      isDark: true,
+    },
+    {
+      eyebrow: t('hero.websites.eyebrow'),
+      title: t('hero.websites.title'),
+      subtitle: t('hero.websites.subtitle'),
+      primaryCTA: { text: t('hero.websites.cta'), href: '/case-studies' },
+      backgroundImage: '/finger-pointing-at-javascript-code.jpg',
+      imageOverlay: 'bg-black/70',
+      isDark: true,
+    },
+    {
+      eyebrow: t('hero.data.eyebrow'),
+      title: t('hero.data.title'),
+      subtitle: t('hero.data.subtitle'),
+      primaryCTA: { text: t('hero.data.cta'), href: '/services/data-ai-automation' },
+      backgroundImage: '/pexels-pachon-in-motion-426015731-30547584.jpg',
+      isDark: true,
+    },
+    {
+      eyebrow: t('hero.partnership.eyebrow'),
+      title: t('hero.partnership.title'),
+      subtitle: t('hero.partnership.subtitle'),
+      primaryCTA: { text: t('hero.partnership.cta'), href: '/contact' },
+      backgroundImage: '/portrait-of-illuminated-laptop.jpg',
+      isDark: true,
+    },
+  ];
 
   return (
     <>
@@ -70,10 +60,10 @@ export default function HomePage() {
         <div className="container-wide">
           <div className="text-center max-w-4xl mx-auto mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Built for Performance
+              {t('builtForPerformance')}
             </h2>
             <p className="text-xl text-slate-700 leading-relaxed">
-              We design, build, and operate high-performance digital systems—websites, apps, and platforms—engineered to scale smoothly and evolve with your business.
+              {t('builtForPerformanceDesc')}
             </p>
           </div>
 
@@ -85,12 +75,12 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4 text-navy-900">Build Fast</h3>
+              <h3 className="text-2xl font-bold mb-4 text-navy-900">{t('buildFast')}</h3>
               <p className="text-slate-700 leading-relaxed mb-4">
-                We ship modern, intuitive, high-performance experiences that feel fast everywhere—mobile, web, and internal tools included.
+                {t('buildFastDesc')}
               </p>
               <Link href="/services" className="inline-flex items-center text-sm font-semibold text-signal-red hover:gap-2 gap-1 transition-all duration-200">
-                <span>Learn more</span>
+                <span>{t('learnMore')}</span>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -104,12 +94,12 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4 text-navy-900">Scale Smoothly</h3>
+              <h3 className="text-2xl font-bold mb-4 text-navy-900">{t('scaleSmoothly')}</h3>
               <p className="text-slate-700 leading-relaxed mb-4">
-                We architect systems that integrate cleanly and grow with your needs, from APIs and workflows to cloud environments and deployment pipelines.
+                {t('scaleSmoothlyDesc')}
               </p>
               <Link href="/services" className="inline-flex items-center text-sm font-semibold text-signal-red hover:gap-2 gap-1 transition-all duration-200">
-                <span>Learn more</span>
+                <span>{t('learnMore')}</span>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -123,12 +113,12 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold mb-4 text-navy-900">Operate Reliably</h3>
+              <h3 className="text-2xl font-bold mb-4 text-navy-900">{t('operateReliably')}</h3>
               <p className="text-slate-700 leading-relaxed mb-4">
-                We stay with you after launch, continuously improving performance, security, and functionality as your business evolves.
+                {t('operateReliablyDesc')}
               </p>
               <Link href="/services" className="inline-flex items-center text-sm font-semibold text-signal-red hover:gap-2 gap-1 transition-all duration-200">
-                <span>Learn more</span>
+                <span>{t('learnMore')}</span>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -138,7 +128,7 @@ export default function HomePage() {
 
           <div className="text-center mt-16">
             <Link href="/case-studies" className="inline-flex items-center text-base font-semibold text-signal-red hover:gap-3 gap-2 transition-all duration-200">
-              <span>Explore Our Work</span>
+              <span>{t('exploreOurWork')}</span>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -167,7 +157,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-navy-900/60" />
           <div className="absolute inset-0 flex items-center justify-center">
             <p className="text-xl md:text-2xl font-bold text-white text-center max-w-2xl px-6">
-              Where clarity meets code. Every system we build starts with understanding—and ends with impact.
+              {t('behindTheCode')}
             </p>
           </div>
         </div>
@@ -181,19 +171,19 @@ export default function HomePage() {
             {/* Left: Content */}
             <div>
               <h2 className="text-4xl md:text-5xl font-bold mb-6 text-navy-900">
-                Measurable Outcomes
+                {t('measurableOutcomes')}
               </h2>
               <p className="text-2xl text-navy-900 mb-6 leading-tight">
-                Engineering isn't just about shipping—it's about impact.
+                {t('measurableOutcomesLead')}
               </p>
               <p className="text-lg text-slate-700 leading-relaxed mb-8">
-                Your digital systems should create momentum—not friction. We measure success in business outcomes, not just technical metrics.
+                {t('measurableOutcomesDesc')}
               </p>
               <Link 
                 href="/case-studies" 
                 className="inline-flex items-center gap-2 text-base font-semibold text-signal-red hover:gap-3 transition-all duration-200"
               >
-                <span>View Case Studies</span>
+                <span>{t('viewCaseStudies')}</span>
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -214,7 +204,7 @@ export default function HomePage() {
                   43%
                 </div>
                 <div className="text-sm text-slate-700 group-hover:text-gray-300 transition-colors duration-300">
-                  Faster load times
+                  {t('fasterLoadTimes')}
                 </div>
               </motion.div>
 
@@ -230,7 +220,7 @@ export default function HomePage() {
                   27%
                 </div>
                 <div className="text-sm text-slate-700 group-hover:text-gray-300 transition-colors duration-300">
-                  Conversion increase
+                  {t('conversionIncrease')}
                 </div>
               </motion.div>
 
@@ -246,7 +236,7 @@ export default function HomePage() {
                   99.9%
                 </div>
                 <div className="text-sm text-slate-700 group-hover:text-gray-300 transition-colors duration-300">
-                  Uptime achieved
+                  {t('uptimeAchieved')}
                 </div>
               </motion.div>
 
@@ -262,7 +252,7 @@ export default function HomePage() {
                   34%
                 </div>
                 <div className="text-sm text-slate-700 group-hover:text-gray-300 transition-colors duration-300">
-                  Cost reduction
+                  {t('costReduction')}
                 </div>
               </motion.div>
             </div>
@@ -271,7 +261,7 @@ export default function HomePage() {
           {/* Bottom tagline */}
           <div className="text-center mt-20 max-w-2xl mx-auto">
             <p className="text-xl font-semibold text-navy-900">
-              Performance gains you can feel—and measure.
+              {t('performanceGains')}
             </p>
           </div>
         </div>
@@ -282,10 +272,10 @@ export default function HomePage() {
         <div className="container-wide">
           <div className="max-w-4xl mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Recent Work
+              {t('recentWork')}
             </h2>
             <p className="text-xl text-gray-200">
-              Real projects. Real outcomes. Real impact.
+              {t('recentWorkDesc')}
             </p>
           </div>
 
@@ -303,7 +293,7 @@ export default function HomePage() {
                 Modern, high-performance website that elevated trust and improved lead quality.
               </p>
               <div className="inline-flex items-center gap-2 text-sm font-semibold text-signal-red group-hover:gap-3 transition-all duration-200">
-                <span>View project</span>
+                <span>{t('viewProject')}</span>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -322,7 +312,7 @@ export default function HomePage() {
                 Fast, mobile-friendly platform that modernized brand presence and improved customer contact flow.
               </p>
               <div className="inline-flex items-center gap-2 text-sm font-semibold text-signal-red group-hover:gap-3 transition-all duration-200">
-                <span>View project</span>
+                <span>{t('viewProject')}</span>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -341,7 +331,7 @@ export default function HomePage() {
                 Complete video production pipeline, editing workflows, and channel strategy for consistent publishing.
               </p>
               <div className="inline-flex items-center gap-2 text-sm font-semibold text-signal-red group-hover:gap-3 transition-all duration-200">
-                <span>View project</span>
+                <span>{t('viewProject')}</span>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -360,7 +350,7 @@ export default function HomePage() {
                 React Native platform for attendance, alerts, and parent communication—engineered for scale.
               </p>
               <div className="inline-flex items-center gap-2 text-sm font-semibold text-signal-red group-hover:gap-3 transition-all duration-200">
-                <span>View project</span>
+                <span>{t('viewProject')}</span>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -370,7 +360,7 @@ export default function HomePage() {
 
           <div className="text-center mt-16">
             <Link href="/case-studies" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-navy-900 font-semibold hover:bg-gray-100 transition-all duration-200 group">
-              <span>View All Work</span>
+              <span>{t('viewAllWork')}</span>
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -383,13 +373,13 @@ export default function HomePage() {
       <section className="section-sm bg-signal-red text-white">
         <div className="container-wide text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Let's map your 90-day value plan
+            {t('ctaTitle')}
           </h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Have a complex stack or ambitious growth target? We turn it into a fast, connected, intelligent system.
+            {t('ctaDesc')}
           </p>
           <Link href="/contact" className="btn-secondary border-white text-white hover:bg-white hover:text-signal-red">
-            Start a conversation
+            {t('startConversation')}
           </Link>
         </div>
       </section>

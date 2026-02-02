@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
 
 const founders = [
@@ -28,6 +29,7 @@ type MeetTheFoundersProps = {
 };
 
 export default function MeetTheFounders({ variant = 'home', embed = false }: MeetTheFoundersProps) {
+  const t = useTranslations('home');
   const isAbout = variant === 'about';
 
   const content = (
@@ -35,7 +37,7 @@ export default function MeetTheFounders({ variant = 'home', embed = false }: Mee
       {!embed && (
         <div className="text-center max-w-2xl mx-auto mb-14">
           <h2 className={`text-4xl md:text-5xl font-bold mb-4 ${isAbout ? 'text-white' : 'text-navy-900'}`}>
-            Meet the Founders
+            {t('meetTheFounders')}
           </h2>
           <p className={`text-lg ${isAbout ? 'text-gray-200' : 'text-slate-700'}`}>
             The people behind IE Global—strategy, design, and engineering in one team.
@@ -86,7 +88,7 @@ export default function MeetTheFounders({ variant = 'home', embed = false }: Mee
             href="/the-team"
             className="inline-flex items-center gap-2 text-base font-semibold text-signal-red hover:gap-3 transition-all duration-200"
           >
-            <span>Learn more about us</span>
+            <span>{t('learnMoreAboutUs')}</span>
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
