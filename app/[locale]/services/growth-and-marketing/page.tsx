@@ -3,8 +3,8 @@ import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Growth & Marketing | IE Global',
-  description: "Performance isn't just technical — it's visible. Optimize your digital presence so your systems don't just work — they grow.",
+  title: 'Growth & Marketing for Digital Systems',
+  description: "IE Global optimizes your digital presence so your systems don't just work—they grow. SEO, analytics, conversion funnels engineered for measurable results.",
 };
 
 export default function GrowthAndMarketingPage() {
@@ -12,6 +12,7 @@ export default function GrowthAndMarketingPage() {
     <>
       <Hero
         eyebrow="Services"
+        eyebrowLink={{ href: '/services', label: 'Digital systems' }}
         title="Growth & Marketing"
         subtitle="Performance isn't just technical — it's visible."
         backgroundPattern="gradient"

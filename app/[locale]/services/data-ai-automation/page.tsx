@@ -4,8 +4,8 @@ import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Data, AI & Automation | IE Global',
-  description: 'Turn data into decisions. Turn decisions into automation. Automate workflows, integrate systems, and implement AI features.',
+  title: 'Data, AI & Automation for Scalable Operations',
+  description: 'IE Global automates workflows, integrates systems, and implements AI that unlocks efficiency and speed. Turn data into decisions, decisions into automation.',
 };
 
 export default function DataAIAutomationPage() {
@@ -13,6 +13,7 @@ export default function DataAIAutomationPage() {
     <>
       <Hero
         eyebrow="Services"
+        eyebrowLink={{ href: '/services', label: 'Digital systems' }}
         title="Data, AI & Automation"
         subtitle="Turn data into decisions. Turn decisions into automation."
         backgroundPattern="gradient"

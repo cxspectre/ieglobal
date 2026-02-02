@@ -3,8 +3,8 @@ import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Cloud & Security | IE Global',
-  description: 'Fast, secure, and effortless to scale. Cloud systems that keep your business online, protected, and performing under pressure.',
+  title: 'Cloud Infrastructure & Security for Digital Systems',
+  description: 'IE Global architects cloud systems that keep your business online, protected, and scaling effortlessly. Reliable, automated, secure.',
 };
 
 export default function CloudAndSecurityPage() {
@@ -12,6 +12,7 @@ export default function CloudAndSecurityPage() {
     <>
       <Hero
         eyebrow="Services"
+        eyebrowLink={{ href: '/services', label: 'Digital systems' }}
         title="Cloud & Security"
         subtitle="Fast, secure, and effortless to scale."
         backgroundPattern="gradient"

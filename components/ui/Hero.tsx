@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils';
 
 type HeroProps = {
   eyebrow?: string;
+  /** When set, eyebrow becomes a link (e.g. for service pages: href="/services", "Digital systems") */
+  eyebrowLink?: { href: string; label: string };
   title: string;
   subtitle: string;
   primaryCTA?: {
@@ -22,6 +24,7 @@ type HeroProps = {
 
 export default function Hero({
   eyebrow,
+  eyebrowLink,
   title,
   subtitle,
   primaryCTA,
@@ -83,9 +86,18 @@ export default function Hero({
         >
           {eyebrow && (
             <motion.div variants={itemVariants}>
-              <span className="inline-block px-4 py-2 text-sm font-semibold bg-white/10 text-white mb-6 tracking-wide uppercase">
-                {eyebrow}
-              </span>
+              {eyebrowLink ? (
+                <Link
+                  href={eyebrowLink.href}
+                  className="inline-block px-4 py-2 text-sm font-semibold bg-white/10 text-white mb-6 tracking-wide uppercase hover:bg-white/20 transition-colors"
+                >
+                  {eyebrowLink.label}
+                </Link>
+              ) : (
+                <span className="inline-block px-4 py-2 text-sm font-semibold bg-white/10 text-white mb-6 tracking-wide uppercase">
+                  {eyebrow}
+                </span>
+              )}
             </motion.div>
           )}
 

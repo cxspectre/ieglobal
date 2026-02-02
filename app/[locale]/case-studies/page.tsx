@@ -4,8 +4,13 @@ import CaseStudyCard from '@/components/ui/CaseStudyCard';
 import { getCaseStudies } from '@/lib/mdx';
 
 export const metadata: Metadata = {
-  title: 'Case Studies',
-  description: 'Evidence of outcomes across sectors. See how we have helped ambitious clients achieve extraordinary results.',
+  title: 'Case Studies – IE Global Digital Systems',
+  description: 'IE Global case studies: evidence of outcomes across sectors. See how we help ambitious clients achieve measurable results with scalable digital systems.',
+  openGraph: {
+    title: 'Case Studies – IE Global Digital Systems',
+    url: 'https://ie-global.net/case-studies',
+  },
+  alternates: { canonical: 'https://ie-global.net/case-studies' },
 };
 
 export default function CaseStudiesPage() {

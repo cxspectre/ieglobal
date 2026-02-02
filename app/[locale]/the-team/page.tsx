@@ -6,11 +6,11 @@ import MeetTheFounders from '@/components/ui/MeetTheFounders';
 import { Link } from '@/i18n/navigation';
 
 export const metadata: Metadata = {
-  title: 'The Team',
-  description: 'Meet the founders of IE Global. Cassian and Wessel—engineers, designers, and product thinkers who build digital systems that create momentum, not friction.',
+  title: 'The Team – IE Global Digital Systems & Engineering',
+  description: 'IE Global is a digital systems and engineering company. Meet Cassian and Wessel—the founders who build scalable digital systems that create momentum, not friction.',
   openGraph: {
-    title: 'The Team | IE Global',
-    description: 'Meet the founders of IE Global. A small team that builds digital systems that create momentum—not friction.',
+    title: 'The Team – IE Global Digital Systems & Engineering',
+    description: 'IE Global is a digital systems and engineering company. Meet the founders who build scalable digital systems that create momentum—not friction.',
     url: 'https://ie-global.net/the-team',
   },
   alternates: { canonical: 'https://ie-global.net/the-team' },
@@ -66,8 +66,8 @@ export default function TheTeamPage() {
           </p>
           <p className="text-lg text-slate-700 leading-relaxed">
             {isDe
-              ? 'IE Global wurde gegründet, um genau das zu ändern. Wir bauen Systeme, die skalieren, schaffen Klarheit in komplexen Entscheidungen und vereinen Design, Engineering und Strategie in einer Disziplin.'
-              : 'IE Global was created to fix that. We build systems that scale, bring clarity to complex decisions, and combine design, engineering, and strategy into one discipline.'}
+              ? 'IE Global ist ein Unternehmen für digitale Systeme und Engineering. Wir wurden gegründet, um genau das zu ändern. Wir bauen Systeme, die skalieren, schaffen Klarheit in komplexen Entscheidungen und vereinen Design, Engineering und Strategie in einer Disziplin.'
+              : 'IE Global is a digital systems and engineering company. We were created to fix that. We build systems that scale, bring clarity to complex decisions, and combine design, engineering, and strategy into one discipline.'}
           </p>
         </div>
       </section>

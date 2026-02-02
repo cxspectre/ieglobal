@@ -3,8 +3,8 @@ import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'AI & Data Strategy',
-  description: 'Measurable use-case ROI, data guardrails, and operating model for AI adoption at scale.',
+  title: 'AI & Data Strategy for Business Transformation',
+  description: 'IE Global turns AI use-cases into business cases. Portfolio prioritization, responsible AI governance, and scalable operating models for AI at scale.',
 };
 
 export default function AIDataStrategyPage() {
@@ -12,6 +12,7 @@ export default function AIDataStrategyPage() {
     <>
       <Hero
         eyebrow="Services"
+        eyebrowLink={{ href: '/services', label: 'Digital systems' }}
         title="AI & Data Strategy"
         subtitle="Turn AI use-cases into business cases. From portfolio prioritization to responsible AI governance and scalable operating models."
         backgroundPattern="gradient"

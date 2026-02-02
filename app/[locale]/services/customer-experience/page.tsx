@@ -3,8 +3,8 @@ import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Customer Experience & Growth',
-  description: 'Higher NPS, increased CLV, and lower cost-to-serve through personalized customer journeys and Next Best Action.',
+  title: 'Customer Experience & Growth Systems',
+  description: 'IE Global turns customer insight into measurable growth. Personalized journeys, Next Best Action, data-driven engagement—higher NPS, increased CLV.',
 };
 
 export default function CustomerExperiencePage() {
@@ -12,6 +12,7 @@ export default function CustomerExperiencePage() {
     <>
       <Hero
         eyebrow="Services"
+        eyebrowLink={{ href: '/services', label: 'Digital systems' }}
         title="Customer Experience & Growth"
         subtitle="Turn customer insight into measurable growth through personalized journeys, Next Best Action, and data-driven engagement."
         backgroundPattern="gradient"

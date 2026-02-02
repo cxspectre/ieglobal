@@ -5,8 +5,13 @@ import { getInsights } from '@/lib/mdx';
 import { formatDate } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'Insights',
-  description: 'Ideas to help you ship faster. Expert perspectives on AI, customer experience, pricing, and digital transformation.',
+  title: 'Insights – IE Global',
+  description: 'IE Global insights on AI, customer experience, pricing, and digital transformation. Ideas to help you ship faster with scalable digital systems.',
+  openGraph: {
+    title: 'Insights – IE Global',
+    url: 'https://ie-global.net/insights',
+  },
+  alternates: { canonical: 'https://ie-global.net/insights' },
 };
 
 export default function InsightsPage() {

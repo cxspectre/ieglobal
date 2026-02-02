@@ -3,8 +3,8 @@ import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Ongoing Support | IE Global',
-  description: "We don't just build — we evolve with you. Long-term maintenance, updates, improvements, and monitoring.",
+  title: 'Ongoing Support for Digital Systems & Platforms',
+  description: "IE Global stays involved beyond launch. Long-term maintenance, updates, improvements, and monitoring—we evolve with your digital systems.",
 };
 
 export default function OngoingSupportPage() {
@@ -12,6 +12,7 @@ export default function OngoingSupportPage() {
     <>
       <Hero
         eyebrow="Services"
+        eyebrowLink={{ href: '/services', label: 'Digital systems' }}
         title="Ongoing Support"
         subtitle="We don't just build — we evolve with you."
         backgroundPattern="gradient"

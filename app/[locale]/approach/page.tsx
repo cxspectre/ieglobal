@@ -5,8 +5,13 @@ import Hero from '@/components/ui/Hero';
 import { Link } from '@/i18n/navigation';
 
 export const metadata: Metadata = {
-  title: 'Our Approach',
-  description: 'How we turn ideas into fast, reliable, long-lasting digital systems. Clarity first, engineering excellence always.',
+  title: 'Our Approach – How IE Global Builds Digital Systems',
+  description: 'How IE Global turns ideas into fast, reliable, long-lasting digital systems. Clarity first, engineering excellence always. From strategy to launch—and beyond.',
+  openGraph: {
+    title: 'Our Approach – How IE Global Builds Digital Systems',
+    url: 'https://ie-global.net/approach',
+  },
+  alternates: { canonical: 'https://ie-global.net/approach' },
 };
 
 export default function ApproachPage() {

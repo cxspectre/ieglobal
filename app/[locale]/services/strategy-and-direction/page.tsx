@@ -3,8 +3,8 @@ import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Strategy & Direction | IE Global',
-  description: 'Clarity first. Engineering second. Before we build anything, we help you understand what should be built — and why.',
+  title: 'Strategy & Direction for Scalable Digital Systems',
+  description: 'Clarity first. Engineering second. IE Global helps you understand what to build and why—before we build anything. Align goals, product vision, and technical approach.',
 };
 
 export default function StrategyAndDirectionPage() {
@@ -12,6 +12,7 @@ export default function StrategyAndDirectionPage() {
     <>
       <Hero
         eyebrow="Services"
+        eyebrowLink={{ href: '/services', label: 'Digital systems' }}
         title="Strategy & Direction"
         subtitle="Clarity first. Engineering second."
         backgroundPattern="gradient"

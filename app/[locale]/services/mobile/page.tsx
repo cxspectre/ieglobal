@@ -3,8 +3,8 @@ import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Mobile & Cross-Platform Apps | IE Global',
-  description: 'One codebase. Every device. Zero compromises. Mobile apps that perform like native experiences.',
+  title: 'Mobile & Cross-Platform Apps for Growing Businesses',
+  description: 'IE Global builds mobile apps that perform like native—one codebase, every device. iOS, Android, and tablet workflows engineered for scale.',
 };
 
 export default function MobileAppsPage() {
@@ -12,6 +12,7 @@ export default function MobileAppsPage() {
     <>
       <Hero
         eyebrow="Services"
+        eyebrowLink={{ href: '/services', label: 'Digital systems' }}
         title="Mobile & Cross-Platform Apps"
         subtitle="One codebase. Every device. Zero compromises."
         backgroundPattern="gradient"

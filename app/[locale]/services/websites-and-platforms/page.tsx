@@ -3,8 +3,8 @@ import Hero from '@/components/ui/Hero';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Websites & Platforms | IE Global',
-  description: 'Fast. Scalable. Designed to last. High-performance digital experiences that feel effortless and deliver measurable results.',
+  title: 'Scalable Websites & Digital Platforms',
+  description: 'IE Global designs and builds high-performance websites and platforms engineered for speed, stability, and long-term growth. Fast. Scalable. Designed to last.',
 };
 
 export default function WebsitesAndPlatformsPage() {
@@ -12,6 +12,7 @@ export default function WebsitesAndPlatformsPage() {
     <>
       <Hero
         eyebrow="Services"
+        eyebrowLink={{ href: '/services', label: 'Digital systems' }}
         title="Websites & Platforms"
         subtitle="Fast. Scalable. Designed to last."
         backgroundPattern="gradient"

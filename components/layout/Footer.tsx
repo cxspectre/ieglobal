@@ -31,7 +31,7 @@ export default function Footer() {
             <Link href="/" className="inline-block mb-6 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-signal-red">
               <Image
                 src="/logo.png"
-                alt="IE Global"
+                alt="IE Global – Digital Systems & Engineering"
                 width={150}
                 height={50}
                 className="h-12 w-auto brightness-0 invert"

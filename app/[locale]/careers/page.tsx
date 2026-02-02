@@ -4,8 +4,13 @@ import Hero from '@/components/ui/Hero';
 import { Link } from '@/i18n/navigation';
 
 export const metadata: Metadata = {
-  title: 'Careers',
-  description: 'Join IE Global or partner with us. We build meaningful work with talented people.',
+  title: 'Careers – IE Global Digital Systems',
+  description: 'Join IE Global. We build scalable digital systems with talented people. Small senior teams, big problems, visible impact.',
+  openGraph: {
+    title: 'Careers – IE Global Digital Systems',
+    url: 'https://ie-global.net/careers',
+  },
+  alternates: { canonical: 'https://ie-global.net/careers' },
 };
 
 export default function CareersPage() {

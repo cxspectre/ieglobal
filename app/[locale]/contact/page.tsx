@@ -3,11 +3,11 @@ import Hero from '@/components/ui/Hero';
 import ContactFormPremium from '@/components/ui/ContactFormPremium';
 
 export const metadata: Metadata = {
-  title: 'Contact Us',
-  description: 'Engineering partnerships that move your business forward. Tell us what you are building. IE Global — digital agency based in the Netherlands.',
+  title: 'Contact – Start a Project with IE Global',
+  description: 'IE Global designs and operates scalable digital systems, websites, and platforms. Tell us what you are building—we stay involved beyond launch. Based in the Netherlands.',
   openGraph: {
-    title: 'Contact IE Global | Start a Project',
-    description: 'Engineering partnerships that move your business forward. Tell us what you are building.',
+    title: 'Contact – Start a Project with IE Global',
+    description: 'Engineering partnerships that move your business forward. IE Global builds scalable digital systems—tell us what you are building.',
     url: 'https://ie-global.net/contact',
   },
   alternates: { canonical: 'https://ie-global.net/contact' },

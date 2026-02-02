@@ -5,11 +5,11 @@ import Hero from '@/components/ui/Hero';
 import { Link } from '@/i18n/navigation';
 
 export const metadata: Metadata = {
-  title: 'Services',
-  description: 'From strategy to scale. We build digital systems that are fast, reliable, and built to last. Websites, apps, AI, and ongoing support.',
+  title: 'Digital Systems & Engineering Services',
+  description: 'IE Global builds scalable digital systems—from strategy and websites to AI, automation, and ongoing support. Fast, reliable, built to last.',
   openGraph: {
-    title: 'Services | IE Global',
-    description: 'From strategy to scale. We build digital systems that are fast, reliable, and built to last.',
+    title: 'Digital Systems & Engineering Services | IE Global',
+    description: 'IE Global builds scalable digital systems—from strategy and websites to AI, automation, and ongoing support.',
     url: 'https://ie-global.net/services',
   },
   alternates: { canonical: 'https://ie-global.net/services' },
