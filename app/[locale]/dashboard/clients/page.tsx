@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
 
 type Client = {
@@ -18,9 +18,34 @@ type Client = {
   priority_level: string | null;
   website: string | null;
   created_at: string;
+  projects?: { id: string; status: string }[];
+  invoices?: { id: string; status: string }[];
 };
 
 type ViewMode = 'grid' | 'list';
+
+function getClientStatus(c: Client): 'no_project' | 'active' | 'invoiced' | 'paid' | 'stalled' {
+  const projects = c.projects || [];
+  const invoices = c.invoices || [];
+  const hasProjects = projects.length > 0;
+  const hasActiveProject = projects.some((p) => ['in_progress', 'planning', 'review'].includes(p.status));
+  const hasPaidInvoice = invoices.some((i) => i.status === 'paid');
+  const hasPendingInvoice = invoices.some((i) => ['pending', 'overdue'].includes(i.status));
+
+  if (!hasProjects) return 'no_project';
+  if (hasPaidInvoice) return 'paid';
+  if (hasPendingInvoice) return 'invoiced';
+  if (hasActiveProject) return 'active';
+  return 'stalled';
+}
+
+const STATUS_CHIP: Record<string, { label: string; className: string }> = {
+  no_project: { label: 'No project', className: 'bg-amber-100 text-amber-800 border-amber-200' },
+  active: { label: 'Active', className: 'bg-blue-100 text-blue-800 border-blue-200' },
+  invoiced: { label: 'Invoiced', className: 'bg-violet-100 text-violet-800 border-violet-200' },
+  paid: { label: 'Paid', className: 'bg-slate-100 text-slate-600 border-slate-200' },
+  stalled: { label: 'Stalled', className: 'bg-red-100 text-red-800 border-red-200' },
+};
 
 export default function ClientsPage() {
   const [loading, setLoading] = useState(true);
@@ -34,15 +59,15 @@ export default function ClientsPage() {
   useEffect(() => {
     const checkAuthAndLoadClients = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
+
       if (!session) {
         router.push('/login');
         return;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('clients')
-        .select('*')
+        .select('*, projects(id, status), invoices(id, status)')
         .order('company_name', { ascending: true });
 
       if (error) {
@@ -50,363 +75,303 @@ export default function ClientsPage() {
       } else {
         setClients(data || []);
       }
-      
+
       setLoading(false);
     };
 
     checkAuthAndLoadClients();
   }, []);
 
-  const filteredClients = clients.filter(client => {
-    const matchesSearch = 
-    client.company_name.toLowerCase().includes(search.toLowerCase()) ||
-    client.contact_person.toLowerCase().includes(search.toLowerCase()) ||
+  const filteredClients = clients.filter((client) => {
+    const matchesSearch =
+      client.company_name.toLowerCase().includes(search.toLowerCase()) ||
+      client.contact_person.toLowerCase().includes(search.toLowerCase()) ||
       client.contact_email.toLowerCase().includes(search.toLowerCase()) ||
       (client.industry && client.industry.toLowerCase().includes(search.toLowerCase()));
-    
+
     const matchesStatus = filterStatus === 'all' || client.status === filterStatus;
-    
+
     return matchesSearch && matchesStatus;
   });
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-700">Loading clients...</p>
+          <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Loading clients...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-          <h1 className="text-3xl font-bold text-navy-900 mb-1">Clients</h1>
-          <p className="text-slate-700">
-            {filteredClients.length} of {clients.length} clients
-          </p>
+    <div className="min-h-screen -m-6 lg:-m-8">
+      {/* Floating hero nav bar */}
+      <div className="pt-12 lg:pt-16 px-4 lg:px-6">
+        <div className="max-w-[1600px] mx-auto">
+          <nav className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl bg-navy-900 px-6 py-4 shadow-xl shadow-black/15 border border-white/5">
+            <div className="flex items-center gap-4">
+              <div>
+                <p className="text-white/50 text-sm">
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </p>
+                <h1 className="text-xl sm:text-2xl font-bold text-white">
+                  Clients
+                  <span className="text-white/50 font-normal ml-2">
+                    {filteredClients.length} of {clients.length}
+                  </span>
+                </h1>
+              </div>
             </div>
-        <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard/clients/new"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-signal-red text-signal-red font-semibold hover:bg-signal-red hover:text-white transition-all duration-200"
-            >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              <span>Add Client</span>
-            </Link>
-          <Link
-            href="/dashboard/clients/onboard"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 shadow-md"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Onboard Client</span>
-          </Link>
-        </div>
-          </div>
-
-      {/* Search & Filters Bar */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="flex items-center gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              placeholder="Search clients by name, contact, email, or industry..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none"
-            />
-            <svg className="absolute left-3 top-3 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <Link
+                href="/dashboard/clients/new"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/15 transition-colors border border-white/10"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-              </button>
-            )}
-          </div>
-
-          {/* Status Filter */}
-          <div className="flex items-center gap-2 bg-off-white rounded-lg p-1">
-            <button
-              onClick={() => setFilterStatus('all')}
-              className={`px-4 py-2 text-sm font-semibold rounded-md transition-all ${
-                filterStatus === 'all'
-                  ? 'bg-white text-navy-900 shadow-sm'
-                  : 'text-slate-600 hover:text-navy-900'
-              }`}
-            >
-              All ({clients.length})
-            </button>
-            <button
-              onClick={() => setFilterStatus('active')}
-              className={`px-4 py-2 text-sm font-semibold rounded-md transition-all ${
-                filterStatus === 'active'
-                  ? 'bg-white text-navy-900 shadow-sm'
-                  : 'text-slate-600 hover:text-navy-900'
-              }`}
-            >
-              Active ({clients.filter(c => c.status === 'active').length})
-            </button>
-            <button
-              onClick={() => setFilterStatus('inactive')}
-              className={`px-4 py-2 text-sm font-semibold rounded-md transition-all ${
-                filterStatus === 'inactive'
-                  ? 'bg-white text-navy-900 shadow-sm'
-                  : 'text-slate-600 hover:text-navy-900'
-              }`}
-            >
-              Inactive ({clients.filter(c => c.status === 'inactive').length})
-            </button>
-          </div>
-
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 bg-off-white rounded-lg p-1">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-md transition-all ${
-                viewMode === 'list'
-                  ? 'bg-white text-signal-red shadow-sm'
-                  : 'text-slate-600 hover:text-navy-900'
-              }`}
-              title="List view"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-md transition-all ${
-                viewMode === 'grid'
-                  ? 'bg-white text-signal-red shadow-sm'
-                  : 'text-slate-600 hover:text-navy-900'
-              }`}
-              title="Grid view"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-            </button>
-          </div>
+                Add Client
+              </Link>
+              <Link
+                href="/dashboard/clients/onboard"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-signal-red text-white font-semibold rounded-xl hover:bg-signal-red/90 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Onboard Client
+              </Link>
+            </div>
+          </nav>
         </div>
       </div>
 
-      {/* Clients Display */}
+      <div className="bg-gradient-to-b from-slate-100 to-slate-50 min-h-[calc(100vh-120px)] p-6 lg:p-8">
+        <div className="max-w-[1600px] mx-auto space-y-6">
+          {/* Search & Filters */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl bg-white p-4 shadow-sm border border-slate-200/80"
+          >
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  placeholder="Search by name, contact, email, or industry..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none text-navy-900"
+                />
+                <svg className="absolute left-3 top-3 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                {search && (
+                  <button onClick={() => setSearch('')} className="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+                  {[
+                    { key: 'all', label: `All`, count: clients.length },
+                    { key: 'active', label: 'Active', count: clients.filter((c) => c.status === 'active').length },
+                    { key: 'inactive', label: 'Inactive', count: clients.filter((c) => c.status === 'inactive').length },
+                  ].map(({ key, label, count }) => (
+                    <button
+                      key={key}
+                      onClick={() => setFilterStatus(key)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-md transition-all ${
+                        filterStatus === key ? 'bg-white text-navy-900 shadow-sm' : 'text-slate-600 hover:text-navy-900'
+                      }`}
+                    >
+                      {label} ({count})
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white text-signal-red shadow-sm' : 'text-slate-600 hover:text-navy-900'}`}
+                    title="List view"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white text-signal-red shadow-sm' : 'text-slate-600 hover:text-navy-900'}`}
+                    title="Grid view"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Clients Display */}
           {filteredClients.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-16 text-center">
-          <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <p className="text-lg text-slate-700 mb-4">
-            {search ? 'No clients match your search' : 'No clients found'}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl bg-white p-16 text-center shadow-sm border border-slate-200/80"
+            >
+              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <p className="font-bold text-navy-900 mb-1">
+                {search ? 'No clients match your search' : 'No clients yet'}
+              </p>
+              <p className="text-sm text-slate-600 mb-6">
+                {search ? 'Try a different search term' : 'Onboard your first client to get started'}
               </p>
               {!search && (
                 <Link
-              href="/dashboard/clients/onboard"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200"
+                  href="/dashboard/clients/onboard"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-signal-red text-white font-semibold rounded-xl hover:bg-signal-red/90 transition-colors"
                 >
-              Onboard Your First Client
+                  Onboard Client
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
                 </Link>
               )}
-            </div>
-      ) : viewMode === 'list' ? (
-        /* List View - Clean CRM Style */
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          {filteredClients.map((client, index) => (
+            </motion.div>
+          ) : viewMode === 'list' ? (
             <motion.div
-              key={client.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.02 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl bg-white shadow-sm border border-slate-200/80 overflow-hidden"
             >
-              <Link
-                href={`/dashboard/clients/${client.id}`}
-                className="flex items-center justify-between p-5 hover:bg-off-white transition-colors border-b border-gray-100 last:border-b-0 group"
-              >
-                {/* Left: Company Info */}
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  {/* Avatar/Initial */}
-                  <div className="w-12 h-12 bg-gradient-to-br from-navy-900 to-navy-800 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                    {client.company_name.charAt(0)}
-                  </div>
-                  
-                  {/* Company & Contact */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="text-base font-bold text-navy-900 group-hover:text-signal-red transition-colors truncate">
-                        {client.company_name}
-                      </h3>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {client.onboarding_status === 'completed' && (
-                          <span className="px-2 py-0.5 bg-signal-red/10 text-signal-red text-xs font-bold rounded border border-signal-red/20">
-                            ONBOARDED
-                          </span>
-                        )}
-                        {client.priority_level === 'critical' && (
-                          <span className="px-2 py-0.5 bg-red-100 text-red-800 text-xs font-bold rounded border border-red-200">
-                            CRITICAL
-                          </span>
-                        )}
-                        {client.priority_level === 'high' && (
-                          <span className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-bold rounded border border-orange-200">
-                            HIGH
-                          </span>
-                        )}
+              {filteredClients.map((client, index) => {
+                const status = getClientStatus(client);
+                const chip = STATUS_CHIP[status];
+                return (
+                  <motion.div
+                    key={client.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.02 }}
+                  >
+                    <Link
+                      href={`/dashboard/clients/${client.id}`}
+                      className="flex items-center justify-between p-5 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0 group"
+                    >
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="w-12 h-12 bg-navy-900 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0 group-hover:bg-signal-red transition-colors">
+                          {client.company_name.charAt(0)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-1 flex-wrap">
+                            <h3 className="text-base font-bold text-navy-900 group-hover:text-signal-red transition-colors truncate">
+                              {client.company_name}
+                            </h3>
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${chip.className}`}>
+                              {chip.label}
+                            </span>
+                            {client.onboarding_status === 'completed' && (
+                              <span className="px-2 py-0.5 bg-signal-red/10 text-signal-red text-xs font-bold rounded border border-signal-red/20">
+                                Onboarded
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-slate-600 flex-wrap">
+                            <span className="flex items-center gap-1.5 truncate">
+                              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                              {client.contact_person}
+                            </span>
+                            <span className="flex items-center gap-1.5 truncate">
+                              <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                              {client.contact_email}
+                            </span>
+                            {client.industry && (
+                              <span className="text-slate-500">{client.industry}</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-4 text-sm text-slate-600">
-                      <span className="flex items-center gap-1.5">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        {client.contact_person}
-                      </span>
-                      <span className="flex items-center gap-1.5 truncate">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                        {client.contact_email}
-                      </span>
-                      {client.contact_phone && (
-                        <span className="flex items-center gap-1.5">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                          {client.contact_phone}
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <span
+                          className={`px-2.5 py-1 text-xs font-medium rounded-full ${
+                            client.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
+                          }`}
+                        >
+                          {client.status}
                         </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right: Industry & Status */}
-                <div className="flex items-center gap-6 flex-shrink-0">
-                  {client.industry && (
-                    <div className="text-right min-w-[120px]">
-                      <p className="text-xs text-slate-500 mb-0.5">Industry</p>
-                      <p className="text-sm font-semibold text-navy-900">{client.industry}</p>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center gap-3">
-                    <span className={`px-3 py-1.5 text-sm font-bold rounded-full ${
-                      client.status === 'active'
-                        ? 'bg-green-100 text-green-800 border-2 border-green-200'
-                        : 'bg-gray-100 text-gray-600 border-2 border-gray-200'
-                    }`}>
-                      {client.status === 'active' ? '●' : '○'}
-                    </span>
-                    
-                    <svg className="w-5 h-5 text-signal-red opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
-              </Link>
+                        <svg className="w-5 h-5 text-slate-400 group-hover:text-signal-red group-hover:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </motion.div>
-          ))}
-        </div>
-      ) : (
-        /* Grid View - Card Style */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredClients.map((client, index) => (
-            <motion.div
-              key={client.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.03 }}
-            >
-                          <Link
-                            href={`/dashboard/clients/${client.id}`}
-                className="block bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-signal-red/30 transition-all duration-200 overflow-hidden group"
-              >
-                {/* Card Header */}
-                <div className="p-5 border-b border-gray-100">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-navy-900 to-navy-800 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0">
-                      {client.company_name.charAt(0)}
-                    </div>
-                    <span className={`px-2 py-1 text-xs font-bold rounded-full ${
-                      client.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      {client.status === 'active' ? '●' : '○'}
-                    </span>
-                  </div>
-                  
-                  <h3 className="text-lg font-bold text-navy-900 group-hover:text-signal-red transition-colors mb-1 truncate">
-                    {client.company_name}
-                  </h3>
-                  
-                  {client.industry && (
-                    <p className="text-sm text-slate-600">{client.industry}</p>
-                  )}
-                  
-                  {/* Badges */}
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {client.onboarding_status === 'completed' && (
-                      <span className="px-2 py-0.5 bg-signal-red/10 text-signal-red text-xs font-bold rounded">
-                        Onboarded
-                      </span>
-                    )}
-                    {(client.priority_level === 'critical' || client.priority_level === 'high') && (
-                      <span className={`px-2 py-0.5 text-xs font-bold rounded ${
-                        client.priority_level === 'critical' 
-                          ? 'bg-red-100 text-red-800' 
-                          : 'bg-orange-100 text-orange-800'
-                      }`}>
-                        {client.priority_level}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Card Body */}
-                <div className="p-5 space-y-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span className="text-navy-900 font-medium truncate">{client.contact_person}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 text-sm">
-                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-slate-700 truncate">{client.contact_email}</span>
-              </div>
-                </div>
-
-                {/* Card Footer */}
-                <div className="px-5 py-3 bg-off-white group-hover:bg-signal-red/5 border-t border-gray-100 transition-colors">
-                  <span className="text-sm font-semibold text-signal-red flex items-center justify-between">
-                    <span>View Details</span>
-                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredClients.map((client, index) => {
+                const status = getClientStatus(client);
+                const chip = STATUS_CHIP[status];
+                return (
+                  <motion.div
+                    key={client.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                  >
+                    <Link
+                      href={`/dashboard/clients/${client.id}`}
+                      className="block rounded-2xl bg-white shadow-sm border border-slate-200/80 hover:shadow-md hover:border-signal-red/20 transition-all overflow-hidden group"
+                    >
+                      <div className="p-5">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="w-10 h-10 bg-navy-900 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0 group-hover:bg-signal-red transition-colors">
+                            {client.company_name.charAt(0)}
+                          </div>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${chip.className}`}>
+                            {chip.label}
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-bold text-navy-900 group-hover:text-signal-red transition-colors mb-1 truncate">
+                          {client.company_name}
+                        </h3>
+                        {client.industry && <p className="text-sm text-slate-600 mb-3">{client.industry}</p>}
+                        <div className="space-y-1.5 text-sm text-slate-600">
+                          <p className="truncate">{client.contact_person}</p>
+                          <p className="truncate">{client.contact_email}</p>
+                        </div>
+                      </div>
+                      <div className="px-5 py-3 bg-slate-50 group-hover:bg-signal-red/5 border-t border-slate-100 transition-colors">
+                        <span className="text-sm font-semibold text-signal-red flex items-center gap-2">
+                          View
+                          <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
+                        </span>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { motion } from 'framer-motion';
 
 type Invoice = {
   id: string;
@@ -12,403 +13,447 @@ type Invoice = {
   status: string;
   issue_date: string;
   due_date: string;
-  description: string | null;
   file_url: string | null;
-  clients: {
-    id: string;
-    company_name: string;
-  } | null;
-  projects: {
-    id: string;
-    name: string;
-  } | null;
+  clients: { id: string; company_name: string } | null;
+  projects: { id: string; name: string } | null;
 };
 
 function InvoicesPageContent() {
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
+  const [clients, setClients] = useState<{ id: string; company_name: string }[]>([]);
+  const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [clientFilter, setClientFilter] = useState<string>('all');
-  const [clients, setClients] = useState<any[]>([]);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createBrowserClient();
 
   useEffect(() => {
     const clientParam = searchParams.get('client');
-    if (clientParam) {
-      setClientFilter(clientParam);
-    }
+    if (clientParam) setClientFilter(clientParam);
   }, [searchParams]);
 
   useEffect(() => {
     checkAuth();
   }, []);
 
-  useEffect(() => {
-    if (invoices.length > 0) {
-      applyFilters();
-    }
-  }, [statusFilter, clientFilter, invoices]);
-
   const checkAuth = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
       if (!session) {
         router.push('/login');
         return;
       }
-
-      const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-
-      if (profile?.role !== 'admin' && profile?.role !== 'employee') {
+      const { data: profile } = await (supabase as any).from('profiles').select('*').eq('id', session.user.id).single();
+      if (profile?.role !== 'admin' && profile?.role !== 'employee' && profile?.role !== 'partner') {
         router.push('/portal');
         return;
       }
-
+      if (profile?.role !== 'admin') {
+        router.push('/dashboard');
+        return;
+      }
       await loadData();
     } catch (err) {
-      console.error('Auth check error:', err);
+      console.error(err);
       setLoading(false);
     }
   };
 
   const loadData = async () => {
     try {
-      // Load all invoices with client and project info
-      const { data: invoicesData, error: invoicesError } = await (supabase as any)
-        .from('invoices')
-        .select(`
-          *,
-          clients!inner(id, company_name),
-          projects(id, name)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (invoicesError) {
-        console.error('Error loading invoices:', invoicesError);
-      } else {
-        setInvoices(invoicesData || []);
-        setFilteredInvoices(invoicesData || []);
-      }
-
-      // Load all clients for filter
-      const { data: clientsData } = await (supabase as any)
-        .from('clients')
-        .select('id, company_name')
-        .order('company_name', { ascending: true });
-
-      if (clientsData) {
-        setClients(clientsData);
-      }
-
-      setLoading(false);
+      const [invRes, clRes] = await Promise.all([
+        (supabase as any).from('invoices').select('*, clients!inner(id, company_name), projects(id, name)').order('created_at', { ascending: false }),
+        (supabase as any).from('clients').select('id, company_name').order('company_name', { ascending: true }),
+      ]);
+      if (invRes.data) setInvoices(invRes.data);
+      if (clRes.data) setClients(clRes.data);
     } catch (err) {
-      console.error('Error loading data:', err);
-      setLoading(false);
+      console.error(err);
     }
+    setLoading(false);
   };
 
-  const applyFilters = () => {
-    let filtered = [...invoices];
+  const filteredInvoices = invoices.filter((inv) => {
+    const matchesSearch =
+      inv.invoice_number.toLowerCase().includes(search.toLowerCase()) ||
+      (inv.clients?.company_name?.toLowerCase().includes(search.toLowerCase()) ?? false);
+    const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
+    const matchesClient = clientFilter === 'all' || inv.clients?.id === clientFilter;
+    return matchesSearch && matchesStatus && matchesClient;
+  });
 
-    // Filter by status
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(inv => inv.status === statusFilter);
+  const pendingCount = filteredInvoices.filter((i) => i.status === 'pending').length;
+  const overdueCount = filteredInvoices.filter((i) => i.status === 'overdue').length;
+  const paidCount = filteredInvoices.filter((i) => i.status === 'paid').length;
+  const totalAmount = filteredInvoices.reduce((s, i) => s + i.amount, 0);
+
+  const markAsPaid = async (inv: Invoice) => {
+    setUpdatingId(inv.id);
+    try {
+      await (supabase as any).from('invoices').update({
+        status: 'paid',
+        paid_date: new Date().toISOString().split('T')[0],
+      }).eq('id', inv.id);
+      await loadData();
+    } catch (err: unknown) {
+      alert('Failed: ' + (err as Error).message);
     }
+    setUpdatingId(null);
+  };
 
-    // Filter by client
-    if (clientFilter !== 'all') {
-      filtered = filtered.filter(inv => inv.clients?.id === clientFilter);
+  const sendReminder = async (inv: Invoice) => {
+    setUpdatingId(inv.id);
+    try {
+      const res = await fetch('/api/invoice-reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoiceId: inv.id }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed');
+      alert(json.emailSent ? 'Reminder sent to client.' : 'Reminder API not configured.');
+      await loadData();
+    } catch (err: unknown) {
+      alert('Failed: ' + (err as Error).message);
     }
-
-    setFilteredInvoices(filtered);
+    setUpdatingId(null);
   };
 
   const handleDelete = async (invoiceId: string) => {
-    if (!confirm('Are you sure you want to delete this invoice? This action cannot be undone.')) {
-      return;
-    }
-
+    if (!confirm('Delete this invoice? This cannot be undone.')) return;
     setDeletingId(invoiceId);
-
     try {
-      // Get invoice to check for file (invoice PDFs live in client-files bucket)
-      const { data: invoice } = await (supabase as any)
-        .from('invoices')
-        .select('storage_path, file_url')
-        .eq('id', invoiceId)
-        .single();
-
-      // Derive storage path: invoices are stored in client-files bucket (path like clientId/invoices/file.pdf)
-      const storagePath =
-        invoice?.storage_path ||
-        (invoice?.file_url?.match(/\/client-files\/(.+)$/)?.[1] ?? null);
-
+      const { data: invoice } = await (supabase as any).from('invoices').select('storage_path, file_url').eq('id', invoiceId).single();
+      const storagePath = invoice?.storage_path ?? invoice?.file_url?.match(/\/client-files\/(.+)$/)?.[1];
       if (storagePath) {
-        const { error: storageError } = await supabase.storage
-          .from('client-files')
-          .remove([storagePath]);
-
-        if (storageError) {
-          console.error('Error deleting file from storage:', storageError);
-        }
+        await supabase.storage.from('client-files').remove([storagePath]);
       }
-
-      // Delete invoice record
-      const { error: deleteError } = await (supabase as any)
-        .from('invoices')
-        .delete()
-        .eq('id', invoiceId);
-
-      if (deleteError) {
-        throw deleteError;
-      }
-
-      // Log activity
-      await (supabase as any)
-        .from('activities')
-        .insert({
-          type: 'invoice_deleted',
-          description: `Invoice deleted`,
-          user_id: (await supabase.auth.getSession()).data.session?.user.id,
-        });
-
-      // Reload invoices
+      await (supabase as any).from('invoices').delete().eq('id', invoiceId);
       await loadData();
     } catch (err) {
-      console.error('Error deleting invoice:', err);
-      alert('Failed to delete invoice. Please try again.');
-    } finally {
-      setDeletingId(null);
+      alert('Failed to delete.');
     }
+    setDeletingId(null);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
-      case 'paid':
-        return 'bg-green-100 text-green-800';
-      case 'overdue':
-        return 'bg-red-100 text-red-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      case 'paid': return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'overdue': return 'bg-red-100 text-red-800 border-red-200';
+      case 'pending': return 'bg-amber-100 text-amber-800 border-amber-200';
+      default: return 'bg-slate-100 text-slate-600 border-slate-200';
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  const isOverdue = (inv: Invoice) =>
+    ['pending', 'overdue'].includes(inv.status) && new Date(inv.due_date) < new Date();
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-700">Loading invoices...</p>
+          <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Loading invoices...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8 flex items-end justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-navy-900 mb-2">Invoices</h1>
-          <p className="text-lg text-slate-700">
-            Manage all client invoices
-          </p>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white p-6 mb-6 border border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="statusFilter" className="block text-sm font-semibold text-navy-900 mb-2">
-              Filter by Status
-            </label>
-            <select
-              id="statusFilter"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none text-navy-900"
-            >
-              <option value="all">All Statuses</option>
-              <option value="pending">Pending</option>
-              <option value="paid">Paid</option>
-              <option value="overdue">Overdue</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="clientFilter" className="block text-sm font-semibold text-navy-900 mb-2">
-              Filter by Client
-            </label>
-            <select
-              id="clientFilter"
-              value={clientFilter}
-              onChange={(e) => setClientFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none text-navy-900"
-            >
-              <option value="all">All Clients</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.company_name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Invoices Table */}
-      <div className="bg-white border border-gray-200 overflow-hidden">
-        {filteredInvoices.length === 0 ? (
-          <div className="p-12 text-center">
-            <p className="text-slate-700 text-lg">No invoices found.</p>
-            {invoices.length === 0 && (
-              <Link
-                href="/dashboard/clients"
-                className="mt-4 inline-block text-signal-red hover:text-signal-red/80 font-semibold"
-              >
-                Create your first invoice →
+    <div className="min-h-screen -m-6 lg:-m-8">
+      {/* Floating hero nav */}
+      <div className="pt-12 lg:pt-16 px-4 lg:px-6">
+        <div className="max-w-[1600px] mx-auto">
+          <nav className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl bg-navy-900 px-6 py-4 shadow-xl shadow-black/15 border border-white/5">
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard" className="p-2 text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-label="Back">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
               </Link>
-            )}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-off-white border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-navy-900 uppercase tracking-wider">
-                    Invoice #
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-navy-900 uppercase tracking-wider">
-                    Client
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-navy-900 uppercase tracking-wider">
-                    Project
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-navy-900 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-navy-900 uppercase tracking-wider">
-                    Issue Date
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-navy-900 uppercase tracking-wider">
-                    Due Date
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-navy-900 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-navy-900 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredInvoices.map((invoice) => (
-                  <tr key={invoice.id} className="hover:bg-off-white transition-colors duration-150">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-semibold text-navy-900">{invoice.invoice_number}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/dashboard/clients/${invoice.clients?.id}`}
-                        className="text-signal-red hover:text-signal-red/80 font-semibold"
-                      >
-                        {invoice.clients?.company_name || 'N/A'}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4">
-                      {invoice.projects?.name ? (
-                        <Link
-                          href={`/dashboard/projects/${invoice.projects.id}`}
-                          className="text-slate-700 hover:text-signal-red"
-                        >
-                          {invoice.projects.name}
-                        </Link>
-                      ) : (
-                        <span className="text-slate-500">—</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="font-semibold text-navy-900">€{invoice.amount.toFixed(2)}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-slate-700">
-                      {formatDate(invoice.issue_date)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-slate-700">
-                      {formatDate(invoice.due_date)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(invoice.status)}`}>
-                        {invoice.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {invoice.file_url && (
-                          <a
-                            href={invoice.file_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3 py-1 text-sm font-semibold text-signal-red hover:text-signal-red/80 transition-colors duration-200"
-                            title="View PDF"
-                          >
-                            View
-                          </a>
-                        )}
-                        <button
-                          onClick={() => handleDelete(invoice.id)}
-                          disabled={deletingId === invoice.id}
-                          className="px-3 py-1 text-sm font-semibold text-red-600 hover:text-red-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Delete invoice"
-                        >
-                          {deletingId === invoice.id ? 'Deleting...' : 'Delete'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              <div>
+                <p className="text-white/50 text-sm">
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </p>
+                <h1 className="text-xl sm:text-2xl font-bold text-white">
+                  Invoices
+                  <span className="text-white/50 font-normal ml-2">
+                    {filteredInvoices.length} of {invoices.length}
+                  </span>
+                </h1>
+              </div>
+            </div>
+            <Link
+              href="/dashboard/clients"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-signal-red text-white font-semibold rounded-xl hover:bg-signal-red/90 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              New invoice
+            </Link>
+          </nav>
+        </div>
       </div>
 
-      {/* Summary Stats */}
-      {filteredInvoices.length > 0 && (
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-6 border border-gray-200">
-            <p className="text-sm text-slate-600 mb-1">Total Invoices</p>
-            <p className="text-3xl font-bold text-navy-900">{filteredInvoices.length}</p>
-          </div>
-          <div className="bg-white p-6 border border-gray-200">
-            <p className="text-sm text-slate-600 mb-1">Total Amount</p>
-            <p className="text-3xl font-bold text-navy-900">
-              €{filteredInvoices.reduce((sum, inv) => sum + inv.amount, 0).toFixed(2)}
-            </p>
-          </div>
-          <div className="bg-white p-6 border border-gray-200">
-            <p className="text-sm text-slate-600 mb-1">Paid Invoices</p>
-            <p className="text-3xl font-bold text-green-600">
-              {filteredInvoices.filter(inv => inv.status === 'paid').length}
-            </p>
+      <div className="bg-gradient-to-b from-slate-100 to-slate-50 min-h-[calc(100vh-120px)] p-6 lg:p-8">
+        <div className="max-w-[1600px] mx-auto space-y-6">
+          {/* Metrics strip */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80"
+          >
+            <div className="flex flex-wrap items-center gap-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
+                  <span className="text-xl font-bold text-navy-900">{filteredInvoices.length}</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-navy-900">Total</p>
+                  <p className="text-xs text-slate-500">invoices</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
+                  <span className="text-xl font-bold text-amber-700">{pendingCount}</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-navy-900">Pending</p>
+                  <p className="text-xs text-slate-500">awaiting payment</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center">
+                  <span className="text-xl font-bold text-red-700">{overdueCount}</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-navy-900">Overdue</p>
+                  <p className="text-xs text-slate-500">needs follow-up</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                  <span className="text-xl font-bold text-emerald-700">€{totalAmount.toLocaleString()}</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-navy-900">Filtered total</p>
+                  <p className="text-xs text-slate-500">{paidCount} paid</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Search & filters */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="rounded-2xl bg-white p-4 shadow-sm border border-slate-200/80"
+          >
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  placeholder="Search by invoice # or client..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none text-navy-900"
+                />
+                <svg className="absolute left-3 top-3 w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                {search && (
+                  <button onClick={() => setSearch('')} className="absolute right-3 top-3 text-slate-400 hover:text-slate-600">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-4 py-2.5 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none text-navy-900 text-sm font-medium"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="paid">Paid</option>
+                </select>
+                <select
+                  value={clientFilter}
+                  onChange={(e) => setClientFilter(e.target.value)}
+                  className="px-4 py-2.5 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none text-navy-900 text-sm font-medium min-w-[160px]"
+                >
+                  <option value="all">All clients</option>
+                  {clients.map((c) => (
+                    <option key={c.id} value={c.id}>{c.company_name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Invoices list */}
+          {filteredInvoices.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl bg-white p-16 text-center shadow-sm border border-slate-200/80"
+            >
+              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="font-bold text-navy-900 mb-1">
+                {search || statusFilter !== 'all' || clientFilter !== 'all' ? 'No invoices match' : 'No invoices yet'}
+              </p>
+              <p className="text-sm text-slate-600 mb-6">
+                {search || statusFilter !== 'all' || clientFilter !== 'all' ? 'Try adjusting filters' : 'Create invoices from a client page'}
+              </p>
+              {!search && statusFilter === 'all' && clientFilter === 'all' && (
+                <Link href="/dashboard/clients" className="inline-flex items-center gap-2 px-5 py-2.5 bg-signal-red text-white font-semibold rounded-xl hover:bg-signal-red/90">
+                  Go to clients
+                </Link>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="rounded-2xl bg-white shadow-sm border border-slate-200/80 overflow-hidden"
+            >
+              {filteredInvoices.map((inv, i) => (
+                <div
+                  key={inv.id}
+                  className={`flex items-center justify-between p-5 border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors ${
+                    isOverdue(inv) ? 'bg-red-50/30' : ''
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <p className="font-semibold text-navy-900">{inv.invoice_number}</p>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${getStatusStyle(inv.status)}`}>
+                        {inv.status}
+                      </span>
+                      {isOverdue(inv) && (
+                        <span className="text-[10px] font-bold text-red-600 px-2 py-0.5 bg-red-100 rounded">OVERDUE</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
+                      <Link href={`/dashboard/clients/${inv.clients?.id}`} className="hover:text-signal-red">
+                        {inv.clients?.company_name}
+                      </Link>
+                      {inv.projects?.name && <span>{inv.projects.name}</span>}
+                      <span>Due {formatDate(inv.due_date)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <p className="font-bold text-navy-900">€{inv.amount.toLocaleString()}</p>
+                    <div className="flex items-center gap-2">
+                      {inv.file_url && (
+                        <button
+                          onClick={() => setViewInvoice(inv)}
+                          className="px-3 py-1.5 text-sm font-medium text-signal-red hover:bg-signal-red/10 rounded-lg transition-colors"
+                        >
+                          View
+                        </button>
+                      )}
+                      {inv.status !== 'paid' && (
+                        <button
+                          onClick={() => markAsPaid(inv)}
+                          disabled={updatingId === inv.id}
+                          className="px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          {updatingId === inv.id ? '...' : 'Mark paid'}
+                        </button>
+                      )}
+                      {(inv.status === 'overdue' || isOverdue(inv)) && (
+                        <button
+                          onClick={() => sendReminder(inv)}
+                          disabled={updatingId === inv.id}
+                          className="px-3 py-1.5 text-sm font-medium text-amber-700 hover:bg-amber-100 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                          {updatingId === inv.id ? '...' : 'Send reminder'}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDelete(inv.id)}
+                        disabled={deletingId === inv.id}
+                        className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {deletingId === inv.id ? '...' : 'Delete'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* View invoice modal */}
+      {viewInvoice && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          onClick={() => setViewInvoice(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="view-invoice-title"
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white">
+              <h2 id="view-invoice-title" className="text-lg font-bold text-navy-900">
+                {viewInvoice.invoice_number} – {viewInvoice.clients?.company_name}
+              </h2>
+              <div className="flex items-center gap-2">
+                {viewInvoice.file_url && (
+                  <a
+                    href={viewInvoice.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 text-sm font-medium text-signal-red hover:bg-signal-red/10 rounded-lg"
+                  >
+                    Open in new tab
+                  </a>
+                )}
+                <button
+                  onClick={() => setViewInvoice(null)}
+                  className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="flex-1 min-h-0">
+              {viewInvoice.file_url ? (
+                <iframe
+                  src={viewInvoice.file_url}
+                  title={`Invoice ${viewInvoice.invoice_number}`}
+                  className="w-full h-[70vh] border-0"
+                />
+              ) : (
+                <div className="p-12 text-center text-slate-500">No PDF attached</div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -419,10 +464,10 @@ function InvoicesPageContent() {
 export default function InvoicesPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-slate-700">Loading invoices...</p>
+          <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Loading invoices...</p>
         </div>
       </div>
     }>
@@ -430,4 +475,3 @@ export default function InvoicesPage() {
     </Suspense>
   );
 }
-

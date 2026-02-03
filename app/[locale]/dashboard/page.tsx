@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Link from 'next/link';
-import Image from 'next/image';
+import { Link } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
 
 type DashboardStats = {
@@ -25,6 +24,8 @@ type RecentClient = {
   contact_person: string;
   priority_level: string | null;
   created_at: string;
+  projects?: { id: string; status: string }[];
+  invoices?: { id: string; status: string }[];
 };
 
 type RecentProject = {
@@ -32,84 +33,67 @@ type RecentProject = {
   name: string;
   status: string;
   progress_percentage: number;
-  clients: {
-    company_name: string;
-  };
+  clients: { company_name: string };
 };
 
 type UpcomingMilestone = {
   id: string;
   title: string;
   expected_date: string;
-  projects: {
-    name: string;
-    clients: {
-      company_name: string;
-    };
-  };
+  project_id?: string;
+  projects: { id?: string; name: string; clients: { company_name: string } };
+};
+
+function getClientStatus(c: RecentClient): 'no_project' | 'active' | 'invoiced' | 'paid' | 'stalled' {
+  const projects = c.projects || [];
+  const invoices = c.invoices || [];
+  const hasProjects = projects.length > 0;
+  const hasActiveProject = projects.some((p) => ['in_progress', 'planning', 'review'].includes(p.status));
+  const hasPaidInvoice = invoices.some((i) => i.status === 'paid');
+  const hasPendingInvoice = invoices.some((i) => ['pending', 'overdue'].includes(i.status));
+
+  if (!hasProjects) return 'no_project';
+  if (hasPaidInvoice) return 'paid';
+  if (hasPendingInvoice) return 'invoiced';
+  if (hasActiveProject) return 'active';
+  return 'stalled';
+}
+
+const STATUS_CHIP: Record<string, { label: string; className: string }> = {
+  no_project: { label: 'No project', className: 'bg-amber-100 text-amber-800 border-amber-200' },
+  active: { label: 'Active', className: 'bg-blue-100 text-blue-800 border-blue-200' },
+  invoiced: { label: 'Invoiced', className: 'bg-violet-100 text-violet-800 border-violet-200' },
+  paid: { label: 'Paid', className: 'bg-slate-100 text-slate-600 border-slate-200' },
+  stalled: { label: 'Stalled', className: 'bg-red-100 text-red-800 border-red-200' },
 };
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [stats, setStats] = useState<DashboardStats>({
-    activeClients: 0,
-    totalClients: 0,
-    totalProjects: 0,
-    inProgressProjects: 0,
-    completedProjects: 0,
-    pendingInvoices: 0,
-    overdueInvoices: 0,
-    totalRevenue: 0,
-    onboardedClients: 0,
+    activeClients: 0, totalClients: 0, totalProjects: 0, inProgressProjects: 0,
+    completedProjects: 0, pendingInvoices: 0, overdueInvoices: 0, totalRevenue: 0, onboardedClients: 0,
   });
   const [recentClients, setRecentClients] = useState<RecentClient[]>([]);
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([]);
   const [upcomingMilestones, setUpcomingMilestones] = useState<UpcomingMilestone[]>([]);
   const [error, setError] = useState<string | null>(null);
-  
   const router = useRouter();
   const supabase = createBrowserClient();
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
+  useEffect(() => { loadDashboard(); }, []);
 
   const loadDashboard = async () => {
     setError(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.push('/login');
-        return;
-      }
-
-      const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
-
-      if (profile?.role !== 'admin' && profile?.role !== 'employee') {
-        router.push('/portal');
-        return;
-      }
-
+      if (!session) { router.push('/login'); return; }
+      const { data: profile } = await (supabase as any).from('profiles').select('*').eq('id', session.user.id).single();
+      if (profile?.role !== 'admin' && profile?.role !== 'employee' && profile?.role !== 'partner') { router.push('/portal'); return; }
       setUser({ ...session.user, profile });
 
       const today = new Date().toISOString().split('T')[0];
-      const [
-        activeClientsResult,
-        totalClientsResult,
-        projectsResult,
-        inProgressResult,
-        completedResult,
-        pendingInvoicesResult,
-        overdueResult,
-        paidInvoicesResult,
-        onboardedResult
-      ] = await Promise.all([
+      const [ac, tc, pr, ip, cp, pi, ov, paid, ob] = await Promise.all([
         supabase.from('clients').select('*', { count: 'exact', head: true }).eq('status', 'active'),
         supabase.from('clients').select('*', { count: 'exact', head: true }),
         supabase.from('projects').select('*', { count: 'exact', head: true }),
@@ -120,43 +104,26 @@ export default function DashboardPage() {
         supabase.from('invoices').select('amount').eq('status', 'paid'),
         supabase.from('clients').select('*', { count: 'exact', head: true }).eq('onboarding_status', 'completed'),
       ]);
+      const totalRevenue = paid.data?.reduce((s: number, i: any) => s + i.amount, 0) || 0;
+      setStats({ activeClients: ac.count || 0, totalClients: tc.count || 0, totalProjects: pr.count || 0, inProgressProjects: ip.count || 0, completedProjects: cp.count || 0, pendingInvoices: pi.count || 0, overdueInvoices: ov.count || 0, totalRevenue, onboardedClients: ob.count || 0 });
 
-      const totalRevenue = paidInvoicesResult.data?.reduce((sum: number, inv: any) => sum + inv.amount, 0) || 0;
-
-      setStats({
-        activeClients: activeClientsResult.count || 0,
-        totalClients: totalClientsResult.count || 0,
-        totalProjects: projectsResult.count || 0,
-        inProgressProjects: inProgressResult.count || 0,
-        completedProjects: completedResult.count || 0,
-        pendingInvoices: pendingInvoicesResult.count || 0,
-        overdueInvoices: overdueResult.count || 0,
-        totalRevenue,
-        onboardedClients: onboardedResult.count || 0,
-      });
-
-      const [clientsData, projectsData, milestonesData] = await Promise.all([
-        supabase.from('clients').select('id, company_name, contact_person, priority_level, created_at').order('created_at', { ascending: false }).limit(4),
+      const [cl, prj, ms] = await Promise.all([
+        (supabase as any).from('clients').select('id, company_name, contact_person, priority_level, created_at, projects(id, status), invoices(id, status)').order('created_at', { ascending: false }).limit(6),
         supabase.from('projects').select('id, name, status, progress_percentage, clients(company_name)').in('status', ['in_progress', 'planning', 'review']).order('created_at', { ascending: false }).limit(4),
-        supabase.from('milestones').select('id, title, expected_date, projects(name, clients(company_name))').gte('expected_date', today).neq('status', 'completed').order('expected_date', { ascending: true }).limit(3),
+        supabase.from('milestones').select('id, title, expected_date, project_id, projects(id, name, clients(company_name))').gte('expected_date', today).neq('status', 'completed').order('expected_date', { ascending: true }).limit(5),
       ]);
-
-      if (clientsData.data) setRecentClients(clientsData.data);
-      if (projectsData.data) setRecentProjects(projectsData.data as any);
-      if (milestonesData.data) setUpcomingMilestones(milestonesData.data as any);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to load dashboard');
-    } finally {
-      setLoading(false);
-    }
+      if (cl.data) setRecentClients(cl.data);
+      if (prj.data) setRecentProjects(prj.data as any);
+      if (ms.data) setUpcomingMilestones(ms.data as any);
+    } catch (err: any) { setError(err?.message || 'Failed to load'); } finally { setLoading(false); }
   };
 
   if (loading && !error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="flex items-center justify-center min-h-[40vh]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-700">Loading dashboard...</p>
+          <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Loading...</p>
         </div>
       </div>
     );
@@ -165,372 +132,309 @@ export default function DashboardPage() {
   const greeting = new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening';
   const firstName = user?.profile?.full_name?.split(' ')[0] || 'there';
 
+  // Reality check: revenue flowing = at least one active project OR revenue this month
+  const revenueFlowing = stats.inProgressProjects > 0 || stats.totalRevenue > 0;
+  const hasOverdue = stats.overdueInvoices > 0;
+  const hasMilestones = upcomingMilestones.length > 0;
+  const hasPendingInvoices = stats.pendingInvoices > 0;
+  const zeroProjects = stats.inProgressProjects === 0 && stats.totalProjects === 0;
+
+  // Pipeline: which stages are stalled? (zero downstream = problem)
+  const clientsStalled = stats.totalClients > 0 && stats.totalProjects === 0; // clients but no projects
+  const projectsStalled = stats.totalProjects > 0 && stats.inProgressProjects === 0; // projects but none active
+  const invoicesStalled = stats.pendingInvoices > 0 && stats.totalRevenue === 0; // pending but no revenue yet
+  const revenueStalled = stats.totalRevenue === 0 && (stats.pendingInvoices > 0 || stats.totalProjects > 0); // work done but €0
+
   return (
-    <div className="max-w-[1600px] mx-auto -mx-8 -mt-8 mb-0">
-      {/* Hero Banner with Background Image */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-b-2xl mb-8"
-      >
-        <div className="relative h-48 md:h-56">
-          <Image
-            src="/pexels-xexusdesigner-777001.jpg"
-            alt=""
-            fill
-            className="object-cover object-center"
-            sizes="(max-width: 1600px) 1600px, 100vw"
-            priority
-          />
-          <div className="absolute inset-0 bg-navy-900/70" />
-          <div className="absolute inset-0 p-8 flex flex-col justify-end">
-            <p className="text-sm text-gray-300 mb-1">
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-            </p>
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-              <div className="flex-1">
-                {error && (
-                  <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center justify-between gap-4">
-                    <p className="text-red-100 text-sm">{error}</p>
-                    <button
-                      onClick={() => { setLoading(true); loadDashboard(); }}
-                      className="px-4 py-2 bg-red-500/50 hover:bg-red-500/70 text-white text-sm font-semibold rounded transition-colors"
-                    >
-                      Retry
-                    </button>
-                  </div>
-                )}
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-1">
-                  {greeting}, {firstName}
-                </h1>
-                <p className="text-gray-200">Here&apos;s your command center</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => { setLoading(true); loadDashboard(); }}
-                  disabled={loading}
-                  className="p-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
-                  title="Refresh"
-                  aria-label="Refresh dashboard"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </button>
-                <Link
-                href="/dashboard/clients/onboard"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 shadow-lg w-fit"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>Onboard Client</span>
-              </Link>
+    <div className="min-h-screen -m-6 lg:-m-8">
+      {/* Floating hero nav bar */}
+      <div className="pt-12 lg:pt-16 px-4 lg:px-6">
+        <div className="max-w-[1600px] mx-auto">
+          <nav className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl bg-navy-900 px-6 py-4 shadow-xl shadow-black/15 border border-white/5">
+            <div className="flex items-center gap-4">
+              <div>
+                <p className="text-white/50 text-sm">
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </p>
+                <h1 className="text-xl sm:text-2xl font-bold text-white">{greeting}, {firstName}</h1>
               </div>
             </div>
-          </div>
-        </div>
-      </motion.div>
-
-      <div className="px-8">
-
-      {/* Primary Metrics Row */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-      >
-        {/* Clients Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-signal-red/10 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-            <Link href="/dashboard/clients" className="text-signal-red hover:text-signal-red/80 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-          <p className="text-sm text-slate-600 mb-1">Clients</p>
-          <div className="flex items-baseline gap-2 mb-2">
-            <p className="text-4xl font-bold text-navy-900">{stats.activeClients}</p>
-            <p className="text-lg text-slate-500">/ {stats.totalClients}</p>
-          </div>
-          <p className="text-xs text-slate-600">{stats.onboardedClients} via onboarding workflow</p>
-                </div>
-
-        {/* Projects Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-              </div>
-            <Link href="/dashboard/projects" className="text-signal-red hover:text-signal-red/80 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-          <p className="text-sm text-slate-600 mb-1">Projects</p>
-          <div className="flex items-baseline gap-2 mb-2">
-            <p className="text-4xl font-bold text-navy-900">{stats.inProgressProjects}</p>
-            <p className="text-lg text-slate-500">/ {stats.totalProjects}</p>
-          </div>
-          <p className="text-xs text-slate-600">{stats.completedProjects} completed</p>
-                </div>
-
-        {/* Revenue Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            <Link href="/dashboard/revenue" className="text-signal-red hover:text-signal-red/80 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-          <p className="text-sm text-slate-600 mb-1">Revenue</p>
-          <p className="text-4xl font-bold text-navy-900">€{stats.totalRevenue.toLocaleString()}</p>
-          <p className="text-xs text-green-600 font-semibold mt-1">Paid invoices</p>
-                </div>
-
-        {/* Invoices Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-              stats.overdueInvoices > 0 ? 'bg-red-500/10' : 'bg-orange-500/10'
-            }`}>
-              <svg className={`w-6 h-6 ${stats.overdueInvoices > 0 ? 'text-red-600' : 'text-orange-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-            <Link href="/dashboard/invoices" className="text-signal-red hover:text-signal-red/80 transition-colors">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </Link>
-          </div>
-          <p className="text-sm text-slate-600 mb-1">Invoices</p>
-          <p className="text-4xl font-bold text-navy-900">{stats.pendingInvoices}</p>
-          {stats.overdueInvoices > 0 ? (
-            <p className="text-xs text-red-600 font-semibold mt-1">{stats.overdueInvoices} overdue</p>
-          ) : (
-            <p className="text-xs text-slate-600 mt-1">All on track</p>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Main Content Grid - 2 columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* Left Column - 2/3 width */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Upcoming Milestones (Urgent) */}
-          {upcomingMilestones.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-lg shadow-sm border-l-4 border-orange-500 p-6"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-navy-900 flex items-center gap-2">
-                  <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Upcoming Deadlines
-                </h2>
-                <span className="text-xs text-slate-600">Next 7 days</span>
-              </div>
-              <div className="space-y-2">
-                {upcomingMilestones.map((milestone) => (
-                  <div key={milestone.id} className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-navy-900 truncate">{milestone.title}</p>
-                      <p className="text-sm text-slate-600 truncate">
-                        {milestone.projects?.clients?.company_name ?? 'Unknown'} • {milestone.projects?.name ?? 'Unknown'}
-                      </p>
-                    </div>
-                    <span className="text-sm font-bold text-orange-700 ml-3 flex-shrink-0">
-                      {new Date(milestone.expected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Active Projects */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-navy-900 flex items-center gap-2">
-                <svg className="w-6 h-6 text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                </svg>
-                Active Projects
-              </h2>
-                <Link
-                  href="/dashboard/projects"
-                className="text-sm font-semibold text-signal-red hover:text-signal-red/80 transition-colors"
-                >
-                View All →
-                    </Link>
-            </div>
-
-            {recentProjects.length === 0 ? (
-              <div className="text-center py-8 text-slate-600">
-                <p>No active projects</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {recentProjects.map((project) => (
-                  <Link
-                    key={project.id}
-                    href={`/dashboard/projects/${project.id}/milestones`}
-                    className="block p-4 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-semibold text-navy-900 group-hover:text-signal-red transition-colors">
-                        {project.name}
-                      </p>
-                      <span className={`px-2 py-1 text-xs font-bold rounded ${
-                        project.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                        project.status === 'review' ? 'bg-purple-100 text-purple-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {project.status.replace('_', ' ')}
-                      </span>
-                    </div>
-                    <p className="text-sm text-slate-600 mb-3">{project.clients?.company_name}</p>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 bg-gray-200 h-2 rounded-full overflow-hidden">
-                        <div
-                          className="bg-signal-red h-full transition-all duration-500"
-                          style={{ width: `${project.progress_percentage ?? 0}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-semibold text-navy-900">{project.progress_percentage ?? 0}%</span>
-                  </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </motion.div>
-            </div>
-
-        {/* Right Column - 1/3 width */}
-        <div className="space-y-6">
-              {/* Recent Clients */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-navy-900">Recent Clients</h2>
-                <Link
-                href="/dashboard/clients"
-                className="text-sm font-semibold text-signal-red hover:text-signal-red/80 transition-colors"
-                >
-                All →
-                </Link>
-            </div>
-
-            {recentClients.length === 0 ? (
-              <div className="text-center py-8 text-slate-600">
-                <p className="text-sm">No clients yet</p>
-              </div>
-              ) : (
-              <div className="space-y-2">
-                  {recentClients.map((client) => (
-                    <Link
-                      key={client.id}
-                      href={`/dashboard/clients/${client.id}`}
-                    className="flex items-center gap-3 p-3 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
-                    >
-                    <div className="w-8 h-8 bg-gradient-to-br from-navy-900 to-navy-800 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
-                      {client.company_name.charAt(0)}
-                </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-navy-900 truncate group-hover:text-signal-red transition-colors">
-                        {client.company_name}
-                      </p>
-                      <p className="text-xs text-slate-600 truncate">{client.contact_person}</p>
-                    </div>
-                    {(client.priority_level === 'critical' || client.priority_level === 'high') && (
-                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                        client.priority_level === 'critical' ? 'bg-red-500' : 'bg-orange-500'
-                      }`} />
-                    )}
-                  </Link>
-                  ))}
-                </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {error && (
+                <button onClick={() => loadDashboard()} className="px-3 py-1.5 bg-red-500/20 text-red-200 text-sm rounded-lg">Retry</button>
               )}
-          </motion.div>
-
-          {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-          >
-            <h2 className="text-lg font-bold text-navy-900 mb-4">Quick Actions</h2>
-            <div className="space-y-2">
-              <Link
-                href="/dashboard/clients/new"
-                className="flex items-center gap-3 p-3 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
-              >
-                <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                      </svg>
-                </div>
-                <span className="font-semibold text-navy-900 text-sm">Add Client</span>
-              </Link>
-
-              <Link
-                href="/dashboard/projects"
-                className="flex items-center gap-3 p-3 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
-              >
-                <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                          </svg>
-                </div>
-                <span className="font-semibold text-navy-900 text-sm">Find Project</span>
-              </Link>
-
-              <Link
-                href="/dashboard/invoices"
-                className="flex items-center gap-3 p-3 bg-off-white hover:bg-gray-50 rounded-lg transition-colors group"
-                    >
-                <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center group-hover:bg-signal-red transition-colors">
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                </div>
-                <span className="font-semibold text-navy-900 text-sm">View Invoices</span>
+              <button onClick={() => loadDashboard()} disabled={loading} className="p-2 text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-label="Refresh">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              </button>
+              <Link href="/dashboard/clients/onboard" className="inline-flex items-center gap-2 px-4 py-2.5 bg-signal-red text-white font-semibold rounded-xl hover:bg-signal-red/90 transition-colors">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                Onboard Client
               </Link>
             </div>
-          </motion.div>
+          </nav>
         </div>
       </div>
+
+      <div className="bg-gradient-to-b from-slate-100 to-slate-50 min-h-[calc(100vh-120px)] p-6 lg:p-8">
+        <div className="max-w-[1600px] mx-auto space-y-6">
+          {/* Pipeline — crime scene mode */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80"
+          >
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Pipeline</h2>
+            <div className="flex flex-wrap items-center gap-4 lg:gap-6">
+              <Link href="/dashboard/clients" className="flex items-center gap-3 group">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                  clientsStalled ? 'bg-amber-100 ring-2 ring-amber-400 ring-offset-2' : 'bg-slate-100 group-hover:bg-signal-red/10'
+                }`}>
+                  <span className={`text-xl font-bold ${clientsStalled ? 'text-amber-800' : 'text-navy-900 group-hover:text-signal-red'}`}>{stats.totalClients}</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-navy-900">Clients</p>
+                  <p className={`text-xs ${clientsStalled ? 'text-amber-700 font-medium' : 'text-slate-500'}`}>
+                    {clientsStalled ? `${stats.totalProjects} projects — create one` : `${stats.activeClients} active`}
+                  </p>
+                </div>
+              </Link>
+              <div className={`hidden sm:block font-bold ${clientsStalled || projectsStalled ? 'text-amber-500' : 'text-slate-300'}`}>→</div>
+              <Link href="/dashboard/projects" className="flex items-center gap-3 group">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                  projectsStalled ? 'bg-amber-100 ring-2 ring-amber-400 ring-offset-2' : 'bg-slate-100 group-hover:bg-signal-red/10'
+                }`}>
+                  <span className={`text-xl font-bold ${projectsStalled ? 'text-amber-800' : 'text-navy-900 group-hover:text-signal-red'}`}>{stats.totalProjects}</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-navy-900">Projects</p>
+                  <p className={`text-xs ${projectsStalled ? 'text-amber-700 font-medium' : 'text-slate-500'}`}>
+                    {projectsStalled ? `0 in progress — bottleneck` : `${stats.inProgressProjects} in progress`}
+                  </p>
+                </div>
+              </Link>
+              <div className={`hidden sm:block font-bold ${invoicesStalled ? 'text-amber-500' : 'text-slate-300'}`}>→</div>
+              <Link href="/dashboard/invoices" className="flex items-center gap-3 group">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                  invoicesStalled ? 'bg-amber-100 ring-2 ring-amber-400 ring-offset-2' : 'bg-slate-100 group-hover:bg-signal-red/10'
+                }`}>
+                  <span className={`text-xl font-bold ${invoicesStalled ? 'text-amber-800' : 'text-navy-900 group-hover:text-signal-red'}`}>{stats.pendingInvoices}</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-navy-900">Invoices</p>
+                  <p className={`text-xs ${stats.overdueInvoices > 0 ? 'text-red-600 font-medium' : invoicesStalled ? 'text-amber-700 font-medium' : 'text-slate-500'}`}>
+                    {stats.overdueInvoices > 0 ? `${stats.overdueInvoices} overdue` : invoicesStalled ? 'pending — follow up' : 'pending'}
+                  </p>
+                </div>
+              </Link>
+              <div className={`hidden sm:block font-bold ${revenueStalled ? 'text-amber-500' : 'text-slate-300'}`}>→</div>
+              <Link href="/dashboard/revenue" className="flex items-center gap-3 group">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                  revenueFlowing ? 'bg-emerald-100' : revenueStalled ? 'bg-amber-100 ring-2 ring-amber-400 ring-offset-2' : 'bg-slate-100 group-hover:bg-emerald-100'
+                }`}>
+                  <span className={`text-xl font-bold ${revenueFlowing ? 'text-emerald-700' : revenueStalled ? 'text-amber-800' : 'text-slate-500'}`}>€{stats.totalRevenue.toLocaleString()}</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-navy-900">Revenue</p>
+                  <p className={`text-xs ${revenueStalled ? 'text-amber-700 font-medium' : 'text-slate-500'}`}>
+                    {revenueStalled ? '€0 — unblock cashflow' : 'paid'}
+                  </p>
+                </div>
+              </Link>
+            </div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              {/* What Unlocks Revenue — no green lie */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80"
+              >
+                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">What unlocks revenue</h2>
+
+                {hasOverdue && (
+                  <Link href="/dashboard/invoices" className="flex items-center gap-4 p-4 rounded-xl bg-red-50 border border-red-200 mb-3 hover:bg-red-100/80 transition-colors group">
+                    <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-navy-900">{stats.overdueInvoices} overdue invoice{stats.overdueInvoices > 1 ? 's' : ''}</p>
+                      <p className="text-sm text-slate-600">Follow up — unblock cashflow</p>
+                    </div>
+                    <svg className="w-5 h-5 text-slate-400 group-hover:text-signal-red group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                  </Link>
+                )}
+
+                {hasMilestones && upcomingMilestones.slice(0, 2).map((m) => (
+                  <Link key={m.id} href={`/dashboard/projects/${(m as any).project_id || (m.projects as any)?.id}/milestones`} className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 border border-amber-100 mb-3 last:mb-0 hover:bg-amber-100/80 transition-colors group">
+                    <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-navy-900 truncate">{m.title}</p>
+                      <p className="text-sm text-slate-600 truncate">{(m.projects as any)?.clients?.company_name} · {new Date(m.expected_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                    </div>
+                    <svg className="w-5 h-5 text-slate-400 flex-shrink-0 group-hover:text-signal-red group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                  </Link>
+                ))}
+
+                {!hasOverdue && !hasMilestones && (
+                  <div className="space-y-3">
+                    {!revenueFlowing && zeroProjects && (
+                      <div className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                        <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-navy-900">0 active projects, €0 revenue</p>
+                          <p className="text-sm text-slate-600">Create a project to get moving</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {!revenueFlowing && !zeroProjects && (
+                      <Link href="/dashboard/projects" className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 border border-amber-200 hover:bg-amber-100/80 transition-colors group">
+                        <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-navy-900">0 in progress — bottleneck</p>
+                          <p className="text-sm text-slate-600">No active projects = no revenue. Start one.</p>
+                        </div>
+                        <svg className="w-5 h-5 text-slate-400 group-hover:text-signal-red ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                      </Link>
+                    )}
+
+                    {hasPendingInvoices && (
+                      <Link href="/dashboard/invoices" className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 hover:border-signal-red/30 hover:bg-slate-50 transition-colors group">
+                        <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center group-hover:bg-signal-red/10 transition-colors">
+                          <svg className="w-5 h-5 text-slate-600 group-hover:text-signal-red" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-navy-900">{stats.pendingInvoices} invoice{stats.pendingInvoices > 1 ? 's' : ''} pending</p>
+                          <p className="text-sm text-slate-600">Follow up to unblock cashflow</p>
+                        </div>
+                        <svg className="w-5 h-5 text-slate-400 group-hover:text-signal-red ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                      </Link>
+                    )}
+
+                    {revenueFlowing && !hasPendingInvoices && (
+                      <div className="flex items-center gap-4 p-4 rounded-xl bg-emerald-50 border border-emerald-100">
+                        <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-navy-900">On track</p>
+                          <p className="text-sm text-slate-600">Revenue flowing. Keep it moving.</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Projects — blunt empty state */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Projects</h2>
+                  <Link href="/dashboard/projects" className="text-sm font-medium text-signal-red hover:underline">View all</Link>
+                </div>
+                {recentProjects.length === 0 ? (
+                  <div className="rounded-xl border-2 border-amber-200 bg-amber-50/50 p-10">
+                    <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-7 h-7 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+                    </div>
+                    <p className="font-bold text-navy-900 mb-1">No projects = no revenue</p>
+                    <p className="text-sm text-slate-600 mb-6">Projects are how money starts moving.</p>
+                    <Link
+                      href={stats.totalClients > 0 ? '/dashboard/clients' : '/dashboard/clients/onboard'}
+                      className="inline-flex items-center gap-2 w-full justify-center py-3.5 bg-signal-red text-white font-semibold rounded-xl hover:bg-signal-red/90 transition-colors"
+                    >
+                      {stats.totalClients > 0 ? 'Create project' : 'Onboard a client first'}
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {recentProjects.map((p) => (
+                      <Link key={p.id} href={`/dashboard/projects/${p.id}/milestones`} className="block p-4 rounded-xl border border-slate-100 hover:border-signal-red/20 hover:shadow-md transition-all group">
+                        <div className="flex justify-between items-start mb-2">
+                          <p className="font-semibold text-navy-900 group-hover:text-signal-red transition-colors">{p.name}</p>
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${p.status === 'in_progress' ? 'bg-blue-100 text-blue-700' : p.status === 'review' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'}`}>{p.status.replace('_', ' ')}</span>
+                        </div>
+                        <p className="text-sm text-slate-500 mb-3">{p.clients?.company_name}</p>
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                            <div className="h-full bg-signal-red rounded-full transition-all" style={{ width: `${p.progress_percentage ?? 0}%` }} />
+                          </div>
+                          <span className="text-sm font-bold text-navy-900 w-10 text-right">{p.progress_percentage ?? 0}%</span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            </div>
+
+            {/* Right col — clients with status chips */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="space-y-6"
+            >
+              <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80 sticky top-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Clients</h2>
+                  <Link href="/dashboard/clients" className="text-sm font-medium text-signal-red hover:underline">All</Link>
+                </div>
+                {recentClients.length === 0 ? (
+                  <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
+                    <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    </div>
+                    <p className="font-semibold text-navy-900 mb-1">No clients yet</p>
+                    <p className="text-sm text-slate-600 mb-4">Onboard your first client to get started</p>
+                    <Link href="/dashboard/clients/onboard" className="inline-flex items-center gap-2 px-4 py-2 bg-signal-red text-white font-medium rounded-lg hover:bg-signal-red/90 text-sm">
+                      Onboard client
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {recentClients.map((c) => {
+                      const status = getClientStatus(c);
+                      const chip = STATUS_CHIP[status];
+                      return (
+                        <Link key={c.id} href={`/dashboard/clients/${c.id}`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group">
+                          <div className="w-10 h-10 rounded-xl bg-navy-900 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 group-hover:bg-signal-red transition-colors">{c.company_name.charAt(0)}</div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-navy-900 truncate group-hover:text-signal-red transition-colors">{c.company_name}</p>
+                            <p className="text-xs text-slate-500 truncate">{c.contact_person}</p>
+                          </div>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border flex-shrink-0 ${chip.className}`}>{chip.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <Link href="/dashboard/clients/new" className="flex items-center gap-3 p-3 rounded-xl bg-navy-900 text-white font-medium hover:bg-signal-red transition-colors text-sm">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    Add client
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
       </div>
     </div>
   );

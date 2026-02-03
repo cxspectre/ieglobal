@@ -15,10 +15,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify role is valid
-    if (role !== 'employee' && role !== 'admin') {
+    // Verify role is valid (admin, employee, or partner)
+    if (!['admin', 'employee', 'partner'].includes(role)) {
       return NextResponse.json(
-        { error: 'Invalid role' },
+        { error: 'Invalid role. Must be admin, employee, or partner.' },
         { status: 400 }
       );
     }

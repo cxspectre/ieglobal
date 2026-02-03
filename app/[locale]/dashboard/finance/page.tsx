@@ -130,7 +130,7 @@ export default function FinancePage() {
       .eq('id', session.user.id)
       .single();
 
-    if (profile?.role !== 'admin' && profile?.role !== 'employee') {
+    if (profile?.role !== 'admin') {
       router.push('/dashboard');
       return;
     }

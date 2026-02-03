@@ -1,11 +1,7 @@
 import { ReactNode } from 'react';
-import PortalLayout from '@/components/portal/PortalLayout';
+import DashboardLayoutClient from '@/components/dashboard/DashboardLayout';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-  return (
-    <PortalLayout userType="employee">
-      {children}
-    </PortalLayout>
-  );
+  return <DashboardLayoutClient>{children}</DashboardLayoutClient>;
 }
 

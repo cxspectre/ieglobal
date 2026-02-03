@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProgressStepper from '@/components/ui/ProgressStepper';
 
@@ -100,6 +100,7 @@ export default function OnboardClientPage() {
     // Step 2: Project Definition
     service_categories: [] as string[],
     project_type: '',
+    project_name: '',
     estimated_scope: '',
     estimated_timeline: '',
     priority_level: 'medium',
@@ -124,6 +125,8 @@ export default function OnboardClientPage() {
     create_notion_page: false,
     create_slack_channel: false,
     send_welcome_email: true,
+    create_portal_account: true,
+    create_first_project: true,
   });
 
   // Load employees for team assignment
@@ -251,7 +254,54 @@ export default function OnboardClientPage() {
 
       if (onboardingError) throw onboardingError;
 
-      // Step 3: Log activity
+      // Step 3: Create first project if requested
+      if (formData.create_first_project && formData.project_name.trim()) {
+        const { error: projectError } = await (supabase as any)
+          .from('projects')
+          .insert({
+            client_id: newClient.id,
+            name: formData.project_name.trim(),
+            description: formData.estimated_scope || null,
+            project_type: formData.project_type || null,
+            status: 'discovery',
+            progress_percentage: 0,
+          });
+        if (projectError) {
+          console.error('Failed to create project:', projectError);
+        } else {
+          await (supabase as any).from('activities').insert({
+            client_id: newClient.id,
+            user_id: session.user.id,
+            action_type: 'project_created',
+            description: `Project "${formData.project_name}" created during onboarding`,
+          });
+        }
+      }
+
+      // Step 4: Create portal account if requested
+      if (formData.create_portal_account) {
+        try {
+          const res = await fetch('/api/create-client-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              clientId: newClient.id,
+              email: formData.contact_email,
+              fullName: formData.contact_person,
+            }),
+          });
+          if (!res.ok) {
+            const json = await res.json();
+            if (!json.error?.includes('already exists')) {
+              console.error('Failed to create portal account:', json.error);
+            }
+          }
+        } catch (accErr) {
+          console.error('Failed to create portal account:', accErr);
+        }
+      }
+
+      // Step 5: Log activity
       await (supabase as any).from('activities').insert({
         client_id: newClient.id,
         user_id: session.user.id,
@@ -264,7 +314,7 @@ export default function OnboardClientPage() {
         },
       });
 
-      // Step 4: Send onboarding emails
+      // Step 6: Send onboarding emails
       if (formData.send_welcome_email || formData.send_upload_link) {
         try {
           const projectLeadName = formData.project_lead_id 
@@ -306,35 +356,39 @@ export default function OnboardClientPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-off-white to-gray-50">
-      <div className="max-w-6xl mx-auto py-8 px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <Link
-            href="/dashboard/clients"
-            className="inline-flex items-center gap-2 text-sm text-slate-700 hover:text-signal-red mb-6 transition-colors duration-200"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Clients
-          </Link>
-          
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-navy-900 mb-3">Onboard New Client</h1>
-              <p className="text-lg text-slate-700">
-                Guided workflow for structured, premium client onboarding
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-sm text-slate-700 mb-1">Progress</div>
-              <div className="text-2xl font-bold text-navy-900">
-                {currentStep < 6 ? `${currentStep}/5` : '✓'}
+    <div className="min-h-screen -m-6 lg:-m-8">
+      {/* Floating hero nav */}
+      <div className="pt-12 lg:pt-16 px-4 lg:px-6">
+        <div className="max-w-[1600px] mx-auto">
+          <nav className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl bg-navy-900 px-6 py-4 shadow-xl shadow-black/15 border border-white/5">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/dashboard/clients"
+                className="p-2 text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                aria-label="Back to clients"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </Link>
+              <div>
+                <p className="text-white/50 text-sm">
+                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                </p>
+                <h1 className="text-xl sm:text-2xl font-bold text-white">
+                  Onboard new client
+                  <span className="text-white/50 font-normal ml-2">
+                    Step {currentStep < 6 ? `${currentStep}/5` : '✓'}
+                  </span>
+                </h1>
               </div>
             </div>
-          </div>
+          </nav>
         </div>
+      </div>
+
+      <div className="bg-gradient-to-b from-slate-100 to-slate-50 min-h-[calc(100vh-120px)] p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto">
 
         {/* Progress Stepper */}
         <ProgressStepper steps={steps} currentStep={currentStep} />
@@ -369,7 +423,7 @@ export default function OnboardClientPage() {
           >
             {/* Step 1: Basic Client Info */}
             {currentStep === 1 && (
-              <div className="bg-white p-8 shadow-xl border-l-4 border-signal-red">
+              <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200/80">
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold text-navy-900 mb-2">Basic Client Information</h2>
                   <p className="text-slate-700">Enter the essential details about your new client</p>
@@ -469,6 +523,82 @@ export default function OnboardClientPage() {
                     </div>
                   </div>
 
+                  {/* Address & Business */}
+                  <div className="pt-4 border-t border-gray-200">
+                    <h3 className="text-sm font-semibold text-navy-900 mb-3">Address & business details</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="address_street" className="block text-sm font-medium text-navy-900 mb-1">Street</label>
+                        <input
+                          type="text"
+                          id="address_street"
+                          value={formData.address_street}
+                          onChange={(e) => updateFormData({ address_street: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none"
+                          placeholder="Street address"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label htmlFor="address_postal_code" className="block text-sm font-medium text-navy-900 mb-1">Postal code</label>
+                          <input
+                            type="text"
+                            id="address_postal_code"
+                            value={formData.address_postal_code}
+                            onChange={(e) => updateFormData({ address_postal_code: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none"
+                            placeholder="1234 AB"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="address_city" className="block text-sm font-medium text-navy-900 mb-1">City</label>
+                          <input
+                            type="text"
+                            id="address_city"
+                            value={formData.address_city}
+                            onChange={(e) => updateFormData({ address_city: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none"
+                            placeholder="Amsterdam"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="address_country" className="block text-sm font-medium text-navy-900 mb-1">Country</label>
+                          <input
+                            type="text"
+                            id="address_country"
+                            value={formData.address_country}
+                            onChange={(e) => updateFormData({ address_country: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="vat_number" className="block text-sm font-medium text-navy-900 mb-1">VAT number</label>
+                          <input
+                            type="text"
+                            id="vat_number"
+                            value={formData.vat_number}
+                            onChange={(e) => updateFormData({ vat_number: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none font-mono"
+                            placeholder="NL123456789B01"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="kvk_number" className="block text-sm font-medium text-navy-900 mb-1">KVK number</label>
+                          <input
+                            type="text"
+                            id="kvk_number"
+                            value={formData.kvk_number}
+                            onChange={(e) => updateFormData({ kvk_number: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none font-mono"
+                            placeholder="12345678"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Internal Notes */}
                   <div>
                     <label htmlFor="internal_notes" className="block text-sm font-semibold text-navy-900 mb-2">
@@ -489,7 +619,7 @@ export default function OnboardClientPage() {
 
             {/* Step 2: Project Definition */}
             {currentStep === 2 && (
-              <div className="bg-white p-8 shadow-xl border-l-4 border-navy-900">
+              <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200/80">
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold text-navy-900 mb-2">Project Definition</h2>
                   <p className="text-slate-700">Define the scope, timeline, and priorities for this engagement</p>
@@ -551,6 +681,22 @@ export default function OnboardClientPage() {
                         <option key={type} value={type}>{type}</option>
                       ))}
                     </select>
+                  </div>
+
+                  {/* Project Name (for first project) */}
+                  <div>
+                    <label htmlFor="project_name" className="block text-sm font-semibold text-navy-900 mb-2">
+                      First project name
+                    </label>
+                    <input
+                      type="text"
+                      id="project_name"
+                      value={formData.project_name}
+                      onChange={(e) => updateFormData({ project_name: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none transition-all duration-200"
+                      placeholder="e.g., Website Redesign, Platform MVP"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">Leave empty to skip creating a project now</p>
                   </div>
 
                   {/* Expected Scope */}
@@ -617,7 +763,7 @@ export default function OnboardClientPage() {
 
             {/* Step 3: Required Documents */}
             {currentStep === 3 && (
-              <div className="bg-white p-8 shadow-xl border-l-4 border-green-600">
+              <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200/80">
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold text-navy-900 mb-2">Required Documents</h2>
                   <p className="text-slate-700">Select documents to request from the client</p>
@@ -693,7 +839,7 @@ export default function OnboardClientPage() {
 
             {/* Step 4: Kickoff Preparation */}
             {currentStep === 4 && (
-              <div className="bg-white p-8 shadow-xl border-l-4 border-orange-600">
+              <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200/80">
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold text-navy-900 mb-2">Kickoff Preparation</h2>
                   <p className="text-slate-700">Assign team members and prepare for project launch</p>
@@ -823,7 +969,7 @@ export default function OnboardClientPage() {
 
             {/* Step 5: Automated Assets */}
             {currentStep === 5 && (
-              <div className="bg-white p-8 shadow-xl border-l-4 border-navy-900">
+              <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200/80">
                 <div className="mb-6">
                   <h2 className="text-2xl font-bold text-navy-900 mb-2">Automated Assets</h2>
                   <p className="text-slate-700">Configure which assets to automatically generate for this client</p>
@@ -914,6 +1060,48 @@ export default function OnboardClientPage() {
                     </div>
                   </label>
 
+                  {/* Create Portal Account */}
+                  <label className="flex items-start gap-4 p-6 border-2 border-green-200 bg-green-50 hover:border-green-300 cursor-pointer transition-all duration-200">
+                    <input
+                      type="checkbox"
+                      checked={formData.create_portal_account}
+                      onChange={(e) => updateFormData({ create_portal_account: e.target.checked })}
+                      className="mt-1 w-5 h-5 text-green-600 border-gray-300 focus:ring-green-600"
+                    />
+                    <div>
+                      <div className="font-semibold text-navy-900 mb-1 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                        </svg>
+                        Create Portal Account
+                      </div>
+                      <div className="text-sm text-slate-700">
+                        Create a login for the client so they can access projects, invoices, and files in the portal
+                      </div>
+                    </div>
+                  </label>
+
+                  {/* Create First Project */}
+                  <label className="flex items-start gap-4 p-6 border-2 border-gray-200 hover:border-blue-300 cursor-pointer transition-all duration-200 bg-white">
+                    <input
+                      type="checkbox"
+                      checked={formData.create_first_project}
+                      onChange={(e) => updateFormData({ create_first_project: e.target.checked })}
+                      className="mt-1 w-5 h-5 text-signal-red border-gray-300 focus:ring-signal-red"
+                    />
+                    <div>
+                      <div className="font-semibold text-navy-900 mb-1 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                        </svg>
+                        Create First Project
+                      </div>
+                      <div className="text-sm text-slate-700">
+                        Create an initial project from the name you entered in Step 2
+                      </div>
+                    </div>
+                  </label>
+
                   {/* Welcome Email */}
                   <label className="flex items-start gap-4 p-6 border-2 border-green-200 bg-green-50 hover:border-green-300 cursor-pointer transition-all duration-200">
                     <input
@@ -955,7 +1143,7 @@ export default function OnboardClientPage() {
 
             {/* Step 6: Confirmation */}
             {currentStep === 6 && createdClientId && (
-              <div className="bg-gradient-to-br from-green-50 to-blue-50 p-12 shadow-2xl border-l-4 border-green-600">
+              <div className="rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 p-12 shadow-sm border border-emerald-200/80">
                 <motion.div
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -1008,6 +1196,22 @@ export default function OnboardClientPage() {
                       What happens next?
                     </h3>
                     <ul className="space-y-3">
+                      {formData.create_portal_account && (
+                        <li className="flex items-start gap-3">
+                          <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-slate-700">Portal account created for <strong>{formData.contact_email}</strong></span>
+                        </li>
+                      )}
+                      {formData.create_first_project && formData.project_name.trim() && (
+                        <li className="flex items-start gap-3">
+                          <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-slate-700">First project <strong>{formData.project_name}</strong> created</span>
+                        </li>
+                      )}
                       {formData.send_welcome_email && (
                         <li className="flex items-start gap-3">
                           <svg className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1124,6 +1328,7 @@ export default function OnboardClientPage() {
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
