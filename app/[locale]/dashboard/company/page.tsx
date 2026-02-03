@@ -84,11 +84,11 @@ export default function CompanyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 rounded-xl bg-slate-50">
                 <p className="text-xs text-slate-500 mb-1">IBAN</p>
-                <p className="font-bold text-navy-900 font-mono">[Add IBAN]</p>
+                <p className="font-bold text-navy-900 font-mono">NL48 QNTO 9386 8485 87</p>
               </div>
               <div className="p-4 rounded-xl bg-slate-50">
                 <p className="text-xs text-slate-500 mb-1">BIC/SWIFT</p>
-                <p className="font-bold text-navy-900 font-mono">[Add BIC]</p>
+                <p className="font-bold text-navy-900 font-mono">QNTONL22XXX</p>
               </div>
             </div>
           </motion.div>
