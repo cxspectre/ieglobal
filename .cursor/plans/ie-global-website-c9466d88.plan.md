@@ -1,4 +1,52 @@
-<!-- c9466d88-7093-4e5e-9ce5-5ea5ed89e47b 1895e6f7-6c47-4725-bd59-005dac667450 -->
+---
+name: IE Global Website - Production Build
+overview: ""
+todos:
+  - id: 059ebde3-b9c2-4867-be49-d38404be3917
+    content: Initialize Next.js 14 project with TypeScript, Tailwind CSS, ESLint, and folder structure
+    status: pending
+  - id: 4780b589-9c20-4d89-b3c6-9b1e93c2ab93
+    content: "Build design system: Tailwind config with IE Global colors, typography, spacing tokens, and base components"
+    status: pending
+  - id: b20133f7-dcf3-4c2b-b73f-362452588237
+    content: Create layout with animated navigation (mega-menu for services) and organized footer
+    status: pending
+  - id: a2967274-6ea0-44f8-a243-a69a6292d9ad
+    content: "Build reusable components: Hero, ServiceCard, CaseStudyCard, MetricCounter, Newsletter, ContactForm, Button, etc."
+    status: pending
+  - id: 5d5cd71f-9b91-41d8-9e01-5feb69b3081b
+    content: Build homepage with hero, value pillars, services preview, proof section, featured case study, newsletter CTA
+    status: pending
+  - id: 3d3ecd45-0a6d-4843-b8c3-77745b8e6dce
+    content: Create About page with leadership bios, values, approach, and company positioning
+    status: pending
+  - id: 04a1f471-65f7-4c50-86d0-eecdf544cb82
+    content: Build Services hub + 5 detail pages (AI/Data, CX, GTM/Pricing, Operating Model, Digital Product)
+    status: pending
+  - id: d8d5c949-31b8-454e-b528-e1acab0c92d2
+    content: Set up MDX + Contentlayer for case studies, create listing page and detail template with filterable outcomes
+    status: pending
+  - id: 3884498b-518a-420d-88ea-eae8d5d43166
+    content: Set up blog/insights with MDX, category taxonomy, listing page, and post template
+    status: pending
+  - id: fd87b437-0caa-4ea3-b2e1-cdbc0f457cb1
+    content: Build Contact page with form integration (Formspree/Resend) and Careers page
+    status: pending
+  - id: 330de965-1c52-4366-816b-71ac0d7b260f
+    content: "Implement Framer Motion animations: scroll reveals, hover states, counters, parallax, micro-interactions"
+    status: pending
+  - id: 52b7b5cf-4cd0-4a5e-a923-1dcd761abea0
+    content: Populate all pages with IE Global copy from brief, add 3 case studies and 3-5 blog posts
+    status: pending
+  - id: 62e874e7-52b6-44b2-a234-21439a2ee998
+    content: Add SEO meta tags, OpenGraph, sitemap, optimize images, improve Lighthouse scores to 90+
+    status: pending
+  - id: 7c03fd28-dc2f-4f8d-93fe-4dba3ee951bc
+    content: Final QA (accessibility, cross-browser, mobile), deploy to Vercel, configure custom domain
+    status: pending
+isProject: false
+---
+
 # IE Global Website - Production Build
 
 ## Overview
@@ -381,20 +429,3 @@ Create a sophisticated, high-performance website matching Bain & Company's visua
 ---
 
 **Ready to build a website that rivals Bain's sophistication with IE Global's engineering edge.**
-
-### To-dos
-
-- [ ] Initialize Next.js 14 project with TypeScript, Tailwind CSS, ESLint, and folder structure
-- [ ] Build design system: Tailwind config with IE Global colors, typography, spacing tokens, and base components
-- [ ] Create layout with animated navigation (mega-menu for services) and organized footer
-- [ ] Build reusable components: Hero, ServiceCard, CaseStudyCard, MetricCounter, Newsletter, ContactForm, Button, etc.
-- [ ] Build homepage with hero, value pillars, services preview, proof section, featured case study, newsletter CTA
-- [ ] Create About page with leadership bios, values, approach, and company positioning
-- [ ] Build Services hub + 5 detail pages (AI/Data, CX, GTM/Pricing, Operating Model, Digital Product)
-- [ ] Set up MDX + Contentlayer for case studies, create listing page and detail template with filterable outcomes
-- [ ] Set up blog/insights with MDX, category taxonomy, listing page, and post template
-- [ ] Build Contact page with form integration (Formspree/Resend) and Careers page
-- [ ] Implement Framer Motion animations: scroll reveals, hover states, counters, parallax, micro-interactions
-- [ ] Populate all pages with IE Global copy from brief, add 3 case studies and 3-5 blog posts
-- [ ] Add SEO meta tags, OpenGraph, sitemap, optimize images, improve Lighthouse scores to 90+
-- [ ] Final QA (accessibility, cross-browser, mobile), deploy to Vercel, configure custom domain

@@ -26,8 +26,6 @@ export default function TeamPage() {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
-  const [newMember, setNewMember] = useState({ email: '', fullName: '', role: 'employee' });
-  const [creating, setCreating] = useState(false);
   const [canAdd, setCanAdd] = useState(false);
 
   const router = useRouter();
@@ -72,27 +70,6 @@ export default function TeamPage() {
     return matchesRole && matchesSearch;
   });
 
-  const createMember = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canAdd) return;
-    setCreating(true);
-    try {
-      const res = await fetch('/api/create-employee-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newMember),
-      });
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error);
-      alert(`Account created. Invitation sent to ${newMember.email}`);
-      setNewMember({ email: '', fullName: '', role: 'employee' });
-      await loadData();
-    } catch (err: unknown) {
-      alert('Failed: ' + (err as Error).message);
-    }
-    setCreating(false);
-  };
-
   const deleteMember = async (id: string, name: string) => {
     if (!canAdd || !confirm(`Remove ${name}?`)) return;
     try {
@@ -101,10 +78,11 @@ export default function TeamPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ employeeId: id }),
       });
-      if (!res.ok) throw new Error('Failed');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to remove');
       await loadData();
-    } catch {
-      alert('Failed to remove');
+    } catch (err) {
+      alert((err as Error).message || 'Failed to remove');
     }
   };
 
@@ -214,37 +192,21 @@ export default function TeamPage() {
           {/* Add team member (admin only) */}
           {canAdd && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Add team member</h2>
-              <form onSubmit={createMember} className="flex flex-col sm:flex-row gap-4">
-                <input
-                  type="text"
-                  required
-                  value={newMember.fullName}
-                  onChange={(e) => setNewMember({ ...newMember, fullName: e.target.value })}
-                  placeholder="Full name"
-                  className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-signal-red/20 outline-none"
-                />
-                <input
-                  type="email"
-                  required
-                  value={newMember.email}
-                  onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
-                  placeholder="Email"
-                  className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-signal-red/20 outline-none"
-                />
-                <select
-                  value={newMember.role}
-                  onChange={(e) => setNewMember({ ...newMember, role: e.target.value })}
-                  className="px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-signal-red/20 outline-none"
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Add team member</h2>
+                  <p className="text-sm text-slate-600">Onboard with full profile info, address, and role.</p>
+                </div>
+                <Link
+                  href="/dashboard/team/onboard"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-signal-red text-white font-semibold rounded-xl hover:bg-signal-red/90 transition-colors"
                 >
-                  <option value="employee">Employee</option>
-                  <option value="partner">Partner</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <button type="submit" disabled={creating} className="px-5 py-2.5 bg-signal-red text-white font-semibold rounded-xl hover:bg-signal-red/90 disabled:opacity-50">
-                  {creating ? 'Creating...' : 'Add & send invite'}
-                </button>
-              </form>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Onboard team member
+                </Link>
+              </div>
             </motion.div>
           )}
 
@@ -257,25 +219,28 @@ export default function TeamPage() {
             ) : (
               <div className="divide-y divide-slate-100">
                 {filteredMembers.map((m) => (
-                  <div key={m.id} className="flex items-center justify-between p-5 hover:bg-slate-50 transition-colors">
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <div className="w-10 h-10 bg-navy-900 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                  <div key={m.id} className="flex items-center justify-between p-5 hover:bg-slate-50 transition-colors group">
+                    <Link href={`/dashboard/team/${m.id}`} className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="w-10 h-10 bg-navy-900 rounded-xl flex items-center justify-center text-white font-bold text-sm flex-shrink-0 group-hover:bg-signal-red transition-colors">
                         {m.full_name?.split(' ').map((n) => n[0]).join('').slice(0, 2) || '?'}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold text-navy-900">{m.full_name}</p>
+                        <p className="font-semibold text-navy-900 group-hover:text-signal-red transition-colors">{m.full_name}</p>
                         <p className="text-sm text-slate-500">{m.email}</p>
                       </div>
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${getRoleStyle(m.role)}`}>
                         {ROLE_LABELS[m.role] || m.role}
                       </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => resendInvite(m.email)} className="px-3 py-1.5 text-sm font-medium text-signal-red hover:bg-signal-red/10 rounded-lg">
+                      <svg className="w-5 h-5 text-slate-400 group-hover:text-signal-red group-hover:translate-x-0.5 transition-all flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                    <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <button onClick={(e) => { e.preventDefault(); resendInvite(m.email); }} className="px-3 py-1.5 text-sm font-medium text-signal-red hover:bg-signal-red/10 rounded-lg">
                         Resend
                       </button>
                       {canAdd && (
-                        <button onClick={() => deleteMember(m.id, m.full_name)} className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg">
+                        <button onClick={(e) => { e.preventDefault(); deleteMember(m.id, m.full_name); }} className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg">
                           Remove
                         </button>
                       )}

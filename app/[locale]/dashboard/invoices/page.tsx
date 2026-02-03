@@ -329,78 +329,77 @@ function InvoicesPageContent() {
               )}
             </motion.div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="rounded-2xl bg-white shadow-sm border border-slate-200/80 overflow-hidden"
-            >
-              {filteredInvoices.map((inv, i) => (
-                <div
+            <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+              {filteredInvoices.map((inv) => (
+                <motion.div
                   key={inv.id}
-                  className={`flex items-center justify-between p-5 border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors ${
-                    isOverdue(inv) ? 'bg-red-50/30' : ''
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`rounded-2xl bg-white shadow-sm border overflow-hidden transition-all hover:shadow-md ${
+                    isOverdue(inv) ? 'border-red-200/80 ring-1 ring-red-100' : 'border-slate-200/80'
                   }`}
                 >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <p className="font-semibold text-navy-900">{inv.invoice_number}</p>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${getStatusStyle(inv.status)}`}>
-                        {inv.status}
-                      </span>
-                      {isOverdue(inv) && (
-                        <span className="text-[10px] font-bold text-red-600 px-2 py-0.5 bg-red-100 rounded">OVERDUE</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 mt-1 text-sm text-slate-500">
-                      <Link href={`/dashboard/clients/${inv.clients?.id}`} className="hover:text-signal-red">
+                  <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 flex-wrap mb-2">
+                        <p className="font-bold text-navy-900 text-lg">{inv.invoice_number}</p>
+                        <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-lg border ${getStatusStyle(inv.status)}`}>
+                          {inv.status}
+                        </span>
+                        {isOverdue(inv) && (
+                          <span className="text-[10px] font-bold text-red-700 px-2.5 py-1 bg-red-100 rounded-lg border border-red-200">OVERDUE</span>
+                        )}
+                      </div>
+                      <Link href={`/dashboard/clients/${inv.clients?.id}`} className="font-medium text-slate-700 hover:text-signal-red transition-colors block truncate">
                         {inv.clients?.company_name}
                       </Link>
-                      {inv.projects?.name && <span>{inv.projects.name}</span>}
-                      <span>Due {formatDate(inv.due_date)}</span>
+                      <div className="flex items-center gap-3 mt-1 text-sm text-slate-500">
+                        {inv.projects?.name && <span>{inv.projects.name}</span>}
+                        <span>Due {formatDate(inv.due_date)}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                      <p className="font-bold text-navy-900 text-xl">€{inv.amount.toLocaleString()}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {inv.file_url && (
+                          <button
+                            onClick={() => setViewInvoice(inv)}
+                            className="px-3 py-2 text-sm font-medium text-white bg-signal-red hover:bg-signal-red/90 rounded-xl transition-colors"
+                          >
+                            View
+                          </button>
+                        )}
+                        {inv.status !== 'paid' && (
+                          <button
+                            onClick={() => markAsPaid(inv)}
+                            disabled={updatingId === inv.id}
+                            className="px-3 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors disabled:opacity-50"
+                          >
+                            {updatingId === inv.id ? '...' : 'Mark paid'}
+                          </button>
+                        )}
+                        {(inv.status === 'overdue' || isOverdue(inv)) && (
+                          <button
+                            onClick={() => sendReminder(inv)}
+                            disabled={updatingId === inv.id}
+                            className="px-3 py-2 text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-xl transition-colors disabled:opacity-50"
+                          >
+                            {updatingId === inv.id ? '...' : 'Remind'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDelete(inv.id)}
+                          disabled={deletingId === inv.id}
+                          className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50"
+                        >
+                          {deletingId === inv.id ? '...' : 'Delete'}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <p className="font-bold text-navy-900">€{inv.amount.toLocaleString()}</p>
-                    <div className="flex items-center gap-2">
-                      {inv.file_url && (
-                        <button
-                          onClick={() => setViewInvoice(inv)}
-                          className="px-3 py-1.5 text-sm font-medium text-signal-red hover:bg-signal-red/10 rounded-lg transition-colors"
-                        >
-                          View
-                        </button>
-                      )}
-                      {inv.status !== 'paid' && (
-                        <button
-                          onClick={() => markAsPaid(inv)}
-                          disabled={updatingId === inv.id}
-                          className="px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100 rounded-lg transition-colors disabled:opacity-50"
-                        >
-                          {updatingId === inv.id ? '...' : 'Mark paid'}
-                        </button>
-                      )}
-                      {(inv.status === 'overdue' || isOverdue(inv)) && (
-                        <button
-                          onClick={() => sendReminder(inv)}
-                          disabled={updatingId === inv.id}
-                          className="px-3 py-1.5 text-sm font-medium text-amber-700 hover:bg-amber-100 rounded-lg transition-colors disabled:opacity-50"
-                        >
-                          {updatingId === inv.id ? '...' : 'Send reminder'}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleDelete(inv.id)}
-                        disabled={deletingId === inv.id}
-                        className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                      >
-                        {deletingId === inv.id ? '...' : 'Delete'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                </motion.div>
               ))}
-            </motion.div>
+            </div>
           )}
         </div>
       </div>
@@ -408,19 +407,19 @@ function InvoicesPageContent() {
       {/* View invoice modal */}
       {viewInvoice && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setViewInvoice(null)}
           role="dialog"
           aria-modal="true"
           aria-labelledby="view-invoice-title"
         >
           <div
-            className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border border-slate-200/80"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-white">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
               <h2 id="view-invoice-title" className="text-lg font-bold text-navy-900">
-                {viewInvoice.invoice_number} – {viewInvoice.clients?.company_name}
+                {viewInvoice.invoice_number} — {viewInvoice.clients?.company_name}
               </h2>
               <div className="flex items-center gap-2">
                 {viewInvoice.file_url && (
@@ -428,30 +427,39 @@ function InvoicesPageContent() {
                     href={viewInvoice.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 text-sm font-medium text-signal-red hover:bg-signal-red/10 rounded-lg"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-signal-red hover:bg-signal-red/90 rounded-xl transition-colors"
                   >
-                    Open in new tab
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    Open PDF
                   </a>
                 )}
                 <button
                   onClick={() => setViewInvoice(null)}
-                  className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg"
+                  className="p-2 text-slate-500 hover:text-navy-900 hover:bg-slate-200/80 rounded-xl transition-colors"
+                  aria-label="Close"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
             </div>
-            <div className="flex-1 min-h-0">
+            <div className="flex-1 min-h-0 bg-slate-100">
               {viewInvoice.file_url ? (
                 <iframe
                   src={viewInvoice.file_url}
                   title={`Invoice ${viewInvoice.invoice_number}`}
-                  className="w-full h-[70vh] border-0"
+                  className="w-full h-[72vh] border-0"
                 />
               ) : (
-                <div className="p-12 text-center text-slate-500">No PDF attached</div>
+                <div className="flex flex-col items-center justify-center p-16 text-slate-500">
+                  <svg className="w-16 h-16 text-slate-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="font-medium">No PDF attached</p>
+                </div>
               )}
             </div>
           </div>

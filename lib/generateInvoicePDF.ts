@@ -32,24 +32,24 @@ type InvoiceData = {
 
 export async function generateInvoicePDF(data: InvoiceData): Promise<Blob> {
   const doc = new jsPDF();
-  
-  const marginLeft = 20;
-  const marginRight = 20;
+
+  const marginLeft = 24;
+  const marginRight = 24;
   const marginTop = 20;
   const pageWidth = 210;
   const contentWidth = pageWidth - marginLeft - marginRight;
-  const lineHeight = 5;
+  const lineHeight = 5.5;
 
   const navyBlue = [11, 25, 48];
   const signalRed = [230, 57, 70];
-  const lightGray = [245, 245, 245];
-  const darkGray = [100, 100, 100];
+  const lightGray = [248, 250, 252];
+  const darkGray = [71, 85, 105];
+  const borderGray = [226, 232, 240];
 
-  // ---------- HEADER ----------
-  // Load logo from public folder (works in browser; same origin as app)
+  // ---------- LOGO (right-aligned at top; on white background) ----------
   let logoDataUrl: string | null = null;
+  const base = typeof window !== 'undefined' ? window.location.origin : '';
   try {
-    const base = typeof window !== 'undefined' ? window.location.origin : '';
     const res = await fetch(`${base}/logo-invoice-pdf.png`);
     if (res.ok) {
       const blob = await res.blob();
@@ -60,247 +60,232 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Blob> {
         reader.readAsDataURL(blob);
       });
     }
-  } catch {
-    // ignore; fallback to text below
-  }
+  } catch { /* ignore */ }
 
-  try {
-    if (logoDataUrl) {
-      const logoWidth = 40;
-      const logoHeight = 14;
-      doc.addImage(logoDataUrl, 'PNG', pageWidth - marginRight - logoWidth, marginTop - 2, logoWidth, logoHeight);
-    } else {
-      throw new Error('No logo');
-    }
-  } catch {
+  const logoW = 38;
+  const logoH = 40;
+  const logoRightX = pageWidth - 15;
+  const logoLeftX = logoRightX - logoW;
+  const logoBottomY = 46;
+  const logoTop = logoBottomY - logoH;
+
+  if (logoDataUrl) {
+    try {
+      doc.addImage(logoDataUrl, 'PNG', logoLeftX, logoTop, logoW, logoH);
+    } catch { /* fallback to text */ }
+  }
+  if (!logoDataUrl) {
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
-    doc.text('IE', pageWidth - marginRight - 28, marginTop + 12);
+    doc.text('IE ', logoRightX - 18, logoTop + 14);
     doc.setTextColor(signalRed[0], signalRed[1], signalRed[2]);
-    doc.text('Global', pageWidth - marginRight - 18, marginTop + 12);
+    doc.text('Global', logoRightX, logoTop + 18, { align: 'right' });
   }
 
-  // Bill To block
-  let currentY = marginTop + 20;
-  doc.setFontSize(9);
-  doc.text('Bill To:', marginLeft, currentY);
+  // ---------- TWO-COLUMN LAYOUT (fixed positions) ----------
+  const colSplitX = marginLeft + contentWidth / 2;
+  const metaLabelX = colSplitX + 8;
+  const metaValueX = pageWidth - marginRight;
+
+  let currentY = logoBottomY + 20;
+
+  // Left column: Bill To (fixed left half)
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+  doc.text('BILL TO', marginLeft, currentY);
+  currentY += lineHeight + 1;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+  doc.text(data.clientName, marginLeft, currentY);
   currentY += lineHeight;
 
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
   const billLines = [
-    data.clientName,
     `Attn: ${data.clientContact}`,
     data.clientAddress.street,
     [data.clientAddress.postalCode, data.clientAddress.city].filter(Boolean).join(' ').trim(),
     data.clientAddress.country,
   ].filter((line): line is string => Boolean(line && line.trim()));
 
-  billLines.forEach(line => {
-    doc.setFont('helvetica', 'normal');
+  billLines.forEach((line) => {
     doc.text(line, marginLeft, currentY);
     currentY += lineHeight;
   });
   const billBottom = currentY;
 
-  // ---------- INVOICE TITLE & METADATA ----------
-  currentY = billBottom + 8;
+  // Right column: Invoice metadata (fixed right half)
+  const issueDateFormatted = new Date(data.issueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const dueDateFormatted = new Date(data.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  let metaY = logoBottomY + 20;
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
-  doc.text('INVOICE', marginLeft, currentY);
-  currentY += lineHeight + 2;
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+  doc.text('INVOICE DETAILS', metaValueX, metaY, { align: 'right' });
+  metaY += lineHeight + 1;
 
-  const issueDateFormatted = new Date(data.issueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-  const dueDateFormatted = new Date(data.dueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-
-  const metaLines: Array<[string, string]> = [
-    ['Invoice Number', data.invoiceNumber],
-    ['Issue Date', issueDateFormatted],
-    ['Due Date', dueDateFormatted],
+  const metaRows: [string, string][] = [
+    ['Invoice number', data.invoiceNumber],
+    ['Issue date', issueDateFormatted],
+    ['Due date', dueDateFormatted],
   ];
-  
-  // Customer Ref. and VAT on same line if both exist
-  if (data.customerNumber && data.clientVAT) {
-    metaLines.push(['Customer Ref.', `${data.customerNumber}; VAT: ${data.clientVAT}`]);
-  } else if (data.customerNumber) {
-    metaLines.push(['Customer Ref.', data.customerNumber]);
-  } else if (data.clientVAT) {
-    metaLines.push(['VAT', data.clientVAT]);
-  }
+  if (data.customerNumber) metaRows.push(['Customer ref.', data.customerNumber]);
+  if (data.clientVAT) metaRows.push(['VAT number', data.clientVAT]);
 
-  const labelX = marginLeft;
-  const valueX = marginLeft + 40;
-  const preparedX = pageWidth - marginRight - 55;
-  
-  // Start "Prepared By" slightly above the first metadata line
-  let preparedY = currentY - lineHeight;
-  
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  doc.setTextColor(0, 0, 0);
-  
-  // Render metadata lines and "Prepared By" side by side
-  metaLines.forEach(([label, value], index) => {
-    // Left side: Invoice metadata
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${label}:`, labelX, currentY);
+  metaRows.forEach(([label, value]) => {
     doc.setFont('helvetica', 'normal');
-    doc.text(value, valueX, currentY);
-    
-    // Right side: Prepared By (only on first line)
-    if (index === 0) {
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-      doc.text('Prepared By:', preparedX, preparedY);
-      preparedY += lineHeight;
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
-      doc.setTextColor(0, 0, 0);
-      doc.text('Cassian Drefke', preparedX, preparedY);
-      preparedY += lineHeight;
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-      doc.text('Managing Director', preparedX, preparedY);
-      preparedY += lineHeight;
-      doc.text('+31 6 27 20 71 08', preparedX, preparedY);
-      preparedY += lineHeight;
-      doc.text('cdrefke@ie-global.net', preparedX, preparedY);
-    }
-    
-    currentY += lineHeight;
+    doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+    doc.text(`${label}:`, metaLabelX, metaY);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text(value, metaValueX, metaY, { align: 'right' });
+    metaY += lineHeight;
   });
 
-  // ---------- TABLE ----------
-  const tableStartY = Math.max(currentY + 6, preparedY + 6);
-  const tableData = (data.items && data.items.length > 0
-    ? data.items
-    : [{ description: data.description || 'Professional Services', quantity: 1, rate: data.subtotal, amount: data.subtotal }]
-  ).map(item => [
+  metaY += 4;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+  doc.text('Prepared by', metaValueX, metaY, { align: 'right' });
+  metaY += lineHeight - 1;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text('Cassian Drefke', metaValueX, metaY, { align: 'right' });
+  metaY += lineHeight - 1;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+  doc.text('Managing Director · cdrefke@ie-global.net', metaValueX, metaY, { align: 'right' });
+
+  const tableStartY = Math.max(billBottom, metaY) + 12;
+
+  const tableData = (
+    data.items && data.items.length > 0
+      ? data.items
+      : [{ description: data.description || 'Professional Services', quantity: 1, rate: data.subtotal, amount: data.subtotal }]
+  ).map((item) => [
     item.description || '',
     (item.quantity ?? 1).toString(),
-    `€${(item.rate ?? item.amount).toFixed(2)}`,
-    `€${item.amount.toFixed(2)}`
+    `€ ${(item.rate ?? item.amount).toFixed(2)}`,
+    `€ ${item.amount.toFixed(2)}`,
   ]);
 
+  const tableColWidths = [82, 22, 30, 28];
   autoTable(doc, {
     startY: tableStartY,
-    head: [['Description', 'Qty', 'Unit Price', 'Amount']],
+    head: [['Description', 'Qty', 'Price', 'Amount']],
     body: tableData,
-    theme: 'grid',
+    theme: 'plain',
+    tableWidth: contentWidth,
+    margin: { left: marginLeft, right: marginRight },
     headStyles: {
-      fillColor: navyBlue as any,
-      textColor: [255, 255, 255] as any,
-      fontSize: 10,
+      fillColor: [248, 250, 252] as any,
+      textColor: navyBlue as any,
+      fontSize: 8,
       fontStyle: 'bold',
       halign: 'left',
       valign: 'middle',
-      cellPadding: { top: 6, right: 4, bottom: 6, left: 4 },
+      cellPadding: { top: 4, right: 5, bottom: 4, left: 6 },
     },
     bodyStyles: {
       textColor: [0, 0, 0],
-      fontSize: 9,
-      cellPadding: { top: 6, right: 4, bottom: 6, left: 4 },
+      fontSize: 8,
+      cellPadding: { top: 4, right: 5, bottom: 4, left: 6 },
       valign: 'middle',
     },
+    alternateRowStyles: {
+      fillColor: [252, 252, 253] as any,
+    },
     columnStyles: {
-      0: { cellWidth: 90 },
-      1: { cellWidth: 20, halign: 'center' },
-      2: { cellWidth: 30, halign: 'right' },
-      3: { cellWidth: 30, halign: 'right', fontStyle: 'bold' },
+      0: { cellWidth: tableColWidths[0] },
+      1: { cellWidth: tableColWidths[1], halign: 'center' },
+      2: { cellWidth: tableColWidths[2], halign: 'right' },
+      3: { cellWidth: tableColWidths[3], halign: 'right', fontStyle: 'bold' },
     },
     styles: {
-      lineColor: [215, 215, 215],
+      lineColor: borderGray as any,
       lineWidth: 0.2,
     },
-    margin: { left: marginLeft, right: marginRight },
   });
 
   currentY = (doc as any).lastAutoTable.finalY + 10;
-  const totalsLabelX = pageWidth - marginRight - 60;
   const totalsValueX = pageWidth - marginRight;
-
-  const totals = [
-    ['Subtotal (excl. VAT)', `€${data.subtotal.toFixed(2)}`],
-    [`VAT (${data.vatRate}%)`, `€${data.vatAmount.toFixed(2)}`],
-  ];
+  const totalsLabelX = totalsValueX - 22;
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
-  totals.forEach(([label, value]) => {
-    doc.text(label, totalsLabelX, currentY, { align: 'right' });
-    doc.text(value, totalsValueX, currentY, { align: 'right' });
-    currentY += lineHeight + 1;
-  });
+  doc.setTextColor(0, 0, 0);
+  doc.text('Subtotal (excl. VAT)', totalsLabelX, currentY, { align: 'right' });
+  doc.text(`€ ${data.subtotal.toFixed(2)}`, totalsValueX, currentY, { align: 'right' });
+  currentY += lineHeight + 2;
+  doc.text(`VAT (${data.vatRate}%)`, totalsLabelX, currentY, { align: 'right' });
+  doc.text(`€ ${data.vatAmount.toFixed(2)}`, totalsValueX, currentY, { align: 'right' });
+  currentY += lineHeight + 4;
 
-  doc.setDrawColor(signalRed[0], signalRed[1], signalRed[2]);
-  doc.setLineWidth(0.5);
+  doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+  doc.setLineWidth(0.4);
   doc.line(totalsLabelX - 5, currentY, totalsValueX, currentY);
-  currentY += lineHeight + 1;
+  currentY += lineHeight + 4;
 
   doc.setFont('helvetica', 'bold');
-  doc.text('TOTAL DUE:', totalsLabelX, currentY, { align: 'right' });
-  doc.setTextColor(signalRed[0], signalRed[1], signalRed[2]);
-  doc.setFontSize(12);
-  doc.text(`€${data.totalAmount.toFixed(2)}`, totalsValueX, currentY, { align: 'right' });
+  doc.setFontSize(10);
+  doc.text('Total due', totalsLabelX, currentY, { align: 'right' });
+  doc.setFontSize(11);
+  doc.setTextColor(navyBlue[0], navyBlue[1], navyBlue[2]);
+  doc.text(`€ ${data.totalAmount.toFixed(2)}`, totalsValueX, currentY, { align: 'right' });
   doc.setTextColor(0, 0, 0);
   currentY += 12;
 
   // ---------- PAYMENT TERMS ----------
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('Payment Terms:', marginLeft, currentY);
-  currentY += lineHeight + 1;
+  doc.setFontSize(8);
+  doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
+  doc.text('Payment terms', marginLeft, currentY);
+  currentY += lineHeight;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  const paymentText = `Payment is due by ${dueDateFormatted} (within 15 business days from the date of receipt of this invoice), unless otherwise agreed in writing. Please include invoice number ${data.invoiceNumber} as payment reference. Payment details, including IBAN (NL50 BUNQ 2152 5367 38), can be found in the footer of this invoice.`;
+  const paymentText = `Payment is due by ${dueDateFormatted} (within 15 business days from receipt). Please include invoice number ${data.invoiceNumber} as reference. Bank details are in the footer below.`;
   doc.text(doc.splitTextToSize(paymentText, contentWidth), marginLeft, currentY);
 
   // ---------- FOOTER ----------
-  const footerY = 255;
-  const footerHeight = 42;
+  const footerY = 258;
+  const footerHeight = 38;
   doc.setFillColor(lightGray[0], lightGray[1], lightGray[2]);
   doc.rect(0, footerY, pageWidth, footerHeight, 'F');
+  doc.setDrawColor(borderGray[0], borderGray[1], borderGray[2]);
+  doc.setLineWidth(0.2);
+  doc.line(0, footerY, pageWidth, footerY);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
 
   const footerStartY = footerY + 8;
-  const columns = [
-    {
-      title: 'IE GLOBAL',
-      lines: ['ODER 20 Box 66193', '2491DC Den Haag', 'Netherlands'],
-      x: marginLeft,
-    },
-    {
-      title: 'LEGAL',
-      lines: ['KvK: 97185515', 'BTW: NL737599054B02'],
-      x: 65,
-    },
-    {
-      title: 'Contact Information',
-      lines: ['Cassian Drefke', '+31 6 27 20 71 08', 'cdrefke@ie-global.net'],
-      x: 115,
-    },
-    {
-      title: 'Payment Details',
-      lines: ['Bank: BUNQ', 'Name: IE Global', 'IBAN: NL50 BUNQ', '      2152 5367 38', 'BIC: BUNQNL2A'],
-      x: 165,
-    },
+  const footerColWidth = contentWidth / 4;
+  const cols = [
+    { title: 'IE GLOBAL', lines: ['Oder 20 Box 66193', '2491DC Den Haag', 'Netherlands'], x: marginLeft },
+    { title: 'LEGAL', lines: ['KvK: 97185515', 'BTW: NL737599054B02'], x: marginLeft + footerColWidth },
+    { title: 'CONTACT', lines: ['Cassian Drefke', '+31 6 27 20 71 08', 'cdrefke@ie-global.net'], x: marginLeft + footerColWidth * 2 },
+    { title: 'BANK', lines: ['BUNQ · IE Global', 'IBAN: NL50 BUNQ 2152 5367 38', 'BIC: BUNQNL2A'], x: marginLeft + footerColWidth * 3 },
   ];
 
-  columns.forEach(col => {
+  cols.forEach((col) => {
     doc.setFont('helvetica', 'bold');
     doc.text(col.title, col.x, footerStartY);
     doc.setFont('helvetica', 'normal');
-    let footerLineY = footerStartY + lineHeight;
-    col.lines.forEach(line => {
-      doc.text(line, col.x, footerLineY);
-      footerLineY += lineHeight;
+    let y = footerStartY + lineHeight - 1;
+    col.lines.forEach((line) => {
+      doc.text(line, col.x, y);
+      y += lineHeight - 0.5;
     });
   });
 

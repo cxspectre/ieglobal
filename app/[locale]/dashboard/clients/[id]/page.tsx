@@ -96,7 +96,7 @@ export default function ClientDetailPage() {
 
   useEffect(() => {
     loadData();
-  }, [params.id]);
+  }, [params.id as string]);
 
   const loadData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -108,7 +108,7 @@ export default function ClientDetailPage() {
     const { data: clientData } = await supabase
       .from('clients')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', params.id as string)
       .single();
 
     if (clientData) setClient(clientData);
@@ -116,7 +116,7 @@ export default function ClientDetailPage() {
     const { data: onboarding } = await (supabase as any)
       .from('client_onboarding_data')
       .select('*')
-      .eq('client_id', params.id)
+      .eq('client_id', params.id as string)
       .single();
 
     if (onboarding) {
@@ -134,7 +134,7 @@ export default function ClientDetailPage() {
     const { data: projectsData } = await supabase
       .from('projects')
       .select('id, name, status, progress_percentage')
-      .eq('client_id', params.id)
+      .eq('client_id', params.id as string)
       .order('created_at', { ascending: false });
 
     if (projectsData) setProjects(projectsData as Project[]);
@@ -142,7 +142,7 @@ export default function ClientDetailPage() {
     const { data: invoicesData } = await (supabase as any)
       .from('invoices')
       .select('id, invoice_number, amount, status, due_date, projects(name)')
-      .eq('client_id', params.id)
+      .eq('client_id', params.id as string)
       .order('created_at', { ascending: false });
 
     if (invoicesData) setInvoices(invoicesData as Invoice[]);
@@ -150,7 +150,7 @@ export default function ClientDetailPage() {
     const { data: filesData } = await supabase
       .from('files')
       .select('file_name, storage_path, created_at')
-      .eq('client_id', params.id)
+      .eq('client_id', params.id as string)
       .order('created_at', { ascending: false });
 
     if (filesData) setUploadedFiles(filesData);
@@ -170,7 +170,7 @@ export default function ClientDetailPage() {
     const { data: clientProfile } = await (supabase as any)
       .from('profiles')
       .select('id, email')
-      .eq('client_id', params.id)
+      .eq('client_id', params.id as string)
       .eq('role', 'client')
       .maybeSingle();
 
@@ -201,7 +201,7 @@ export default function ClientDetailPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          clientId: params.id,
+          clientId: params.id as string,
           email: client?.contact_email,
           fullName: client?.contact_person,
         }),
@@ -241,7 +241,7 @@ export default function ClientDetailPage() {
     const newStatus = client.status === 'active' ? 'inactive' : 'active';
     if (!confirm(`${newStatus === 'inactive' ? 'Retire' : 'Reactivate'} ${client.company_name}?`)) return;
     try {
-      const { error } = await (supabase as any).from('clients').update({ status: newStatus }).eq('id', params.id);
+      const { error } = await (supabase as any).from('clients').update({ status: newStatus }).eq('id', params.id as string);
       if (error) throw error;
       await loadData();
       alert(`Client ${newStatus}d.`);
@@ -297,7 +297,7 @@ export default function ClientDetailPage() {
       const { error } = await (supabase as any)
         .from('clients')
         .update(payload)
-        .eq('id', params.id);
+        .eq('id', params.id as string);
       if (error) throw error;
       setClient({ ...client, ...payload });
       setEditOpen(false);
@@ -317,7 +317,7 @@ export default function ClientDetailPage() {
       return;
     }
     try {
-      const { error } = await (supabase as any).from('clients').delete().eq('id', params.id);
+      const { error } = await (supabase as any).from('clients').delete().eq('id', params.id as string);
       if (error) throw error;
       alert('Client deleted.');
       router.push('/dashboard/clients');

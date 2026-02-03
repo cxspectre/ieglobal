@@ -1,5 +1,16 @@
 import { NextResponse } from 'next/server';
 import { jsPDF } from 'jspdf';
+import { loadLogoDataUrl } from '@/lib/loadLogoForPDF';
+
+function addLogoSafe(doc: jsPDF, pageWidth: number, marginRight: number, marginTop: number) {
+  const logoDataUrl = loadLogoDataUrl();
+  if (!logoDataUrl) return;
+  try {
+    doc.addImage(logoDataUrl, 'PNG', pageWidth - marginRight - 40, marginTop - 2, 40, 14);
+  } catch {
+    // jsPDF PNG decode can fail in some environments; skip logo
+  }
+}
 
 export async function GET() {
   try {
@@ -14,15 +25,7 @@ export async function GET() {
     const navyBlue = [11, 25, 48];
     const signalRed = [210, 59, 59];
     
-    // Logo
-    const logoDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAAGQCAYAAACAvzbMAAAAAXNSR0IArs4c6QAAAHhlWElmTU0AKgAAAAgABAEaAAUAAAABAAAAPgEbAAUAAAABAAAARgEoAAMAAAABAAIAAIdpAAQAAAABAAAATgAAAAAAAABgAAAAAQAAAGAAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAAZCgAwAEAAAAAQAAAZAAAAAAx+O3PAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAWRpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IlhNUCBDb3JlIDYuMC4wIj4KICAgPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIj4KICAgICAgICAgPHhtcDpDcmVhdG9yVG9vbD53d3cuaW5rc2NhcGUub3JnPC94bXA6Q3JlYXRvclRvb2w+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgqyyWIhAAAiy0lEQVR4Ae3dT6h8S34Q8O6+9715vwQ0YUZNnIgDEpAE3GTALAJusgpKEDdZhOBGA/5Fg6uEkL27oIsJAUHIKhqEQEAICGIEF5OFrgwmLpLMkKCGGcd57/fndltV55zqOn/63r7953Sdez/Ne7er6tSf7/lUn6ruvv3ru1q5ESBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgAABAgQIECBAgACB+QT+P+HYJvHcaeqVAAAAAElFTkSuQmCC';
-    try {
-      const logoWidth = 40;
-      const logoHeight = 14;
-      doc.addImage(logoDataUrl, 'PNG', pageWidth - marginRight - logoWidth, marginTop - 2, logoWidth, logoHeight);
-    } catch (error) {
-      console.error('Failed to render logo', error);
-    }
+    addLogoSafe(doc, pageWidth, marginRight, marginTop);
 
     let currentY = marginTop + 20;
     
@@ -115,11 +118,7 @@ export async function GET() {
       if (currentY > 270) {
         doc.addPage();
         currentY = marginTop;
-        try {
-          doc.addImage(logoDataUrl, 'PNG', pageWidth - marginRight - 40, marginTop - 10, 40, 14);
-        } catch (error) {
-          console.error('Failed to render logo');
-        }
+        addLogoSafe(doc, pageWidth, marginRight, marginTop);
         currentY += 15;
       }
       doc.text(field, marginLeft, currentY);
@@ -129,12 +128,7 @@ export async function GET() {
     // CMS/Platform Access
     doc.addPage();
     currentY = marginTop + 20;
-    
-    try {
-      doc.addImage(logoDataUrl, 'PNG', pageWidth - marginRight - 40, marginTop - 10, 40, 14);
-    } catch (error) {
-      console.error('Failed to render logo');
-    }
+    addLogoSafe(doc, pageWidth, marginRight, marginTop);
     
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
@@ -198,11 +192,7 @@ export async function GET() {
       if (currentY > 270) {
         doc.addPage();
         currentY = marginTop;
-        try {
-          doc.addImage(logoDataUrl, 'PNG', pageWidth - marginRight - 40, marginTop - 10, 40, 14);
-        } catch (error) {
-          console.error('Failed to render logo');
-        }
+        addLogoSafe(doc, pageWidth, marginRight, marginTop);
         currentY += 15;
       }
       

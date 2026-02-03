@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { emailTemplate } from '@/lib/email-template';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -49,42 +50,18 @@ export async function POST(request: Request) {
     // Send email via Resend
     if (resend && invitationLink) {
       try {
+        const html = emailTemplate(`
+          <p>Hi ${fullName},</p>
+          <p>You requested a new invitation to access your IE Global portal. Click below to set your password:</p>
+          <p><a href="${invitationLink}" class="button">Set My Password</a></p>
+          <p style="font-size: 14px; color: #64748b;">Or copy this link: ${invitationLink}</p>
+          <p>— The IE Global Team</p>
+        `);
         await resend.emails.send({
           from: 'IE Global <contact@ie-global.net>',
           to: email,
-          subject: 'IE Global Portal - Set Your Password (Resent)',
-          html: `
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <style>
-                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #333; }
-                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: #0B1930; color: white; padding: 30px 20px; margin-bottom: 30px; }
-                  .button { display: inline-block; padding: 16px 32px; background: #E63946; color: white; text-decoration: none; font-weight: 600; margin: 20px 0; }
-                </style>
-              </head>
-              <body>
-                <div class="container">
-                  <div class="header">
-                    <h1 style="margin: 0; font-size: 24px;">Set Your Portal Password</h1>
-                  </div>
-                  
-                  <p>Hi ${fullName},</p>
-                  
-                  <p>You requested a new invitation to access your IE Global portal. Click below to set your password:</p>
-                  
-                  <a href="${invitationLink}" class="button" style="color: white;">Set My Password</a>
-                  
-                  <p style="font-size: 14px; color: #666;">
-                    Or copy this link: <span style="word-break: break-all; color: #0066cc;">${invitationLink}</span>
-                  </p>
-                  
-                  <p>— The IE Global Team</p>
-                </div>
-              </body>
-            </html>
-          `,
+          subject: 'IE Global Portal – Set Your Password (Resent)',
+          html,
         });
 
         console.log('Resend email sent via Resend to:', email);

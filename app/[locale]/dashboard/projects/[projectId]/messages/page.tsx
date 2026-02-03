@@ -61,7 +61,7 @@ export default function MessagesPage() {
           event: 'INSERT', 
           schema: 'public', 
           table: 'messages',
-          filter: `project_id=eq.${params.projectId}`
+          filter: `project_id=eq.${params.projectId as string}`
         }, 
         () => {
           loadData();
@@ -72,7 +72,7 @@ export default function MessagesPage() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [params.projectId]);
+  }, [params.projectId as string]);
 
   const loadData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -88,7 +88,7 @@ export default function MessagesPage() {
     const { data: projectData } = await supabase
       .from('projects')
       .select('*, clients(company_name, contact_person)')
-      .eq('id', params.projectId)
+      .eq('id', params.projectId as string)
       .single();
 
     if (projectData) setProject(projectData as any);
@@ -103,7 +103,7 @@ export default function MessagesPage() {
           role
         )
       `)
-      .eq('project_id', params.projectId)
+      .eq('project_id', params.projectId as string)
       .order('created_at', { ascending: true });
 
     if (messagesData) {
@@ -125,7 +125,7 @@ export default function MessagesPage() {
       const { error } = await supabase
         .from('messages')
         .insert({
-          project_id: params.projectId as string,
+          project_id: params.projectId as string as string,
           sender_id: session.user.id,
           message_text: newMessage.trim(),
           is_internal: isInternal,

@@ -51,7 +51,7 @@ export default function ClientUploadPage() {
 
   useEffect(() => {
     loadClientData();
-  }, [params.clientId]);
+  }, [params.clientId as string]);
 
   const loadClientData = async () => {
     try {
@@ -59,7 +59,7 @@ export default function ClientUploadPage() {
       const { data: clientData, error: clientError } = await supabase
         .from('clients')
         .select('id, company_name, contact_person')
-        .eq('id', params.clientId)
+        .eq('id', params.clientId as string)
         .single();
 
       if (clientError) throw clientError;
@@ -69,7 +69,7 @@ export default function ClientUploadPage() {
       const { data: onboardingInfo } = await (supabase as any)
         .from('client_onboarding_data')
         .select('documents_requested')
-        .eq('client_id', params.clientId)
+        .eq('client_id', params.clientId as string)
         .single();
 
       if (onboardingInfo) {
@@ -80,7 +80,7 @@ export default function ClientUploadPage() {
       const { data: existingFiles } = await supabase
         .from('files')
         .select('file_name, storage_path')
-        .eq('client_id', params.clientId);
+        .eq('client_id', params.clientId as string);
 
       if (existingFiles) {
         const filesByCategory: Record<string, string[]> = {};
@@ -131,7 +131,7 @@ export default function ClientUploadPage() {
         const file = files[i];
         const fileExt = file.name.split('.').pop();
         const fileName = `${docType}_${Date.now()}_${i}.${fileExt}`;
-        const filePath = `${params.clientId}/${docType}/${fileName}`;
+        const filePath = `${params.clientId as string}/${docType}/${fileName}`;
 
         // Upload to Supabase Storage
         const { error: uploadError } = await supabase.storage
@@ -152,7 +152,7 @@ export default function ClientUploadPage() {
         const { error: dbError } = await (supabase as any)
           .from('files')
           .insert({
-            client_id: params.clientId,
+            client_id: params.clientId as string,
             file_name: file.name,
             file_type: file.type,
             file_size: file.size,

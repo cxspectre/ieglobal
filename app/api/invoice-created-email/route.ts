@@ -5,6 +5,8 @@ import { emailTemplate } from '@/lib/email-template';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+const PORTAL_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://ie-global.net';
+
 export async function POST(request: Request) {
   try {
     const { invoiceId } = await request.json();
@@ -33,13 +35,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Client has no email' }, { status: 400 });
     }
 
-    const amount = parseFloat(invoice.amount || 0).toFixed(2);
-    const dueDate = new Date(invoice.due_date).toLocaleDateString('en-US', {
+    const amount = parseFloat(invoice.total_amount ?? invoice.amount ?? 0).toFixed(2);
+    const dueDate = new Date(invoice.due_date).toLocaleDateString('en-GB', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
+    const portalLink = `${PORTAL_URL.replace(/\/$/, '')}/portal/invoices`;
 
     if (!resend || !process.env.RESEND_API_KEY) {
       return NextResponse.json({
@@ -51,26 +54,28 @@ export async function POST(request: Request) {
 
     const html = emailTemplate(`
       <p>Hi ${client?.contact_person || 'there'},</p>
-      <p>This is a friendly reminder that the following invoice is overdue:</p>
+      <p>A new invoice is ready for ${client?.company_name || 'your company'}. Payment is due within 15 days.</p>
       <p><strong>Invoice:</strong> ${invoice.invoice_number}<br>
       <strong>Amount:</strong> €${amount}<br>
       <strong>Due date:</strong> ${dueDate}</p>
-      <p>Please arrange payment at your earliest convenience. If you have already paid, kindly disregard this reminder.</p>
-      <p>If you have any questions, please do not hesitate to reach out.</p>
+      <p>You can view and download the invoice in your client portal. If you have any questions, please do not hesitate to reach out.</p>
+      <p><a href="${portalLink}" class="button">View Invoices in Portal</a></p>
+      <p style="font-size: 14px; color: #64748b;">Or log in at <a href="${PORTAL_URL}/login" style="color: #E63946;">${PORTAL_URL}/login</a></p>
       <p>Best regards,<br>The IE Global Team</p>
     `);
+
     await resend.emails.send({
       from: 'IE Global <contact@ie-global.net>',
       to: contactEmail,
-      subject: `Payment reminder: Invoice ${invoice.invoice_number}`,
+      subject: `Invoice ${invoice.invoice_number} is ready – due ${new Date(invoice.due_date).toLocaleDateString('en-GB')}`,
       html,
     });
 
     return NextResponse.json({ success: true, emailSent: true });
   } catch (err) {
-    console.error('Invoice reminder error:', err);
+    console.error('Invoice created email error:', err);
     return NextResponse.json(
-      { error: (err as Error).message || 'Failed to send reminder' },
+      { error: (err as Error).message || 'Failed to send email' },
       { status: 500 }
     );
   }

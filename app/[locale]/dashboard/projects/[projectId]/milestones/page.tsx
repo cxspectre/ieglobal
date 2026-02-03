@@ -38,7 +38,7 @@ export default function MilestonesPage() {
 
   useEffect(() => {
     loadData();
-  }, [params.projectId]);
+  }, [params.projectId as string]);
 
   const loadData = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -50,7 +50,7 @@ export default function MilestonesPage() {
     const { data: projectData } = await (supabase as any)
       .from('projects')
       .select('*, clients(company_name)')
-      .eq('id', params.projectId)
+      .eq('id', params.projectId as string)
       .single();
 
     if (projectData) setProject(projectData);
@@ -58,7 +58,7 @@ export default function MilestonesPage() {
     const { data: milestonesData } = await supabase
       .from('milestones')
       .select('*')
-      .eq('project_id', params.projectId)
+      .eq('project_id', params.projectId as string)
       .order('order_index', { ascending: true });
 
     if (milestonesData) setMilestones(milestonesData);
@@ -78,7 +78,7 @@ export default function MilestonesPage() {
       await (supabase as any)
         .from('milestones')
         .insert({
-          project_id: params.projectId,
+          project_id: params.projectId as string,
           title: newMilestone.title,
           description: newMilestone.description || null,
           expected_date: newMilestone.expected_date || null,
@@ -90,7 +90,7 @@ export default function MilestonesPage() {
       // Sync progress (new milestone = upcoming, so completed/total may change)
       const newTotal = milestones.length + 1;
       const progress = Math.round((completedCount / newTotal) * 100);
-      await (supabase as any).from('projects').update({ progress_percentage: progress }).eq('id', params.projectId);
+      await (supabase as any).from('projects').update({ progress_percentage: progress }).eq('id', params.projectId as string);
 
       await loadData();
       setNewMilestone({ title: '', description: '', expected_date: '' });
@@ -116,7 +116,7 @@ export default function MilestonesPage() {
       const completed = updated.filter((x) => x.status === 'completed').length;
       const total = updated.length;
       const progress = total === 0 ? 0 : Math.round((completed / total) * 100);
-      await (supabase as any).from('projects').update({ progress_percentage: progress }).eq('id', params.projectId);
+      await (supabase as any).from('projects').update({ progress_percentage: progress }).eq('id', params.projectId as string);
 
       await loadData();
     } catch (err: unknown) {
@@ -126,7 +126,7 @@ export default function MilestonesPage() {
 
   const updateProjectStatus = async (newStatus: string) => {
     try {
-      await (supabase as any).from('projects').update({ status: newStatus }).eq('id', params.projectId);
+      await (supabase as any).from('projects').update({ status: newStatus }).eq('id', params.projectId as string);
       await loadData();
     } catch (err: unknown) {
       alert('Failed: ' + (err as Error).message);

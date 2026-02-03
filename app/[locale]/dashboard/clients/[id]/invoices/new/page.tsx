@@ -22,7 +22,7 @@ export default function NewInvoicePage() {
     const { data } = await (supabase as any)
       .from('clients')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', params.id as string)
       .single();
     
     if (data) setClientData(data);
@@ -143,7 +143,7 @@ export default function NewInvoicePage() {
         .getPublicUrl(pdfPath);
 
       // Create invoice with VAT breakdown
-      const { error: invoiceError } = await supabase
+      const { data: newInvoice, error: invoiceError } = await supabase
         .from('invoices')
         .insert({
           client_id: params.id as string,
@@ -161,9 +161,21 @@ export default function NewInvoicePage() {
           vat_amount: vatAmount,
           total_amount: totalAmount,
           created_by: session.user.id,
-        } as any);
+        } as any)
+        .select('id')
+        .single();
 
       if (invoiceError) throw invoiceError;
+
+      // Notify client by email (non-blocking)
+      const invoiceId = (newInvoice as { id?: string } | null)?.id;
+      if (invoiceId) {
+        fetch('/api/invoice-created-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ invoiceId }),
+        }).catch((e) => console.warn('Invoice email failed:', e));
+      }
 
       // Save PDF as file record
       await (supabase as any).from('files').insert({
@@ -186,7 +198,7 @@ export default function NewInvoicePage() {
       } as any);
 
       setLoading(false);
-      alert(`✅ Invoice created and PDF generated!\n\nFile: ${pdfFileName}\nTotal: €${totalAmount.toFixed(2)} (incl. VAT)`);
+      alert(`✅ Invoice created and PDF generated!\n\nThe client has been notified by email.\n\nFile: ${pdfFileName}\nTotal: €${totalAmount.toFixed(2)} (incl. VAT)`);
 
       // Redirect back
       router.push(`/dashboard/clients/${params.id}`);
@@ -215,8 +227,9 @@ export default function NewInvoicePage() {
       </div>
 
       {/* Form */}
-      <div className="bg-white p-8 border-l-4 border-signal-red">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="rounded-2xl bg-white p-8 shadow-sm border border-slate-200 overflow-hidden">
+        <div className="h-1 w-full bg-signal-red" aria-hidden />
+        <form onSubmit={handleSubmit} className="space-y-6 pt-6">
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 text-red-900 text-sm">
               {error}
@@ -235,7 +248,7 @@ export default function NewInvoicePage() {
               value={formData.invoice_number}
               onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
               placeholder="e.g., INV-2024-001"
-              className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none transition-colors"
             />
           </div>
 
@@ -251,7 +264,7 @@ export default function NewInvoicePage() {
                 required
                 value={formData.issue_date}
                 onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none transition-colors"
               />
             </div>
             <div>
@@ -265,7 +278,7 @@ export default function NewInvoicePage() {
                 required
                 value={formData.due_date}
                 onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -285,7 +298,7 @@ export default function NewInvoicePage() {
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                 placeholder="0.00"
-                className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none transition-colors"
               />
             </div>
             <div>
@@ -301,7 +314,7 @@ export default function NewInvoicePage() {
                 max="100"
                 value={formData.vat_rate}
                 onChange={(e) => setFormData({ ...formData, vat_rate: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -338,7 +351,7 @@ export default function NewInvoicePage() {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Describe the services or products being invoiced..."
-              className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none resize-none"
+              className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none resize-none transition-colors"
             />
           </div>
 

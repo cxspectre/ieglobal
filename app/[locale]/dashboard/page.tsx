@@ -145,6 +145,47 @@ export default function DashboardPage() {
   const invoicesStalled = stats.pendingInvoices > 0 && stats.totalRevenue === 0; // pending but no revenue yet
   const revenueStalled = stats.totalRevenue === 0 && (stats.pendingInvoices > 0 || stats.totalProjects > 0); // work done but €0
 
+  // Daily Briefing — executive attention management
+  const today = new Date().toISOString().split('T')[0];
+  const milestonesDueToday = upcomingMilestones.filter((m) => m.expected_date === today);
+  const stalledClients = recentClients.filter((c) => getClientStatus(c) === 'stalled' || getClientStatus(c) === 'no_project');
+  const actions: { label: string; href: string; urgency: 'high' | 'medium' }[] = [];
+  if (stats.overdueInvoices > 0) actions.push({ label: `Follow up on ${stats.overdueInvoices} overdue invoice${stats.overdueInvoices > 1 ? 's' : ''}`, href: '/dashboard/invoices', urgency: 'high' });
+  milestonesDueToday.slice(0, 2).forEach((m) => {
+    const projId = (m as any).project_id || (m.projects as any)?.id;
+    if (projId) actions.push({ label: `Complete: ${m.title}`, href: `/dashboard/projects/${projId}/milestones`, urgency: 'high' });
+  });
+  if (stats.overdueInvoices === 0 && upcomingMilestones.length > 0 && milestonesDueToday.length === 0) {
+    const next = upcomingMilestones[0];
+    const projId = (next as any).project_id || (next.projects as any)?.id;
+    if (projId) actions.push({ label: `Next milestone: ${next.title} (${(next.projects as any)?.clients?.company_name})`, href: `/dashboard/projects/${projId}/milestones`, urgency: 'medium' });
+  }
+  if (clientsStalled && actions.length < 3) actions.push({ label: 'Create first project for a client', href: '/dashboard/clients', urgency: 'high' });
+  if (projectsStalled && actions.length < 3) actions.push({ label: 'Move a project to In progress', href: '/dashboard/projects', urgency: 'high' });
+  if (actions.length < 3 && stats.pendingInvoices > 0 && !actions.some((a) => a.label.includes('invoice'))) actions.push({ label: `${stats.pendingInvoices} invoice${stats.pendingInvoices > 1 ? 's' : ''} pending — follow up`, href: '/dashboard/invoices', urgency: 'medium' });
+  if (stats.totalClients === 0 && stats.totalProjects === 0) actions.push({ label: 'Onboard your first client', href: '/dashboard/clients/onboard', urgency: 'high' });
+  const briefingActions = actions.slice(0, 3);
+
+  let uncomfortableTruth = '';
+  if (clientsStalled) uncomfortableTruth = `${stats.totalClients} client${stats.totalClients > 1 ? 's' : ''} with zero projects. Pipeline stops here.`;
+  else if (projectsStalled) uncomfortableTruth = `${stats.totalProjects} project${stats.totalProjects > 1 ? 's' : ''} and none are in progress. Work isn’t moving.`;
+  else if (stats.overdueInvoices > 0 && stats.totalRevenue === 0) uncomfortableTruth = 'Invoices are overdue and €0 has been collected. Cashflow is blocked.';
+  else if (stalledClients.length > 0) uncomfortableTruth = `${stalledClients.length} client${stalledClients.length > 1 ? 's' : ''} ${stalledClients.length === 1 ? 'is' : 'are'} stalled — no active project or no project at all.`;
+  else if (revenueStalled) uncomfortableTruth = 'Work has been done but €0 revenue. Invoices sent? Followed up?';
+  else if (stats.totalClients === 0 && stats.totalProjects === 0) uncomfortableTruth = 'No clients, no projects. Nothing to manage yet.';
+  else uncomfortableTruth = 'Everything looks fine on the surface. Check what’s slipping.';
+
+  let forwardMotion = '';
+  if (stats.overdueInvoices > 0) forwardMotion = 'Send one invoice follow-up email today.';
+  else if (clientsStalled) forwardMotion = 'Create one project today.';
+  else if (projectsStalled) forwardMotion = 'Start one project — change status to In progress.';
+  else if (stalledClients.length > 0) forwardMotion = 'Reach out to one stalled client.';
+  else if (stats.pendingInvoices > 0) forwardMotion = 'Follow up on the oldest pending invoice.';
+  else if (milestonesDueToday.length > 0) forwardMotion = 'Complete the milestone due today.';
+  else if (upcomingMilestones.length > 0) forwardMotion = 'Move one milestone forward.';
+  else if (stats.totalProjects > 0) forwardMotion = 'Update one project’s progress.';
+  else forwardMotion = 'Onboard your first client.';
+
   return (
     <div className="min-h-screen -m-6 lg:-m-8">
       {/* Floating hero nav bar */}
@@ -177,6 +218,46 @@ export default function DashboardPage() {
 
       <div className="bg-gradient-to-b from-slate-100 to-slate-50 min-h-[calc(100vh-120px)] p-6 lg:p-8">
         <div className="max-w-[1600px] mx-auto space-y-6">
+          {/* Daily Briefing — start of day ritual */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl bg-navy-900 text-white p-6 shadow-lg border border-white/5"
+          >
+            <div className="flex items-center gap-2 mb-5">
+              <span className="text-white/50 text-xs font-bold uppercase tracking-wider">Daily Briefing</span>
+              <span className="text-white/30">·</span>
+              <span className="text-white/60 text-sm">{new Date().toLocaleDateString('en-US', { weekday: 'long' })}</span>
+            </div>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div>
+                <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Do today</p>
+                <ul className="space-y-2">
+                  {briefingActions.length > 0 ? (
+                    briefingActions.map((a, i) => (
+                      <li key={i}>
+                        <Link href={a.href} className="flex items-center gap-2 text-white hover:text-signal-red transition-colors group">
+                          <span className="w-1.5 h-1.5 rounded-full bg-signal-red flex-shrink-0" />
+                          <span className="group-hover:underline">{a.label}</span>
+                        </Link>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-white/60 text-sm">No urgent actions. Stay sharp.</li>
+                  )}
+                </ul>
+              </div>
+              <div>
+                <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Uncomfortable truth</p>
+                <p className="text-white/90 text-sm leading-relaxed">{uncomfortableTruth}</p>
+              </div>
+              <div>
+                <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">Forward motion</p>
+                <p className="text-signal-red font-medium text-sm">{forwardMotion}</p>
+              </div>
+            </div>
+          </motion.div>
+
           {/* Pipeline — crime scene mode */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { emailTemplate } from '@/lib/email-template';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -94,72 +95,37 @@ export async function POST(request: Request) {
     if (resend && invitationLink) {
       try {
         console.log('Sending email via Resend to:', email);
+        const html = emailTemplate(`
+          <p>Hi ${fullName},</p>
+          <p>Your IE Global project portal has been set up. You can access your project dashboard to:</p>
+          <ul style="margin: 16px 0; padding-left: 24px;">
+            <li>Track project progress and milestones</li>
+            <li>View and download files</li>
+            <li>Review invoices</li>
+            <li>Communicate with your team</li>
+          </ul>
+          <p><strong>To get started, click below to set your password:</strong></p>
+          <p><a href="${invitationLink}" class="button">Set My Password &amp; Access Portal</a></p>
+          <p style="font-size: 14px; color: #64748b;">If the button does not work, copy this link into your browser: ${invitationLink}</p>
+          <p>Once you have set your password, you can log in at <a href="https://ie-global.net/login" style="color: #E63946;">ie-global.net/login</a></p>
+          <p>Questions? Reply to this email or contact us at hello@ie-global.net</p>
+          <p>— The IE Global Team</p>
+        `);
         const emailResult = await resend.emails.send({
           from: 'IE Global <contact@ie-global.net>',
           to: email,
-          subject: 'Welcome to IE Global Portal - Set Your Password',
-          html: `
-            <!DOCTYPE html>
-            <html>
-              <head>
-                <style>
-                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: #333; }
-                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: #0B1930; color: white; padding: 30px 20px; margin-bottom: 30px; }
-                  .content { padding: 0 20px; }
-                  .button { display: inline-block; padding: 16px 32px; background: #E63946; color: white; text-decoration: none; font-weight: 600; margin: 20px 0; }
-                  .footer { margin-top: 30px; padding-top: 20px; border-top: 2px solid #f0f0f0; font-size: 14px; color: #888; }
-                </style>
-              </head>
-              <body>
-                <div class="container">
-                  <div class="header">
-                    <h1 style="margin: 0; font-size: 24px;">Welcome to IE Global Portal</h1>
-                  </div>
-                  
-                  <div class="content">
-                    <p>Hi ${fullName},</p>
-                    
-                    <p>Your IE Global project portal has been set up! You can now access your project dashboard to:</p>
-                    
-                    <ul>
-                      <li>Track project progress and milestones</li>
-                      <li>View and download files</li>
-                      <li>Review invoices</li>
-                      <li>Communicate with your team</li>
-                    </ul>
-                    
-                    <p><strong>To get started, click the button below to set your password:</strong></p>
-                    
-                    <a href="${invitationLink}" class="button" style="color: white;">Set My Password & Access Portal</a>
-                    
-                    <p style="font-size: 14px; color: #666;">
-                      If the button doesn't work, copy and paste this link into your browser:<br>
-                      <span style="word-break: break-all; color: #0066cc;">${invitationLink}</span>
-                    </p>
-                    
-                    <p>Once you've set your password, you can log in anytime at:</p>
-                    <p><strong><a href="https://ie-global.net/login" style="color: #E63946;">https://ie-global.net/login</a></strong></p>
-                  </div>
-                  
-                  <div class="footer">
-                    <p>Questions? Reply to this email or contact us at hello@ie-global.net</p>
-                    <p style="margin-top: 10px;">— The IE Global Team</p>
-                  </div>
-                </div>
-              </body>
-            </html>
-          `,
+          subject: 'Welcome to IE Global Portal – Set Your Password',
+          html,
         });
 
-        console.log('✅ Email sent successfully via Resend!', emailResult);
+        console.log('Email sent successfully via Resend:', emailResult);
         emailSent = true;
       } catch (emailError) {
-        console.error('❌ Resend email error:', emailError);
+        console.error('Resend email error:', emailError);
         // Don't fail - we have the manual link as backup
       }
     } else {
-      console.log('⚠️ Resend not configured or no invitation link');
+      console.log('Resend not configured or no invitation link');
     }
 
     return NextResponse.json({

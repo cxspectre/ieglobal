@@ -40,7 +40,7 @@ export default function FilesPage() {
     const { data, error } = await supabase
       .from('files')
       .select('*')
-      .eq('client_id', params.id)
+      .eq('client_id', params.id as string)
       .order('created_at', { ascending: false });
 
     if (error) {
