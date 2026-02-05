@@ -15,10 +15,16 @@ export default function ClientLayout({ children, locale }: ClientLayoutProps) {
   const pathname = usePathname();
   const [isHeroVisible, setIsHeroVisible] = useState(true);
   const [heroIsDark, setHeroIsDark] = useState(true);
+  const [isDashboardHost, setIsDashboardHost] = useState(false);
+
+  useEffect(() => {
+    setIsDashboardHost(window.location?.hostname?.startsWith('dashboard.') ?? false);
+  }, []);
 
   // Pages without nav/footer (portal pages) — pathname may include locale prefix e.g. /en/dashboard
+  // Also hide when on dashboard subdomain (URL may show / but content is rewritten to /dashboard)
   const noLayoutPages = ['/login', '/dashboard', '/portal', '/reset-password', '/auth', '/upload'];
-  const hideLayout = noLayoutPages.some(path => pathname?.includes(path));
+  const hideLayout = isDashboardHost || noLayoutPages.some(path => pathname?.includes(path));
 
   // Pages without dark heroes (always use white navbar) — pathname may be /privacy or /en/privacy
   const whiteBackgroundPages = ['/privacy', '/terms', '/imprint'];

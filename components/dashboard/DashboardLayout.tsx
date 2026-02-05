@@ -12,6 +12,7 @@ type DashboardLayoutProps = {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState<'admin' | 'employee' | 'partner' | 'client' | undefined>();
+  const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
   const supabase = createBrowserClient();
 
@@ -41,12 +42,25 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         return;
       }
     }
+    setAuthChecked(true);
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/login');
   };
+
+  // Don't render dashboard UI until auth is verified (avoids showing content when session expired)
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100">
