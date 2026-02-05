@@ -1,21 +1,22 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getCaseStudy, getCaseStudies } from '@/lib/mdx';
+import { getCaseStudyBySlug, getAllCaseStudies } from '@/lib/case-studies';
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
-  const caseStudies = getCaseStudies();
+  const caseStudies = await getAllCaseStudies();
   return caseStudies.map((study) => ({
     slug: study.slug,
   }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const caseStudy = getCaseStudy(params.slug);
+  const { slug } = await params;
+  const caseStudy = await getCaseStudyBySlug(slug);
 
   if (!caseStudy) {
     return {
@@ -29,8 +30,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function CaseStudyPage({ params }: Props) {
-  const caseStudy = getCaseStudy(params.slug);
+export default async function CaseStudyPage({ params }: Props) {
+  const { slug } = await params;
+  const caseStudy = await getCaseStudyBySlug(slug);
 
   if (!caseStudy) {
     notFound();

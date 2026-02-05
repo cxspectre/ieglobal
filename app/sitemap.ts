@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
-import { getCaseStudies, getInsights } from '@/lib/mdx';
+import { getInsights } from '@/lib/mdx';
+import { getAllCaseStudies } from '@/lib/case-studies';
 
 const baseUrl = 'https://ie-global.net';
 
@@ -15,9 +16,11 @@ const serviceSlugs = [
   'customer-experience',
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const caseStudies = getCaseStudies();
-  const insights = getInsights();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [caseStudies, insights] = await Promise.all([
+    getAllCaseStudies(),
+    Promise.resolve(getInsights()),
+  ]);
 
   // Static pages - high priority
   const staticPages: MetadataRoute.Sitemap = [

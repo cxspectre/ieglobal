@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 const mainNavSections = [
   { label: null, items: [{ href: '/dashboard', label: 'Overview', icon: HomeIcon, exactMatch: true }] },
-  { label: 'Work', items: [{ href: '/dashboard/clients', label: 'Clients', icon: UsersIcon, exactMatch: false }, { href: '/dashboard/projects', label: 'Projects', icon: FolderIcon, exactMatch: false }] },
+  { label: 'Work', items: [{ href: '/dashboard/clients', label: 'Clients', icon: UsersIcon, exactMatch: false }, { href: '/dashboard/projects', label: 'Projects', icon: FolderIcon, exactMatch: false }, { href: '/dashboard/work', label: 'Case Studies', icon: BriefcaseIcon, exactMatch: false }] },
   { label: 'People', items: [{ href: '/dashboard/team', label: 'Team', icon: UsersIcon, exactMatch: false }] },
   { label: 'Finance', items: [{ href: '/dashboard/invoices', label: 'Invoices', icon: DocumentIcon, exactMatch: false, adminOnly: true }, { href: '/dashboard/revenue', label: 'Revenue', icon: ChartIcon, exactMatch: false, adminOnly: true }, { href: '/dashboard/finance', label: 'Finance', icon: BankIcon, exactMatch: false, adminOnly: true }] },
 ];
@@ -35,6 +35,13 @@ function FolderIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+    </svg>
+  );
+}
+function BriefcaseIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
     </svg>
   );
 }

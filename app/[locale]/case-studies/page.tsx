@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Hero from '@/components/ui/Hero';
 import CaseStudyCard from '@/components/ui/CaseStudyCard';
-import { getCaseStudies } from '@/lib/mdx';
+import { getAllCaseStudies } from '@/lib/case-studies';
 
 export const metadata: Metadata = {
   title: 'Case Studies – IE Global Digital Systems',
@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   alternates: { canonical: 'https://ie-global.net/case-studies' },
 };
 
-export default function CaseStudiesPage() {
-  const caseStudies = getCaseStudies();
+export default async function CaseStudiesPage() {
+  const caseStudies = await getAllCaseStudies();
 
   return (
     <>
@@ -45,7 +45,7 @@ export default function CaseStudiesPage() {
                   outcome={caseStudy.outcome}
                   href={`/case-studies/${caseStudy.slug}`}
                   metrics={caseStudy.metrics}
-                  coverImage={caseStudy.coverImage}
+                  coverImage={caseStudy.coverImage ?? undefined}
                   index={index}
                 />
               ))}
