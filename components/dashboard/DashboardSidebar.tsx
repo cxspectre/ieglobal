@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 const mainNavSections = [
   { label: null, items: [{ href: '/dashboard', label: 'Overview', icon: HomeIcon, exactMatch: true }] },
-  { label: 'Work', items: [{ href: '/dashboard/clients', label: 'Clients', icon: UsersIcon, exactMatch: false }, { href: '/dashboard/projects', label: 'Projects', icon: FolderIcon, exactMatch: false }, { href: '/dashboard/work', label: 'Case Studies', icon: BriefcaseIcon, exactMatch: false }] },
+  { label: 'Work', items: [{ href: '/dashboard/clients', label: 'Clients', icon: UsersIcon, exactMatch: false }, { href: '/dashboard/projects', label: 'Projects', icon: FolderIcon, exactMatch: false }, { href: '/dashboard/work', label: 'Case Studies', icon: BriefcaseIcon, exactMatch: false }, { href: '/dashboard/agreements', label: 'Agreements', icon: DocumentIcon, exactMatch: false }] },
   { label: 'People', items: [{ href: '/dashboard/team', label: 'Team', icon: UsersIcon, exactMatch: false }] },
   { label: 'Finance', items: [{ href: '/dashboard/invoices', label: 'Invoices', icon: DocumentIcon, exactMatch: false, adminOnly: true }, { href: '/dashboard/revenue', label: 'Revenue', icon: ChartIcon, exactMatch: false, adminOnly: true }, { href: '/dashboard/finance', label: 'Finance', icon: BankIcon, exactMatch: false, adminOnly: true }] },
 ];
