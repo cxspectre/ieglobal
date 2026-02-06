@@ -9,9 +9,10 @@ import { Link, useRouter, usePathname } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 
-/** Login URL: on main site (ie-global.net) → dashboard.ie-global.net; on localhost/dashboard subdomain → /login */
+/** Login URL: on main site (ie-global.net, www.ie-global.net) → dashboard.ie-global.net; on localhost/dashboard subdomain → /login */
 function getLoginUrl(): string {
-  if (typeof window !== 'undefined' && window.location.hostname === 'ie-global.net') {
+  const host = typeof window !== 'undefined' ? window.location.hostname : '';
+  if (host === 'ie-global.net' || host === 'www.ie-global.net') {
     return 'https://dashboard.ie-global.net/login';
   }
   if (process.env.NEXT_PUBLIC_DASHBOARD_URL) {
