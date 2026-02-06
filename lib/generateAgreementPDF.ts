@@ -247,16 +247,20 @@ export async function generateAgreementPDF(
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
 
-  // Preamble
+  // Preamble (wrap long lines to avoid cut-off)
+  const contentWidth = pageWidth - marginLeft - marginRight;
   const preambleLines = preamble.split('\n');
   for (const line of preambleLines) {
-    if (currentY.value > 270) {
-      doc.addPage();
-      addLogoSafe(doc);
-      currentY.value = logoBottomY + 20;
+    const wrapped = doc.splitTextToSize(line, contentWidth);
+    for (const w of wrapped) {
+      if (currentY.value > 270) {
+        doc.addPage();
+        addLogoSafe(doc);
+        currentY.value = logoBottomY + 20;
+      }
+      doc.text(w, marginLeft, currentY.value);
+      currentY.value += lineHeight;
     }
-    doc.text(line, marginLeft, currentY.value);
-    currentY.value += lineHeight;
   }
   currentY.value += 8;
 
