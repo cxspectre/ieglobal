@@ -17,6 +17,8 @@ const AGREEMENT_TYPES = [
   { id: 'dpa', label: 'Data Processing Agreement (DPA)' },
 ] as const;
 
+type ClientAgreementType = (typeof AGREEMENT_TYPES)[number]['id'];
+
 const PARTNER_AGREEMENT_TYPES = [
   { id: 'partnership', label: 'UI/UX Design Partnership Agreement (No Development)' },
 ] as const;
@@ -48,7 +50,7 @@ type TeamMember = {
 };
 
 const defaultClientForm = {
-  agreementType: 'nda' as const,
+  agreementType: 'nda' as ClientAgreementType,
   clientId: '',
   client_name: '',
   company_name: '',
@@ -230,10 +232,7 @@ export default function AgreementsPage() {
       const res = await fetch('/api/agreements/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          agreementType: 'partnership',
-          ...partnerForm,
-        }),
+        body: JSON.stringify(partnerForm),
       });
       if (!res.ok) {
         const err = await res.json();

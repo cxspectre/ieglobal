@@ -183,37 +183,49 @@ export async function generateAgreementPDF(
       needsSignatures = true;
       break;
     }
-    case 'nda':
-      title = fillTemplate(NDA_TEXT.title, data);
-      preamble = fillTemplate(NDA_TEXT.parties, data);
-      sections = NDA_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, data) }));
+    case 'nda': {
+      const cData = data as AgreementFormData;
+      title = fillTemplate(NDA_TEXT.title, cData);
+      preamble = fillTemplate(NDA_TEXT.parties, cData);
+      sections = NDA_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, cData) }));
       break;
-    case 'msa':
-      title = fillTemplate(MSA_TEXT.title, data);
-      preamble = fillTemplate(MSA_TEXT.preamble, data);
-      sections = MSA_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, data) }));
+    }
+    case 'msa': {
+      const cData = data as AgreementFormData;
+      title = fillTemplate(MSA_TEXT.title, cData);
+      preamble = fillTemplate(MSA_TEXT.preamble, cData);
+      sections = MSA_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, cData) }));
       break;
-    case 'sow':
-      title = fillTemplate(SOW_TEXT.title, data);
-      preamble = fillTemplate(SOW_TEXT.preamble, data);
-      sections = SOW_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, data) }));
+    }
+    case 'sow': {
+      const cData = data as AgreementFormData;
+      title = fillTemplate(SOW_TEXT.title, cData);
+      preamble = fillTemplate(SOW_TEXT.preamble, cData);
+      sections = SOW_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, cData) }));
       needsSignatures = false;
       break;
-    case 'sla':
-      title = fillTemplate(SLA_TEXT.title, data);
-      preamble = fillTemplate(SLA_TEXT.preamble, data);
-      sections = SLA_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, data) }));
+    }
+    case 'sla': {
+      const cData = data as AgreementFormData;
+      title = fillTemplate(SLA_TEXT.title, cData);
+      preamble = fillTemplate(SLA_TEXT.preamble, cData);
+      sections = SLA_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, cData) }));
       break;
-    case 'osa':
-      title = fillTemplate(OSA_TEXT.title, data);
-      preamble = fillTemplate(OSA_TEXT.preamble, data);
-      sections = OSA_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, data) }));
+    }
+    case 'osa': {
+      const cData = data as AgreementFormData;
+      title = fillTemplate(OSA_TEXT.title, cData);
+      preamble = fillTemplate(OSA_TEXT.preamble, cData);
+      sections = OSA_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, cData) }));
       break;
-    case 'dpa':
-      title = fillTemplate(DPA_TEXT.title, data);
-      preamble = fillTemplate(DPA_TEXT.preamble, data);
-      sections = DPA_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, data) }));
+    }
+    case 'dpa': {
+      const cData = data as AgreementFormData;
+      title = fillTemplate(DPA_TEXT.title, cData);
+      preamble = fillTemplate(DPA_TEXT.preamble, cData);
+      sections = DPA_TEXT.sections.map((s) => ({ title: s.title, content: fillTemplate(s.content, cData) }));
       break;
+    }
     default:
       throw new Error(`Unknown agreement type: ${agreementType}`);
   }
