@@ -57,6 +57,7 @@ export default function TeamMemberPage() {
   const [documents, setDocuments] = useState<ProfileDocument[]>([]);
   const [documentsLoading, setDocumentsLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [canManageDocs, setCanManageDocs] = useState(false);
   useEffect(() => {
     const load = async () => {
@@ -347,12 +348,24 @@ export default function TeamMemberPage() {
             <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Documents</h2>
             {canManageDocs && (
               <label className="block mb-4">
-                <div className="flex items-center justify-center gap-3 px-6 py-4 bg-slate-50 border-2 border-dashed border-slate-300 hover:border-signal-red/50 rounded-xl cursor-pointer transition-colors">
+                <div
+                  onDrop={async (e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    const f = e.dataTransfer.files?.[0];
+                    if (f) await uploadDocument(f);
+                  }}
+                  onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                  onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
+                  className={`flex items-center justify-center gap-3 px-6 py-4 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+                    isDragging ? 'border-signal-red bg-signal-red/5' : 'bg-slate-50 border-slate-300 hover:border-signal-red/50'
+                  }`}
+                >
                   <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                   </svg>
                   <span className="text-sm font-medium text-slate-700">
-                    {uploading ? 'Uploading...' : 'Click to upload or drag and drop'}
+                    {uploading ? 'Uploading...' : isDragging ? 'Drop file here' : 'Click to upload or drag and drop'}
                   </span>
                 </div>
                 <input
