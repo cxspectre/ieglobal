@@ -141,7 +141,8 @@ export default function DashboardPage() {
 
   // Pipeline: which stages are stalled? (zero downstream = problem)
   const clientsStalled = stats.totalClients > 0 && stats.totalProjects === 0; // clients but no projects
-  const projectsStalled = stats.totalProjects > 0 && stats.inProgressProjects === 0; // projects but none active
+  const allProjectsCompleted = stats.totalProjects > 0 && stats.completedProjects === stats.totalProjects;
+  const projectsStalled = stats.totalProjects > 0 && stats.inProgressProjects === 0 && !allProjectsCompleted; // projects but none active, and not all done
   const invoicesStalled = stats.pendingInvoices > 0 && stats.totalRevenue === 0; // pending but no revenue yet
   const revenueStalled = stats.totalRevenue === 0 && (stats.pendingInvoices > 0 || stats.totalProjects > 0); // work done but €0
 
@@ -162,6 +163,7 @@ export default function DashboardPage() {
   }
   if (clientsStalled && actions.length < 3) actions.push({ label: 'Create first project for a client', href: '/dashboard/clients', urgency: 'high' });
   if (projectsStalled && actions.length < 3) actions.push({ label: 'Move a project to In progress', href: '/dashboard/projects', urgency: 'high' });
+  if (allProjectsCompleted && stats.pendingInvoices > 0 && actions.length < 3 && !actions.some((a) => a.label.includes('invoice'))) actions.push({ label: 'Follow up on pending invoices', href: '/dashboard/invoices', urgency: 'medium' });
   if (actions.length < 3 && stats.pendingInvoices > 0 && !actions.some((a) => a.label.includes('invoice'))) actions.push({ label: `${stats.pendingInvoices} invoice${stats.pendingInvoices > 1 ? 's' : ''} pending — follow up`, href: '/dashboard/invoices', urgency: 'medium' });
   if (stats.totalClients === 0 && stats.totalProjects === 0) actions.push({ label: 'Onboard your first client', href: '/dashboard/clients/onboard', urgency: 'high' });
   const briefingActions = actions.slice(0, 3);
@@ -178,6 +180,7 @@ export default function DashboardPage() {
   let forwardMotion = '';
   if (stats.overdueInvoices > 0) forwardMotion = 'Send one invoice follow-up email today.';
   else if (clientsStalled) forwardMotion = 'Create one project today.';
+  else if (allProjectsCompleted) forwardMotion = stats.pendingInvoices > 0 ? 'Follow up on invoices to collect revenue.' : 'Start a new project or celebrate — all done.';
   else if (projectsStalled) forwardMotion = 'Start one project — change status to In progress.';
   else if (stalledClients.length > 0) forwardMotion = 'Reach out to one stalled client.';
   else if (stats.pendingInvoices > 0) forwardMotion = 'Follow up on the oldest pending invoice.';
@@ -282,14 +285,14 @@ export default function DashboardPage() {
               <div className={`hidden sm:block font-bold ${clientsStalled || projectsStalled ? 'text-amber-500' : 'text-slate-300'}`}>→</div>
               <Link href="/dashboard/projects" className="flex items-center gap-3 group">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                  projectsStalled ? 'bg-amber-100 ring-2 ring-amber-400 ring-offset-2' : 'bg-slate-100 group-hover:bg-signal-red/10'
+                  projectsStalled ? 'bg-amber-100 ring-2 ring-amber-400 ring-offset-2' : allProjectsCompleted ? 'bg-emerald-100' : 'bg-slate-100 group-hover:bg-signal-red/10'
                 }`}>
-                  <span className={`text-xl font-bold ${projectsStalled ? 'text-amber-800' : 'text-navy-900 group-hover:text-signal-red'}`}>{stats.totalProjects}</span>
+                  <span className={`text-xl font-bold ${projectsStalled ? 'text-amber-800' : allProjectsCompleted ? 'text-emerald-700' : 'text-navy-900 group-hover:text-signal-red'}`}>{stats.totalProjects}</span>
                 </div>
                 <div>
                   <p className="font-semibold text-navy-900">Projects</p>
-                  <p className={`text-xs ${projectsStalled ? 'text-amber-700 font-medium' : 'text-slate-500'}`}>
-                    {projectsStalled ? `0 in progress — bottleneck` : `${stats.inProgressProjects} in progress`}
+                  <p className={`text-xs ${projectsStalled ? 'text-amber-700 font-medium' : allProjectsCompleted ? 'text-emerald-700 font-medium' : 'text-slate-500'}`}>
+                    {projectsStalled ? `0 in progress — bottleneck` : allProjectsCompleted ? `${stats.completedProjects} completed — all done` : `${stats.inProgressProjects} in progress`}
                   </p>
                 </div>
               </Link>
@@ -375,7 +378,20 @@ export default function DashboardPage() {
                       </div>
                     )}
 
-                    {!revenueFlowing && !zeroProjects && (
+                    {!revenueFlowing && !zeroProjects && allProjectsCompleted && (
+                      <Link href="/dashboard/invoices" className="flex items-center gap-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 hover:bg-emerald-100/80 transition-colors group">
+                        <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                          <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-navy-900">All projects completed</p>
+                          <p className="text-sm text-slate-600">{stats.pendingInvoices > 0 ? 'Follow up on invoices to collect.' : 'Revenue flowing?'}</p>
+                        </div>
+                        <svg className="w-5 h-5 text-slate-400 group-hover:text-signal-red ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                      </Link>
+                    )}
+
+                    {!revenueFlowing && !zeroProjects && !allProjectsCompleted && (
                       <Link href="/dashboard/projects" className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 border border-amber-200 hover:bg-amber-100/80 transition-colors group">
                         <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
                           <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>
