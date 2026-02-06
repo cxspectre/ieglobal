@@ -139,16 +139,17 @@ export default function ProfilePage() {
     try {
       const { data, error } = await supabase.storage
         .from('profile-documents')
-        .createSignedUrl(doc.storage_path, 60);
+        .download(doc.storage_path);
       if (error) throw error;
-      if (data?.signedUrl) {
+      if (data) {
+        const url = URL.createObjectURL(data);
         const a = document.createElement('a');
-        a.href = data.signedUrl;
+        a.href = url;
         a.download = doc.file_name;
-        a.target = '_blank';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+        URL.revokeObjectURL(url);
       }
     } catch (err: any) {
       alert('Failed to download: ' + err?.message);
