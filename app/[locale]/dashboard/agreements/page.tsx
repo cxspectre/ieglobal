@@ -104,7 +104,7 @@ const defaultPartnerForm = {
 
 export default function AgreementsPage() {
   const [category, setCategory] = useState<AgreementCategory>('clients');
-  const [clients, setCliients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
