@@ -152,6 +152,103 @@ export const OSA_TEXT = {
   ],
 };
 
+// UI/UX Design Partnership Agreement (Partners)
+export type PartnershipFormData = {
+  partner_name: string;
+  partner_entity_type: string;
+  partner_address: string;
+  partner_email: string;
+  partner_contact: string;
+  effective_date: string;
+  communication_tools: string;
+  revision_rounds: string;
+  revision_rate: string;
+  acceptance_days: string;
+  fee_model: string;
+  hourly_rate?: string;
+  day_rate?: string;
+  billing_frequency?: string;
+  fixed_fee?: string;
+  retainer_amount?: string;
+  retainer_hours?: string;
+  excess_rate?: string;
+  revenue_share_pct?: string;
+  revenue_share_days?: string;
+  invoice_days: string;
+  late_interest: string;
+  confidentiality_years: string;
+  non_solicit_months: string;
+  liability_months: string;
+  notice_days: string;
+  cure_days: string;
+  governing_law: string;
+  notice_email: string;
+};
+
+export function fillPartnershipTemplate(text: string, data: PartnershipFormData): string {
+  const feeText = data.fee_model === 'A' && data.hourly_rate
+    ? `Model A — Hourly/Day Rate: €${data.hourly_rate}/hour or €${data.day_rate || '—'}/day, billed ${data.billing_frequency || 'monthly'}.`
+    : data.fee_model === 'B' && data.fixed_fee
+    ? `Model B — Fixed Fee Per Deliverable: €${data.fixed_fee} per milestone.`
+    : data.fee_model === 'C' && data.retainer_amount
+    ? `Model C — Retainer: €${data.retainer_amount}/month for up to ${data.retainer_hours || '—'} hours, excess at €${data.excess_rate || '—'}/hour.`
+    : data.fee_model === 'D' && data.revenue_share_pct
+    ? `Model D — Revenue Share: Partner receives ${data.revenue_share_pct}% of net project revenue, payable within ${data.revenue_share_days || '30'} days after IE Global receives client payment.`
+    : 'Fees as specified in individual SOWs.';
+
+  return text
+    .replace(/\{\{partner_name\}\}/g, data.partner_name || '_________________________')
+    .replace(/\{\{partner_entity_type\}\}/g, data.partner_entity_type || '_________________________')
+    .replace(/\{\{partner_address\}\}/g, data.partner_address || '_________________________')
+    .replace(/\{\{partner_email\}\}/g, data.partner_email || '_________________________')
+    .replace(/\{\{partner_contact\}\}/g, data.partner_contact || '_________________________')
+    .replace(/\{\{effective_date\}\}/g, data.effective_date || new Date().toISOString().slice(0, 10))
+    .replace(/\{\{communication_tools\}\}/g, data.communication_tools || 'Figma, Notion, Slack, Email')
+    .replace(/\{\{revision_rounds\}\}/g, data.revision_rounds || '2')
+    .replace(/\{\{revision_rate\}\}/g, data.revision_rate || 'as agreed')
+    .replace(/\{\{acceptance_days\}\}/g, data.acceptance_days || '5')
+    .replace(/\{\{fee_text\}\}/g, feeText)
+    .replace(/\{\{invoice_days\}\}/g, data.invoice_days || '14')
+    .replace(/\{\{late_interest\}\}/g, data.late_interest || 'statutory interest')
+    .replace(/\{\{confidentiality_years\}\}/g, data.confidentiality_years || '3')
+    .replace(/\{\{non_solicit_months\}\}/g, data.non_solicit_months || '12')
+    .replace(/\{\{liability_months\}\}/g, data.liability_months || '12')
+    .replace(/\{\{notice_days\}\}/g, data.notice_days || '30')
+    .replace(/\{\{cure_days\}\}/g, data.cure_days || '10')
+    .replace(/\{\{governing_law\}\}/g, data.governing_law || 'Netherlands')
+    .replace(/\{\{notice_email\}\}/g, data.notice_email || IE_GLOBAL.email);
+}
+
+export const PARTNERSHIP_TEXT = {
+  title: 'UI/UX Design Partnership Agreement (No Development)',
+  preamble: `This UI/UX Design Partnership Agreement ("Agreement") is entered into as of {{effective_date}} ("Effective Date") by and between:
+
+1. IE Global, with its principal place of business at ${IE_GLOBAL.address} ("IE Global"), and
+2. {{partner_name}}, {{partner_entity_type}}, with its principal place of business at {{partner_address}} ("Partner").
+
+IE Global and Partner may be referred to individually as a "Party" and together as the "Parties".`,
+  sections: [
+    { title: '1) Purpose', content: 'The purpose of this Agreement is to define how the Parties collaborate on UI/UX design, product planning, workshops, and brainstorming for client and internal projects, excluding any software development or coding obligations by Partner. IE Global\'s delivery approach emphasizes premium, minimal, intentional design and clear execution standards.' },
+    { title: '2) Relationship Type (Independent Contractors)', content: '2.1 The Parties are independent contractors. Nothing creates an employment, agency, franchise, or joint venture relationship.\n2.2 Neither Party may bind the other to agreements without written authorization.' },
+    { title: '3) Scope of Collaboration (Design Only)', content: '3.1 Partner may provide: Discovery support (requirements clarification, user flows, information architecture); Workshops (stakeholder sessions, ideation, prioritization); UX deliverables (wireframes, user journeys, prototypes); UI deliverables (visual design systems, component libraries, screens); Design handoff materials (annotations, specs, interaction notes); Feedback loops and iteration cycles.\n\n3.2 Explicit Exclusions (No Development): Partner will not be responsible for: Writing production code (frontend/backend), configuring hosting, databases, CI/CD; Implementing tracking, analytics, tagging, or technical SEO; Security hardening, performance engineering, or infrastructure decisions; Ongoing maintenance of software systems. Partner can advise conceptually, but IE Global remains responsible for implementation.' },
+    { title: '4) Engagement Structure (Statements of Work)', content: '4.1 Work is commissioned through individual Statements of Work ("SOW") (Exhibit A).\n4.2 Each SOW should define at minimum: Project name + client (if applicable); Deliverables and file formats (e.g., Figma); Timeline and milestones; Revision/iteration limits; Fees and payment schedule; Acceptance criteria. If an SOW conflicts with this Agreement, the SOW controls only for that project.' },
+    { title: '5) Communication & Workflow', content: `5.1 Primary tools: {{communication_tools}}.\n5.2 Partner agrees to: Provide realistic timelines and flag risks early; Attend key meetings as agreed in the SOW; Maintain orderly files and naming conventions for handoff.\n5.3 IE Global will: Provide clear requirements, brand inputs, and decision-makers; Consolidate feedback to avoid "death-by-committee" loops.` },
+    { title: '6) Quality, Iterations, and Acceptance', content: '6.1 Deliverables must match the SOW\'s acceptance criteria.\n6.2 Unless otherwise stated, each deliverable includes: {{revision_rounds}} rounds of revisions included; Additional revisions billed at {{revision_rate}} or as agreed.\n6.3 Acceptance occurs when IE Global confirms in writing (email/message) that deliverables are approved, or if no rejection is provided within {{acceptance_days}} business days after delivery.' },
+    { title: '7) Fees & Payment', content: '{{fee_text}}\n\n7.2 Invoices are payable within {{invoice_days}} days.\n7.3 Late payments may incur {{late_interest}} where lawful.' },
+    { title: '8) Intellectual Property (Who Owns What)', content: '8.1 Work Product includes all UI/UX outputs created under an SOW (designs, mockups, flows, prototypes, design systems, docs).\n8.2 Upon full payment, Partner assigns to IE Global all rights, title, and interest in the Work Product to the extent permitted by law, including the right to transfer to the client.\n8.3 Partner retains ownership of: Pre-existing materials, templates, and general know-how; Non-client-specific methods and reusable components created independently.\n8.4 Portfolio Rights: Partner may showcase final, public-facing work in a portfolio only after (a) the client launches publicly or (b) IE Global gives written permission. No confidential metrics, credentials, or private screens.' },
+    { title: '9) Confidentiality', content: '9.1 Each Party must keep confidential any non-public info learned during collaboration (client info, business strategy, pricing, designs, credentials, roadmaps).\n9.2 Confidentiality survives termination for {{confidentiality_years}} years (or longer for trade secrets).' },
+    { title: '10) Data Protection (GDPR-Friendly)', content: '10.1 If Partner accesses personal data (e.g., user interview notes, client customer data), Partner will: Process data only as needed for the project; Use reasonable security measures; Notify IE Global promptly of any suspected breach.\n10.2 If required, the Parties will sign a separate Data Processing Agreement (DPA).' },
+    { title: '11) Non-Solicitation (Anti-Poaching Clause)', content: '11.1 During the Agreement and for {{non_solicit_months}} months after, Partner will not knowingly solicit IE Global\'s clients for competing services related to the same engagement without IE Global\'s written consent.\n11.2 During the Agreement and for {{non_solicit_months}} months after, Partner will not solicit IE Global team members/contractors for hire.' },
+    { title: '12) Non-Exclusivity', content: 'This Agreement is non-exclusive unless an SOW explicitly states exclusivity for a defined period and compensation reflects that.' },
+    { title: '13) Warranties & Third-Party Assets', content: '13.1 Partner warrants the Work Product is original or properly licensed and does not knowingly infringe third-party rights.\n13.2 If Partner uses third-party assets (fonts, illustrations, UI kits), Partner must disclose licensing terms and ensure the client/IE Global has a valid right to use them.' },
+    { title: '14) Limitation of Liability', content: '14.1 Neither Party is liable for indirect damages (lost profits, consequential damages) to the maximum extent permitted by law.\n14.2 Each Party\'s total liability under this Agreement is capped at the fees paid under the relevant SOW in the {{liability_months}} months preceding the claim, except for fraud, wilful misconduct, or breach of confidentiality/IP where caps may not apply.' },
+    { title: '15) Term & Termination', content: `15.1 Term begins on the Effective Date and continues until terminated.\n15.2 Either Party may terminate with {{notice_days}} days written notice.\n15.3 Either Party may terminate immediately for material breach if not cured within {{cure_days}} business days after notice.\n15.4 On termination: Partner delivers all in-progress files for paid work; IE Global pays for completed work and approved milestones per SOW.` },
+    { title: '16) Dispute Resolution & Governing Law', content: '16.1 Parties will attempt good-faith resolution within 14 days.\n16.2 If unresolved, disputes go to court in Den Haag, Netherlands.\n16.3 Governing law: {{governing_law}}.' },
+    { title: '17) Miscellaneous', content: 'Entire Agreement + SOWs are the full understanding. Changes must be in writing. If one clause is invalid, the rest remains effective. Notices sent to: {{notice_email}}.' },
+  ],
+  signaturePartner: 'Partner',
+};
+
 // DPA
 export const DPA_TEXT = {
   title: 'Data Processing Agreement (DPA)',

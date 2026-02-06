@@ -21,6 +21,15 @@ type TeamMemberProfile = {
   created_at: string;
 };
 
+type ProfileDocument = {
+  id: string;
+  file_name: string;
+  file_type: string;
+  file_size: number | null;
+  created_at: string;
+  storage_path: string;
+};
+
 const ROLE_LABELS: Record<string, string> = {
   admin: 'Admin',
   employee: 'Employee',
@@ -45,7 +54,10 @@ export default function TeamMemberPage() {
   const [loading, setLoading] = useState(true);
   const [member, setMember] = useState<TeamMemberProfile | null>(null);
   const [canAdd, setCanAdd] = useState(false);
-
+  const [documents, setDocuments] = useState<ProfileDocument[]>([]);
+  const [documentsLoading, setDocumentsLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [canManageDocs, setCanManageDocs] = useState(false);
   useEffect(() => {
     const load = async () => {
       if (!id) return;
@@ -61,6 +73,7 @@ export default function TeamMemberPage() {
         return;
       }
       setCanAdd(profile?.role === 'admin');
+      setCanManageDocs(profile?.role === 'admin' || profile?.role === 'employee');
 
       const { data, error } = await (supabase as any)
         .from('profiles')
@@ -82,6 +95,95 @@ export default function TeamMemberPage() {
     };
     load();
   }, [id, router, supabase]);
+
+  const loadDocuments = async () => {
+    if (!id) return;
+    setDocumentsLoading(true);
+    const { data } = await (supabase as any)
+      .from('profile_documents')
+      .select('id, file_name, file_type, file_size, created_at, storage_path')
+      .eq('profile_id', id)
+      .order('created_at', { ascending: false });
+    setDocuments(data ?? []);
+    setDocumentsLoading(false);
+  };
+
+  useEffect(() => {
+    if (member) loadDocuments();
+  }, [member?.id]);
+
+  const uploadDocument = async (file: File) => {
+    if (!member || !canManageDocs) return;
+    setUploading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const filePath = `${member.id}/${fileName}`;
+      const { error: uploadError } = await supabase.storage
+        .from('profile-documents')
+        .upload(filePath, file, { cacheControl: '3600', upsert: false });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-documents')
+        .getPublicUrl(filePath);
+      const { error: dbError } = await (supabase as any)
+        .from('profile_documents')
+        .insert({
+          profile_id: member.id,
+          file_name: file.name,
+          file_type: file.type,
+          file_size: file.size,
+          file_url: publicUrl,
+          storage_path: filePath,
+          uploaded_by: session.user.id,
+        });
+      if (dbError) throw dbError;
+      await loadDocuments();
+      alert(`"${file.name}" uploaded successfully.`);
+    } catch (err: any) {
+      alert('Failed to upload: ' + err?.message);
+    }
+    setUploading(false);
+  };
+
+  const downloadDocument = async (doc: ProfileDocument) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('profile-documents')
+        .createSignedUrl(doc.storage_path, 60);
+      if (error) throw error;
+      if (data?.signedUrl) {
+        const a = document.createElement('a');
+        a.href = data.signedUrl;
+        a.download = doc.file_name;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    } catch (err: any) {
+      alert('Failed to download: ' + err?.message);
+    }
+  };
+
+  const deleteDocument = async (doc: ProfileDocument) => {
+    if (!canManageDocs || !confirm(`Delete "${doc.file_name}"?`)) return;
+    try {
+      await supabase.storage.from('profile-documents').remove([doc.storage_path]);
+      await (supabase as any).from('profile_documents').delete().eq('id', doc.id);
+      await loadDocuments();
+    } catch (err: any) {
+      alert('Failed to delete: ' + err?.message);
+    }
+  };
+
+  const formatFileSize = (bytes: number | null) => {
+    const b = bytes ?? 0;
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / (1024 * 1024)).toFixed(1) + ' MB';
+  };
 
   const resendInvite = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -239,6 +341,70 @@ export default function TeamMemberPage() {
               <p className="text-navy-900 whitespace-pre-wrap">{member.bio}</p>
             </motion.div>
           )}
+
+          {/* Documents */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80">
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Documents</h2>
+            {canManageDocs && (
+              <label className="block mb-4">
+                <div className="flex items-center justify-center gap-3 px-6 py-4 bg-slate-50 border-2 border-dashed border-slate-300 hover:border-signal-red/50 rounded-xl cursor-pointer transition-colors">
+                  <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <span className="text-sm font-medium text-slate-700">
+                    {uploading ? 'Uploading...' : 'Click to upload or drag and drop'}
+                  </span>
+                </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  disabled={uploading}
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (f) await uploadDocument(f);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+            )}
+            {documentsLoading ? (
+              <p className="text-sm text-slate-500 py-4">Loading documents...</p>
+            ) : documents.length === 0 ? (
+              <p className="text-sm text-slate-500 py-4">No documents uploaded yet.</p>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {documents.map((doc) => (
+                  <div key={doc.id} className="flex items-center justify-between py-3 first:pt-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                      <div className="min-w-0">
+                        <p className="font-medium text-navy-900 truncate">{doc.file_name}</p>
+                        <p className="text-xs text-slate-500">{formatFileSize(doc.file_size)} · {new Date(doc.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => downloadDocument(doc)}
+                        className="px-3 py-1.5 text-sm font-medium text-signal-red hover:bg-signal-red/10 rounded-lg"
+                      >
+                        Download
+                      </button>
+                      {canManageDocs && (
+                        <button
+                          onClick={() => deleteDocument(doc)}
+                          className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg"
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
         </div>
       </div>
     </div>

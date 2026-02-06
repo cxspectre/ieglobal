@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
+import { motion } from 'framer-motion';
 
 type Profile = {
   id: string;
@@ -19,9 +20,19 @@ type Profile = {
   created_at: string;
 };
 
+type ProfileDocument = {
+  id: string;
+  file_name: string;
+  file_type: string;
+  file_size: number | null;
+  created_at: string;
+  storage_path: string;
+};
+
 export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [documents, setDocuments] = useState<ProfileDocument[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
   const [saveLoading, setSaveLoading] = useState(false);
@@ -67,6 +78,13 @@ export default function ProfilePage() {
           address_country: data.address_country || '',
           bio: data.bio || '',
         });
+        // Load profile documents
+        const { data: docs } = await (supabase as any)
+          .from('profile_documents')
+          .select('id, file_name, file_type, file_size, created_at, storage_path')
+          .eq('profile_id', session.user.id)
+          .order('created_at', { ascending: false });
+        setDocuments(docs ?? []);
       }
 
       setLoading(false);
@@ -117,6 +135,33 @@ export default function ProfilePage() {
     setSaveLoading(false);
   };
 
+  const downloadDocument = async (doc: ProfileDocument) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('profile-documents')
+        .createSignedUrl(doc.storage_path, 60);
+      if (error) throw error;
+      if (data?.signedUrl) {
+        const a = document.createElement('a');
+        a.href = data.signedUrl;
+        a.download = doc.file_name;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    } catch (err: any) {
+      alert('Failed to download: ' + err?.message);
+    }
+  };
+
+  const formatFileSize = (bytes: number | null) => {
+    const b = bytes ?? 0;
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
   const requestPasswordReset = async () => {
     setPasswordLoading(true);
     setPasswordMessage('');
@@ -143,12 +188,21 @@ export default function ProfilePage() {
     setPasswordLoading(false);
   };
 
+  const getRoleStyle = (role: string) => {
+    switch (role) {
+      case 'admin': return 'bg-red-100 text-red-800 border-red-200';
+      case 'employee': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'partner': return 'bg-violet-100 text-violet-800 border-violet-200';
+      default: return 'bg-slate-100 text-slate-600 border-slate-200';
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-100 to-slate-50">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-700">Loading profile...</p>
+          <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Loading profile...</p>
         </div>
       </div>
     );
@@ -156,14 +210,15 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-navy-900 mb-4">Profile Not Found</h1>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-100 to-slate-50">
+        <div className="text-center p-8">
+          <h1 className="text-xl font-bold text-navy-900 mb-2">Profile not found</h1>
+          <p className="text-slate-600 mb-4">We couldn&apos;t load your profile.</p>
           <button
             onClick={() => router.back()}
-            className="text-signal-red hover:underline"
+            className="text-signal-red font-medium hover:underline"
           >
-            Go Back
+            Go back
           </button>
         </div>
       </div>
@@ -171,217 +226,260 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen -m-6 lg:-m-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-navy-900 mb-2">My Profile</h1>
-        <p className="text-lg text-slate-700">Manage your personal information and account settings</p>
+      <div className="bg-navy-900 px-4 sm:px-6 lg:px-8 pt-12 lg:pt-16 pb-8 shadow-xl shadow-black/15">
+        <div className="max-w-[900px] mx-auto">
+          <p className="text-white/50 text-sm mb-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">My Profile</h1>
+        </div>
       </div>
 
-      {/* Profile Information Card */}
-      <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-navy-900">Personal Information</h2>
-          {!isEditing ? (
-            <button
-              onClick={startEditing}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-navy-900 text-sm font-semibold rounded-lg transition-colors duration-200"
-            >
-              Edit Profile
-            </button>
-          ) : (
-            <div className="flex gap-2">
-              <button
-                onClick={cancelEditing}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-navy-900 text-sm font-semibold rounded-lg transition-colors duration-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={saveProfile}
-                disabled={saveLoading}
-                className="px-4 py-2 bg-signal-red text-white text-sm font-semibold rounded-lg hover:bg-signal-red/90 transition-colors duration-200 disabled:opacity-50"
-              >
-                {saveLoading ? 'Saving...' : 'Save Changes'}
-              </button>
+      <div className="bg-gradient-to-b from-slate-100 to-slate-50 min-h-[calc(100vh-160px)] p-6 lg:p-8">
+        <div className="max-w-[900px] mx-auto space-y-6">
+          {/* Profile hero */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80"
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-16 h-16 bg-navy-900 rounded-2xl flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+                {profile.full_name?.split(' ').map((n) => n[0]).join('').slice(0, 2) || '?'}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h2 className="text-lg font-bold text-navy-900">{profile.full_name || '—'}</h2>
+                    <span className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded border ${getRoleStyle(profile.role)}`}>
+                      {profile.role}
+                    </span>
+                  </div>
+                  {!isEditing ? (
+                    <button
+                      onClick={startEditing}
+                      className="px-4 py-2 text-sm font-medium text-navy-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors self-start sm:self-auto"
+                    >
+                      Edit profile
+                    </button>
+                  ) : (
+                    <div className="flex gap-2 self-start sm:self-auto">
+                      <button onClick={cancelEditing} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl">
+                        Cancel
+                      </button>
+                      <button
+                        onClick={saveProfile}
+                        disabled={saveLoading}
+                        className="px-4 py-2 text-sm font-medium text-white bg-signal-red hover:bg-signal-red/90 rounded-xl disabled:opacity-50"
+                      >
+                        {saveLoading ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <a href={`mailto:${profile.email}`} className="text-signal-red hover:underline text-sm mt-1 inline-block">
+                  {profile.email}
+                </a>
+              </div>
             </div>
-          )}
-        </div>
+          </motion.div>
 
-        {isEditing ? (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-navy-900 mb-2">Full Name</label>
-                <input
-                  type="text"
-                  value={editForm.full_name}
-                  onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-navy-900 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={profile.email}
-                  disabled
-                  className="w-full px-4 py-3 border border-gray-300 bg-gray-50 text-slate-500 rounded-lg cursor-not-allowed"
-                />
-                <p className="text-xs text-slate-500 mt-1">Email cannot be changed</p>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-navy-900 mb-2">Birth Date</label>
-                <input
-                  type="date"
-                  value={editForm.birth_date}
-                  onChange={(e) => setEditForm({ ...editForm, birth_date: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-navy-900 mb-2">Phone</label>
-                <input
-                  type="tel"
-                  value={editForm.phone}
-                  onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-navy-900 mb-2">Address</label>
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  value={editForm.address_street}
-                  onChange={(e) => setEditForm({ ...editForm, address_street: e.target.value })}
-                  placeholder="Street address"
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    value={editForm.address_postal_code}
-                    onChange={(e) => setEditForm({ ...editForm, address_postal_code: e.target.value })}
-                    placeholder="Postal code"
-                    className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
-                  />
-                  <input
-                    type="text"
-                    value={editForm.address_city}
-                    onChange={(e) => setEditForm({ ...editForm, address_city: e.target.value })}
-                    placeholder="City"
-                    className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+          {/* Personal info */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80"
+          >
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Personal information</h2>
+            {isEditing ? (
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Full name</label>
+                    <input
+                      type="text"
+                      value={editForm.full_name}
+                      onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+                    <input
+                      type="email"
+                      value={profile.email}
+                      disabled
+                      className="w-full px-4 py-2.5 border border-slate-200 bg-slate-50 text-slate-500 rounded-xl cursor-not-allowed"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">Email cannot be changed</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Birth date</label>
+                    <input
+                      type="date"
+                      value={editForm.birth_date}
+                      onChange={(e) => setEditForm({ ...editForm, birth_date: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1.5">Phone</label>
+                    <input
+                      type="tel"
+                      value={editForm.phone}
+                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Address</label>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={editForm.address_street}
+                      onChange={(e) => setEditForm({ ...editForm, address_street: e.target.value })}
+                      placeholder="Street address"
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        value={editForm.address_postal_code}
+                        onChange={(e) => setEditForm({ ...editForm, address_postal_code: e.target.value })}
+                        placeholder="Postal code"
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
+                      />
+                      <input
+                        type="text"
+                        value={editForm.address_city}
+                        onChange={(e) => setEditForm({ ...editForm, address_city: e.target.value })}
+                        placeholder="City"
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      value={editForm.address_country}
+                      onChange={(e) => setEditForm({ ...editForm, address_country: e.target.value })}
+                      placeholder="Country"
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Bio</label>
+                  <textarea
+                    rows={4}
+                    value={editForm.bio}
+                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                    placeholder="Tell us about yourself..."
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none resize-none"
                   />
                 </div>
-                <input
-                  type="text"
-                  value={editForm.address_country}
-                  onChange={(e) => setEditForm({ ...editForm, address_country: e.target.value })}
-                  placeholder="Country"
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
-                />
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-navy-900 mb-2">Bio</label>
-              <textarea
-                rows={4}
-                value={editForm.bio}
-                onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
-                placeholder="Tell us about yourself..."
-                className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg resize-none"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Full Name</p>
-                <p className="font-semibold text-navy-900">{profile.full_name || '—'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Email</p>
-                <p className="font-semibold text-navy-900">{profile.email}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Birth Date</p>
-                <p className="font-semibold text-navy-900">
-                  {profile.birth_date ? new Date(profile.birth_date).toLocaleDateString() : '—'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Phone</p>
-                <p className="font-semibold text-navy-900">{profile.phone || '—'}</p>
-              </div>
-            </div>
-            {(profile.address_street || profile.address_city) && (
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Address</p>
-                <p className="font-semibold text-navy-900">
-                  {profile.address_street && <>{profile.address_street}<br /></>}
-                  {profile.address_postal_code} {profile.address_city}
-                  {profile.address_country && <><br />{profile.address_country}</>}
-                </p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-xs text-slate-500 mb-0.5">Birth date</p>
+                  <p className="font-medium text-navy-900">{profile.birth_date ? new Date(profile.birth_date).toLocaleDateString() : '—'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-0.5">Phone</p>
+                  <p className="font-medium text-navy-900">{profile.phone || '—'}</p>
+                </div>
+                {(profile.address_street || profile.address_city) && (
+                  <div className="sm:col-span-2">
+                    <p className="text-xs text-slate-500 mb-0.5">Address</p>
+                    <p className="font-medium text-navy-900">
+                      {profile.address_street && <>{profile.address_street}<br /></>}
+                      {[profile.address_postal_code, profile.address_city].filter(Boolean).join(' ')}
+                      {profile.address_country && <><br />{profile.address_country}</>}
+                    </p>
+                  </div>
+                )}
+                {profile.bio && (
+                  <div className="sm:col-span-2">
+                    <p className="text-xs text-slate-500 mb-0.5">Bio</p>
+                    <p className="text-navy-900 whitespace-pre-wrap">{profile.bio}</p>
+                  </div>
+                )}
               </div>
             )}
-            {profile.bio && (
-              <div>
-                <p className="text-sm text-slate-600 mb-1">Bio</p>
-                <p className="text-slate-700 whitespace-pre-wrap">{profile.bio}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+          </motion.div>
 
-      {/* Account Settings Card */}
-      <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <h2 className="text-2xl font-bold text-navy-900 mb-6">Account Settings</h2>
-        
-        <div className="space-y-6">
-          <div>
-            <p className="text-sm text-slate-600 mb-1">Role</p>
-            <p className="font-semibold text-navy-900 capitalize">{profile.role}</p>
-          </div>
-          <div>
-            <p className="text-sm text-slate-600 mb-1">Member Since</p>
-            <p className="font-semibold text-navy-900">
-              {new Date(profile.created_at).toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-            </p>
+          {/* Account & documents side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80"
+            >
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Account</h2>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-slate-500 mb-0.5">Member since</p>
+                  <p className="font-medium text-navy-900">
+                    {new Date(profile.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-slate-100">
+                  <p className="text-xs text-slate-500 mb-2">Password</p>
+                  <button
+                    onClick={requestPasswordReset}
+                    disabled={passwordLoading}
+                    className="px-4 py-2 text-sm font-medium text-white bg-signal-red hover:bg-signal-red/90 rounded-xl disabled:opacity-50"
+                  >
+                    {passwordLoading ? 'Sending...' : 'Reset password'}
+                  </button>
+                  {passwordMessage && (
+                    <p className={`mt-3 text-sm ${passwordMessage.includes('Failed') ? 'text-red-600' : 'text-green-600'}`}>
+                      {passwordMessage}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200/80"
+            >
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">My documents</h2>
+              <p className="text-xs text-slate-500 mb-4">Contracts, agreements, and files shared with you.</p>
+              {documents.length === 0 ? (
+                <p className="text-sm text-slate-500 py-4">No documents yet.</p>
+              ) : (
+                <div className="space-y-3">
+                  {documents.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between py-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        <div className="min-w-0">
+                          <p className="font-medium text-navy-900 truncate text-sm">{doc.file_name}</p>
+                          <p className="text-xs text-slate-500">{formatFileSize(doc.file_size)} · {new Date(doc.created_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => downloadDocument(doc)}
+                        className="px-3 py-1.5 text-sm font-medium text-signal-red hover:bg-signal-red/10 rounded-lg flex-shrink-0"
+                      >
+                        Download
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
           </div>
         </div>
-      </div>
-
-      {/* Password Reset Card */}
-      <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-2xl font-bold text-navy-900 mb-4">Password</h2>
-        <p className="text-sm text-slate-700 mb-6">
-          Click the button below to receive a password reset link via email.
-        </p>
-        <button
-          onClick={requestPasswordReset}
-          disabled={passwordLoading}
-          className="px-6 py-3 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {passwordLoading ? 'Sending...' : 'Send Password Reset Email'}
-        </button>
-        {passwordMessage && (
-          <div className={`mt-4 p-4 rounded-lg ${
-            passwordMessage.includes('Failed') 
-              ? 'bg-red-50 border border-red-200 text-red-800' 
-              : 'bg-green-50 border border-green-200 text-green-800'
-          }`}>
-            <p className="text-sm">{passwordMessage}</p>
-          </div>
-        )}
       </div>
     </div>
   );

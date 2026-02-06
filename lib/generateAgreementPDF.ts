@@ -3,16 +3,19 @@ import { loadLogoDataUrl } from './loadLogoForPDF';
 import {
   IE_GLOBAL,
   fillTemplate,
+  fillPartnershipTemplate,
   type AgreementFormData,
+  type PartnershipFormData,
   NDA_TEXT,
   MSA_TEXT,
   SOW_TEXT,
   SLA_TEXT,
   OSA_TEXT,
   DPA_TEXT,
+  PARTNERSHIP_TEXT,
 } from './agreements';
 
-type AgreementType = 'nda' | 'msa' | 'sow' | 'sla' | 'osa' | 'dpa';
+type AgreementType = 'nda' | 'msa' | 'sow' | 'sla' | 'osa' | 'dpa' | 'partnership';
 
 const marginLeft = 20;
 const marginRight = 20;
@@ -116,9 +119,48 @@ function addSignatures(doc: jsPDF, currentY: { value: number }) {
   doc.text('Date: ____________________________________________________', marginLeft, currentY.value);
 }
 
+function addPartnerSignatures(doc: jsPDF, currentY: { value: number }, partnerName: string) {
+  if (currentY.value > 180) {
+    doc.addPage();
+    addLogoSafe(doc);
+  }
+  currentY.value = logoBottomY + 20;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('Signatures:', marginLeft, currentY.value);
+  currentY.value += 15;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('IE Global:', marginLeft, currentY.value);
+  currentY.value += lineHeight + 2;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Signature: ________________________________________________', marginLeft, currentY.value);
+  currentY.value += lineHeight + 3;
+  doc.text(`Name: ${IE_GLOBAL.contact}`, marginLeft, currentY.value);
+  currentY.value += lineHeight + 3;
+  doc.text('Title: Managing Director', marginLeft, currentY.value);
+  currentY.value += lineHeight + 3;
+  doc.text('Date: ________________________________________________', marginLeft, currentY.value);
+  currentY.value += 15;
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Partner:', marginLeft, currentY.value);
+  currentY.value += lineHeight + 2;
+  doc.setFont('helvetica', 'normal');
+  doc.text('Signature: ________________________________________________', marginLeft, currentY.value);
+  currentY.value += lineHeight + 3;
+  doc.text(`Name: ${partnerName || '____________________________________________________'}`, marginLeft, currentY.value);
+  currentY.value += lineHeight + 3;
+  doc.text('Title: ____________________________________________________', marginLeft, currentY.value);
+  currentY.value += lineHeight + 3;
+  doc.text('Date: ____________________________________________________', marginLeft, currentY.value);
+}
+
 export async function generateAgreementPDF(
   agreementType: AgreementType,
-  data: AgreementFormData
+  data: AgreementFormData | PartnershipFormData
 ): Promise<Blob> {
   const doc = new jsPDF();
   addLogoSafe(doc);
@@ -130,6 +172,17 @@ export async function generateAgreementPDF(
   let needsSignatures = true;
 
   switch (agreementType) {
+    case 'partnership': {
+      const pData = data as PartnershipFormData;
+      title = fillPartnershipTemplate(PARTNERSHIP_TEXT.title, pData);
+      preamble = fillPartnershipTemplate(PARTNERSHIP_TEXT.preamble, pData);
+      sections = PARTNERSHIP_TEXT.sections.map((s) => ({
+        title: s.title,
+        content: fillPartnershipTemplate(s.content, pData),
+      }));
+      needsSignatures = true;
+      break;
+    }
     case 'nda':
       title = fillTemplate(NDA_TEXT.title, data);
       preamble = fillTemplate(NDA_TEXT.parties, data);
@@ -201,14 +254,18 @@ export async function generateAgreementPDF(
   }
 
   if (needsSignatures) {
-    addSignatures(doc, currentY);
+    if (agreementType === 'partnership') {
+      addPartnerSignatures(doc, currentY, (data as PartnershipFormData).partner_contact || (data as PartnershipFormData).partner_name);
+    } else {
+      addSignatures(doc, currentY);
+    }
   }
 
   return doc.output('blob');
 }
 
-export function getAgreementFilename(type: AgreementType, companyName: string): string {
-  const slug = (companyName || 'client').replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 30);
+export function getAgreementFilename(type: AgreementType, companyNameOrPartner: string): string {
+  const slug = (companyNameOrPartner || 'unknown').replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 30);
   const typeLabels: Record<AgreementType, string> = {
     nda: 'NDA',
     msa: 'MSA',
@@ -216,6 +273,7 @@ export function getAgreementFilename(type: AgreementType, companyName: string): 
     sla: 'SLA',
     osa: 'Ongoing-Support',
     dpa: 'DPA',
+    partnership: 'UI-UX-Partnership',
   };
   return `IE-Global-${typeLabels[type]}-${slug}.pdf`;
 }
