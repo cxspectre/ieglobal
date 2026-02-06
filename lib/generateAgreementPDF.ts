@@ -84,8 +84,10 @@ function addSignatures(doc: jsPDF, currentY: { value: number }) {
   if (currentY.value > 180) {
     doc.addPage();
     addLogoSafe(doc);
+    currentY.value = logoBottomY + 20;
+  } else {
+    currentY.value += 15;
   }
-  currentY.value = logoBottomY + 20;
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
@@ -123,8 +125,10 @@ function addPartnerSignatures(doc: jsPDF, currentY: { value: number }, partnerNa
   if (currentY.value > 180) {
     doc.addPage();
     addLogoSafe(doc);
+    currentY.value = logoBottomY + 20;
+  } else {
+    currentY.value += 15;
   }
-  currentY.value = logoBottomY + 20;
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
