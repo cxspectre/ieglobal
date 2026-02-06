@@ -9,10 +9,16 @@ import { Link, useRouter, usePathname } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 
-/** Dashboard URL for Sign In - set NEXT_PUBLIC_DASHBOARD_URL in Vercel for production. Unset = use relative /login (local dev) */
-const DASHBOARD_LOGIN_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL
-  ? `${process.env.NEXT_PUBLIC_DASHBOARD_URL}/login`
-  : '/login';
+/** Login URL: on main site (ie-global.net) → dashboard.ie-global.net; on localhost/dashboard subdomain → /login */
+function getLoginUrl(): string {
+  if (typeof window !== 'undefined' && window.location.hostname === 'ie-global.net') {
+    return 'https://dashboard.ie-global.net/login';
+  }
+  if (process.env.NEXT_PUBLIC_DASHBOARD_URL) {
+    return `${process.env.NEXT_PUBLIC_DASHBOARD_URL}/login`;
+  }
+  return '/login';
+}
 
 const servicesMenu = [
   {
@@ -103,6 +109,11 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [hoveredService, setHoveredService] = useState<number | null>(null);
   const [isNavHovered, setIsNavHovered] = useState(false);
+  const [loginUrl, setLoginUrl] = useState('/login');
+
+  useEffect(() => {
+    setLoginUrl(getLoginUrl());
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -333,7 +344,7 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
               {t('startProject')}
             </Link>
             <a
-              href={DASHBOARD_LOGIN_URL}
+              href={loginUrl}
               className={cn("flex items-center gap-2 transition-colors duration-500", textColor)}
               aria-label={t('signIn')}
             >
@@ -454,7 +465,7 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
                 </Link>
 
                 <a
-                  href={DASHBOARD_LOGIN_URL}
+                  href={loginUrl}
                   className="flex items-center justify-center gap-2 w-full mt-4 py-3 text-navy-900 hover:text-signal-red font-medium border border-gray-200 rounded-lg hover:border-signal-red transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
