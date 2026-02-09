@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Link from 'next/link';
 
 type Message = {
   id: string;
@@ -128,17 +127,12 @@ export default function ClientMessagesPage() {
     setSending(false);
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="min-h-[40vh] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-700">Loading...</p>
+          <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Loading messages...</p>
         </div>
       </div>
     );
@@ -147,140 +141,100 @@ export default function ClientMessagesPage() {
   const currentProject = projects.find(p => p.id === selectedProjectId);
 
   return (
-    <div className="min-h-screen bg-off-white flex flex-col">
-      {/* Top Bar */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/portal" className="font-bold text-xl text-navy-900">
-              Portal
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/portal" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Overview
-              </Link>
-              <Link href="/portal/milestones" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Milestones
-              </Link>
-              <Link href="/portal/invoices" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Invoices
-              </Link>
-              <Link href="/portal/files" className="text-sm font-medium text-slate-700 hover:text-navy-900">
-                Files
-              </Link>
-            </nav>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-slate-700 hover:text-signal-red transition-colors duration-200"
-          >
-            Sign Out
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col p-8">
-        <div className="max-w-5xl mx-auto w-full flex flex-col h-full">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-navy-900 mb-2">Messages</h1>
-            <p className="text-slate-700">Communicate with your IE Global team</p>
-          </div>
-
-          {projects.length === 0 ? (
-            <div className="bg-white p-12 text-center">
-              <p className="text-slate-700">No projects yet.</p>
-            </div>
-          ) : (
-            <>
-              {/* Project Selector */}
-              {projects.length > 1 && (
-                <div className="mb-6">
-                  <select
-                    value={selectedProjectId}
-                    onChange={(e) => setSelectedProjectId(e.target.value)}
-                    className="px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none"
-                  >
-                    {projects.map((project) => (
-                      <option key={project.id} value={project.id}>
-                        {project.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Messages Container */}
-              <div className="flex-1 bg-white p-6 mb-6 overflow-y-auto max-h-[500px]">
-                {messages.length === 0 ? (
-                  <div className="text-center py-12 text-slate-700">
-                    No messages yet. Send your first message!
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {messages.map((message) => {
-                      const isCurrentUser = message.sender_id === currentUserId;
-                      const isFromTeam = message.profiles?.role === 'admin' || message.profiles?.role === 'employee';
-                      
-                      return (
-                        <div
-                          key={message.id}
-                          className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
-                        >
-                          <div className={`max-w-[70%] ${isCurrentUser ? 'ml-auto' : ''}`}>
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-semibold text-slate-700">
-                                {isFromTeam ? 'IE Global Team' : message.profiles?.full_name || 'You'}
-                              </span>
-                              <span className="text-xs text-slate-500">
-                                {new Date(message.created_at).toLocaleString()}
-                              </span>
-                            </div>
-                            <div
-                              className={`p-4 rounded-lg ${
-                                isCurrentUser
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-100 text-navy-900'
-                              }`}
-                            >
-                              <p className="whitespace-pre-wrap">{message.message_text}</p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Message Input */}
-              <div className="bg-white p-6 border-l-4 border-signal-red">
-                <form onSubmit={handleSendMessage} className="space-y-4">
-                  <div>
-                    <textarea
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Type your message to IE Global team..."
-                      rows={3}
-                      disabled={sending}
-                      className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none resize-none"
-                    />
-                  </div>
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={sending || !newMessage.trim()}
-                      className="px-6 py-3 bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {sending ? 'Sending...' : 'Send Message'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </>
-          )}
-        </div>
+    <div className="max-w-5xl mx-auto flex flex-col h-full">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-navy-900 mb-2">Messages</h1>
+        <p className="text-slate-600 text-sm">Communicate with your IE Global team</p>
       </div>
+
+      {projects.length === 0 ? (
+        <div className="rounded-2xl bg-white p-12 text-center border border-slate-200/80 shadow-sm">
+          <p className="text-slate-600">No projects yet.</p>
+        </div>
+      ) : (
+        <>
+          {projects.length > 1 && (
+            <div className="mb-6 rounded-2xl bg-white p-4 border border-slate-200/80 shadow-sm">
+              <label className="block text-sm font-semibold text-navy-900 mb-2">Project</label>
+              <select
+                value={selectedProjectId}
+                onChange={(e) => setSelectedProjectId(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none transition-colors"
+              >
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="rounded-2xl bg-white p-6 mb-6 border border-slate-200/80 shadow-sm overflow-y-auto max-h-[500px] min-h-[300px]">
+            {messages.length === 0 ? (
+              <div className="text-center py-12 text-slate-500 text-sm">
+                No messages yet. Send your first message below.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messages.map((message) => {
+                  const isCurrentUser = message.sender_id === currentUserId;
+                  const isFromTeam = message.profiles?.role === 'admin' || message.profiles?.role === 'employee';
+
+                  return (
+                    <div
+                      key={message.id}
+                      className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`max-w-[75%] ${isCurrentUser ? 'ml-auto' : ''}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-semibold text-slate-700">
+                            {isFromTeam ? 'IE Global Team' : message.profiles?.full_name || 'You'}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            {new Date(message.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        <div
+                          className={`p-4 rounded-xl ${
+                            isCurrentUser
+                              ? 'bg-signal-red text-white'
+                              : 'bg-slate-100 text-navy-900'
+                          }`}
+                        >
+                          <p className="whitespace-pre-wrap text-sm">{message.message_text}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-2xl bg-white p-6 border border-slate-200/80 shadow-sm">
+            <form onSubmit={handleSendMessage} className="space-y-4">
+              <textarea
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type your message to IE Global team..."
+                rows={3}
+                disabled={sending}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none resize-none transition-colors"
+              />
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={sending || !newMessage.trim()}
+                  className="px-6 py-3 rounded-xl bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {sending ? 'Sending...' : 'Send message'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
+      )}
     </div>
   );
 }

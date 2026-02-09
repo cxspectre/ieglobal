@@ -7,11 +7,13 @@ import { useTranslations } from 'next-intl';
 import HeroCarousel from '@/components/ui/HeroCarousel';
 import HowWeCanHelp from '@/components/ui/HowWeCanHelp';
 import MeetTheFounders from '@/components/ui/MeetTheFounders';
+import TemplateRequestModal from '@/components/ui/TemplateRequestModal';
 import { Link } from '@/i18n/navigation';
 
 export default function HomePage() {
   const t = useTranslations('home');
   const [heroIsDark, setHeroIsDark] = useState(true);
+  const [templateModalOpen, setTemplateModalOpen] = useState(false);
 
   const heroSlides = [
     {
@@ -54,6 +56,40 @@ export default function HomePage() {
       {/* Hero Carousel */}
       <HeroCarousel slides={heroSlides} autoPlayInterval={6500} onSlideChange={setHeroIsDark} />
 
+      {/* We Build Your Website - Bold CTA band */}
+      <section className="relative overflow-hidden bg-navy-900 text-white py-16 md:py-24">
+        <div className="absolute inset-0 bg-gradient-to-br from-signal-red/10 via-transparent to-transparent" aria-hidden="true" />
+        <div className="container-wide relative">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
+              {t('weBuildYourWebsite')}
+            </h2>
+            <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+              {t('weBuildYourWebsiteDesc')}
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-signal-red text-white font-semibold rounded-xl hover:bg-signal-red/90 transition-colors"
+              >
+                {t('getInTouch')}
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setTemplateModalOpen(true)}
+                className="inline-flex items-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-xl border border-white/20 hover:bg-white/20 transition-colors"
+              >
+                {t('requestTemplates')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <TemplateRequestModal isOpen={templateModalOpen} onClose={() => setTemplateModalOpen(false)} />
 
       {/* What We Do - Built for Performance */}
       <section className="section bg-white">

@@ -145,10 +145,10 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="min-h-[40vh] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-700">Loading profile...</p>
+          <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Loading profile...</p>
         </div>
       </div>
     );
@@ -156,14 +156,11 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="min-h-[40vh] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-navy-900 mb-4">Profile Not Found</h1>
-          <button
-            onClick={() => router.back()}
-            className="text-signal-red hover:underline"
-          >
-            Go Back
+          <h1 className="text-2xl font-bold text-navy-900 mb-4">Profile not found</h1>
+          <button onClick={() => router.back()} className="text-signal-red font-medium hover:underline">
+            Go back
           </button>
         </div>
       </div>
@@ -172,37 +169,35 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-navy-900 mb-2">My Profile</h1>
-        <p className="text-lg text-slate-700">Manage your personal information and account settings</p>
+        <h1 className="text-3xl font-bold text-navy-900 mb-2">My profile</h1>
+        <p className="text-slate-600 text-sm">Manage your personal information and account settings</p>
       </div>
 
-      {/* Profile Information Card */}
-      <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-navy-900">Personal Information</h2>
+      <div className="rounded-2xl bg-white p-6 lg:p-8 shadow-sm border border-slate-200/80 mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <h2 className="text-xl font-bold text-navy-900">Personal information</h2>
           {!isEditing ? (
             <button
               onClick={startEditing}
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-navy-900 text-sm font-semibold rounded-lg transition-colors duration-200"
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-navy-900 text-sm font-semibold rounded-xl transition-colors"
             >
-              Edit Profile
+              Edit profile
             </button>
           ) : (
             <div className="flex gap-2">
               <button
                 onClick={cancelEditing}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-navy-900 text-sm font-semibold rounded-lg transition-colors duration-200"
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-navy-900 text-sm font-semibold rounded-xl transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={saveProfile}
                 disabled={saveLoading}
-                className="px-4 py-2 bg-signal-red text-white text-sm font-semibold rounded-lg hover:bg-signal-red/90 transition-colors duration-200 disabled:opacity-50"
+                className="px-4 py-2.5 bg-signal-red text-white text-sm font-semibold rounded-xl hover:bg-signal-red/90 transition-colors disabled:opacity-50"
               >
-                {saveLoading ? 'Saving...' : 'Save Changes'}
+                {saveLoading ? 'Saving...' : 'Save changes'}
               </button>
             </div>
           )}
@@ -217,7 +212,7 @@ export default function ProfilePage() {
                   type="text"
                   value={editForm.full_name}
                   onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                  className="w-full px-4 py-3 border border-slate-200 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none rounded-xl transition-colors"
                   required
                 />
               </div>
@@ -227,7 +222,7 @@ export default function ProfilePage() {
                   type="email"
                   value={profile.email}
                   disabled
-                  className="w-full px-4 py-3 border border-gray-300 bg-gray-50 text-slate-500 rounded-lg cursor-not-allowed"
+                  className="w-full px-4 py-3 border border-slate-200 bg-slate-50 text-slate-500 rounded-xl cursor-not-allowed"
                 />
                 <p className="text-xs text-slate-500 mt-1">Email cannot be changed</p>
               </div>
@@ -237,7 +232,7 @@ export default function ProfilePage() {
                   type="date"
                   value={editForm.birth_date}
                   onChange={(e) => setEditForm({ ...editForm, birth_date: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                  className="w-full px-4 py-3 border border-slate-200 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none rounded-xl transition-colors"
                 />
               </div>
               <div>
@@ -246,7 +241,7 @@ export default function ProfilePage() {
                   type="tel"
                   value={editForm.phone}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                  className="w-full px-4 py-3 border border-slate-200 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none rounded-xl transition-colors"
                 />
               </div>
             </div>
@@ -258,7 +253,7 @@ export default function ProfilePage() {
                   value={editForm.address_street}
                   onChange={(e) => setEditForm({ ...editForm, address_street: e.target.value })}
                   placeholder="Street address"
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                  className="w-full px-4 py-3 border border-slate-200 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none rounded-xl transition-colors"
                 />
                 <div className="grid grid-cols-2 gap-4">
                   <input
@@ -266,14 +261,14 @@ export default function ProfilePage() {
                     value={editForm.address_postal_code}
                     onChange={(e) => setEditForm({ ...editForm, address_postal_code: e.target.value })}
                     placeholder="Postal code"
-                    className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                    className="w-full px-4 py-3 border border-slate-200 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none rounded-xl transition-colors"
                   />
                   <input
                     type="text"
                     value={editForm.address_city}
                     onChange={(e) => setEditForm({ ...editForm, address_city: e.target.value })}
                     placeholder="City"
-                    className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                    className="w-full px-4 py-3 border border-slate-200 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none rounded-xl transition-colors"
                   />
                 </div>
                 <input
@@ -281,7 +276,7 @@ export default function ProfilePage() {
                   value={editForm.address_country}
                   onChange={(e) => setEditForm({ ...editForm, address_country: e.target.value })}
                   placeholder="Country"
-                  className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg"
+                  className="w-full px-4 py-3 border border-slate-200 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none rounded-xl transition-colors"
                 />
               </div>
             </div>
@@ -292,7 +287,7 @@ export default function ProfilePage() {
                 value={editForm.bio}
                 onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
                 placeholder="Tell us about yourself..."
-                className="w-full px-4 py-3 border border-gray-300 focus:border-signal-red focus:ring-1 focus:ring-signal-red focus:outline-none rounded-lg resize-none"
+                className="w-full px-4 py-3 border border-slate-200 focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none rounded-xl resize-none transition-colors"
               />
             </div>
           </div>
@@ -338,9 +333,8 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* Account Settings Card */}
-      <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-6">
-        <h2 className="text-2xl font-bold text-navy-900 mb-6">Account Settings</h2>
+      <div className="rounded-2xl bg-white p-6 lg:p-8 shadow-sm border border-slate-200/80 mb-6">
+        <h2 className="text-xl font-bold text-navy-900 mb-6">Account settings</h2>
         
         <div className="space-y-6">
           <div>
@@ -360,21 +354,20 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Password Reset Card */}
-      <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-2xl font-bold text-navy-900 mb-4">Password</h2>
-        <p className="text-sm text-slate-700 mb-6">
+      <div className="rounded-2xl bg-white p-6 lg:p-8 shadow-sm border border-slate-200/80">
+        <h2 className="text-xl font-bold text-navy-900 mb-4">Password</h2>
+        <p className="text-sm text-slate-600 mb-6">
           Click the button below to receive a password reset link via email.
         </p>
         <button
           onClick={requestPasswordReset}
           disabled={passwordLoading}
-          className="px-6 py-3 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 rounded-xl bg-signal-red text-white font-semibold hover:bg-signal-red/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {passwordLoading ? 'Sending...' : 'Send Password Reset Email'}
+          {passwordLoading ? 'Sending...' : 'Send password reset email'}
         </button>
         {passwordMessage && (
-          <div className={`mt-4 p-4 rounded-lg ${
+          <div className={`mt-4 p-4 rounded-xl ${
             passwordMessage.includes('Failed') 
               ? 'bg-red-50 border border-red-200 text-red-800' 
               : 'bg-green-50 border border-green-200 text-green-800'

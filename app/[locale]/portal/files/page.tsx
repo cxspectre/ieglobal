@@ -91,10 +91,10 @@ export default function ClientFilesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="min-h-[40vh] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-700">Loading files...</p>
+          <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Loading files...</p>
         </div>
       </div>
     );
@@ -102,21 +102,24 @@ export default function ClientFilesPage() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <h1 className="text-3xl font-bold text-navy-900 mb-8">Files & Documents</h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-navy-900 mb-2">Files</h1>
+        <p className="text-slate-600 text-sm">Shared documents from your IE Global team</p>
+      </div>
 
       {!profile?.client_id ? (
-        <div className="bg-white p-12 text-center rounded-lg border border-gray-200">
-          <p className="text-slate-700">Your account is not yet linked to a client. Please contact hello@ie-global.net if you need access.</p>
+        <div className="rounded-2xl bg-white p-12 text-center border border-slate-200/80 shadow-sm">
+          <p className="text-slate-600">Your account is not yet linked to a client. Contact <a href="mailto:hello@ie-global.net" className="text-signal-red font-medium hover:underline">hello@ie-global.net</a> for access.</p>
         </div>
       ) : files.length === 0 ? (
-            <div className="bg-white p-12 text-center">
-              <p className="text-slate-700">No files available yet. Your IE Global team will share files here as they become available.</p>
-            </div>
-          ) : (
-            <div className="bg-white">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-off-white border-b border-gray-200">
+        <div className="rounded-2xl bg-white p-12 text-center border border-slate-200/80 shadow-sm">
+          <p className="text-slate-600">No files yet. Your IE Global team will share files here as they become available.</p>
+        </div>
+      ) : (
+        <div className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50/80 border-b border-slate-200/80">
                     <tr>
                       <th className="px-6 py-4 text-left text-xs font-bold text-navy-900 uppercase tracking-wider">
                         File Name
@@ -132,9 +135,9 @@ export default function ClientFilesPage() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-slate-200/80">
                     {files.map((file) => (
-                      <tr key={file.id} className="hover:bg-off-white transition-colors duration-150">
+                      <tr key={file.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <svg className="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

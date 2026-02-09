@@ -3,7 +3,7 @@
 import { useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import PortalNav from './PortalNav';
+import PortalSidebar from './PortalSidebar';
 
 type PortalLayoutProps = {
   children: ReactNode;
@@ -12,7 +12,7 @@ type PortalLayoutProps = {
 
 export default function PortalLayout({ children, userType }: PortalLayoutProps) {
   const [userName, setUserName] = useState('');
-  const [userRole, setUserRole] = useState<'admin' | 'employee' | 'client' | undefined>();
+  const [authChecked, setAuthChecked] = useState(false);
   const router = useRouter();
   const supabase = createBrowserClient();
 
@@ -22,7 +22,7 @@ export default function PortalLayout({ children, userType }: PortalLayoutProps) 
 
   const loadUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (!session) {
       router.push('/login');
       return;
@@ -36,8 +36,12 @@ export default function PortalLayout({ children, userType }: PortalLayoutProps) 
 
     if (profile) {
       setUserName(profile.full_name);
-      setUserRole(profile.role);
+      if (profile.role !== 'client') {
+        router.replace('/dashboard');
+        return;
+      }
     }
+    setAuthChecked(true);
   };
 
   const handleLogout = async () => {
@@ -45,18 +49,25 @@ export default function PortalLayout({ children, userType }: PortalLayoutProps) 
     router.push('/login');
   };
 
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-off-white">
-      <PortalNav 
-        userType={userType} 
-        userName={userName}
-        userRole={userRole}
-        onLogout={handleLogout}
-      />
-      <main className="p-8">
-        {children}
+    <div className="min-h-screen bg-slate-100">
+      <PortalSidebar userName={userName} onLogout={handleLogout} />
+      <main className="lg:pl-64 min-h-screen">
+        <div className="pt-16 lg:pt-0 p-6 lg:p-8">
+          {children}
+        </div>
       </main>
     </div>
   );
 }
-

@@ -75,7 +75,7 @@ export default function Hero({
       )}
     >
       {/* Background Pattern Overlay */}
-      <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5" />
+      <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "url('/grid-pattern.svg')" }} />
 
       <div className="container-wide relative z-10">
         <motion.div

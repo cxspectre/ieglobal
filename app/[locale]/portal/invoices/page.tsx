@@ -63,10 +63,10 @@ export default function ClientInvoicesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-off-white">
+      <div className="min-h-[40vh] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-700">Loading invoices...</p>
+          <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-500 text-sm">Loading invoices...</p>
         </div>
       </div>
     );
@@ -82,15 +82,17 @@ export default function ClientInvoicesPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-navy-900 mb-2">Invoices</h1>
-      <p className="text-slate-600 text-sm mb-8">View and download your invoices</p>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-navy-900 mb-2">Invoices</h1>
+        <p className="text-slate-600 text-sm">View and download your invoices</p>
+      </div>
 
       {!profile?.client_id ? (
-        <div className="rounded-2xl bg-white p-12 text-center border border-slate-200 shadow-sm">
+        <div className="rounded-2xl bg-white p-12 text-center border border-slate-200/80 shadow-sm">
           <p className="text-slate-600">Your account is not yet linked to a client. Contact <a href="mailto:hello@ie-global.net" className="text-signal-red font-medium hover:underline">hello@ie-global.net</a> for access.</p>
         </div>
       ) : invoices.length === 0 ? (
-        <div className="rounded-2xl bg-white p-16 text-center border border-slate-200 shadow-sm">
+        <div className="rounded-2xl bg-white p-16 text-center border border-slate-200/80 shadow-sm">
           <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
             <svg className="w-7 h-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -106,7 +108,7 @@ export default function ClientInvoicesPage() {
             return (
               <div
                 key={invoice.id}
-                className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden hover:border-slate-300 hover:shadow-md transition-all"
               >
                 <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                   <div className="flex-1 min-w-0">

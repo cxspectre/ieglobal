@@ -159,6 +159,22 @@ Submitted: Nov 11, 2025, 3:45 PM ET
 
 ---
 
+## Password Reset – Supabase Redirect URLs
+
+The branded password reset email sends a link that goes through Supabase Auth. For the link to land on the reset page (not the homepage), add these URLs to Supabase:
+
+1. Go to **Supabase Dashboard** → **Authentication** → **URL Configuration**
+2. Under **Redirect URLs**, add:
+   - `https://dashboard.ie-global.net/en/reset-password`
+   - `https://dashboard.ie-global.net/de/reset-password`
+   - `https://ie-global.net/en/reset-password`
+   - `https://ie-global.net/de/reset-password`
+3. Or use wildcards: `https://dashboard.ie-global.net/**` and `https://ie-global.net/**`
+
+Without these, Supabase will redirect to the Site URL (homepage) instead of the reset page.
+
+---
+
 **Your contact form is ready to go live!** 🚀
 
 Questions? Check: https://resend.com/docs

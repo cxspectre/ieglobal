@@ -43,7 +43,7 @@ export default async function CaseStudyPage({ params }: Props) {
       {/* Hero - Dark & Dramatic Like Other Pages */}
       <section className="relative pt-32 pb-24 bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 text-white overflow-hidden">
         {/* Background pattern */}
-        <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-5" />
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "url('/grid-pattern.svg')" }} />
         <div className="absolute inset-0 bg-black/30" />
         
         <div className="container-wide max-w-5xl relative z-10">
