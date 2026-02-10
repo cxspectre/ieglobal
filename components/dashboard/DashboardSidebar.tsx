@@ -41,6 +41,7 @@ const mainNavSections: NavSection[] = [
       { href: '/dashboard/invoices', label: 'Invoices', icon: DocumentIcon, exactMatch: false, adminOnly: true },
       { href: '/dashboard/revenue', label: 'Revenue', icon: ChartIcon, exactMatch: false, adminOnly: true },
       { href: '/dashboard/finance', label: 'Finance', icon: BankIcon, exactMatch: false, adminOnly: true },
+      { href: '/dashboard/boekhoud', label: 'Boekhoud', icon: DocumentIcon, exactMatch: false, adminOnly: true },
     ],
   },
 ];
