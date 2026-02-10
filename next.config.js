@@ -17,7 +17,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vuanlnmdlcgeiarxeklu.supabase.co').hostname,
+        hostname: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cdn.ie-global.net').hostname,
         pathname: '/storage/v1/object/public/**',
       },
     ],
