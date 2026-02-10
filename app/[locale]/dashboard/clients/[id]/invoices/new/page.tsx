@@ -38,6 +38,62 @@ export default function NewInvoicePage() {
     vat_rate: '21.00',
   });
 
+  // Generate sequential invoice number in format INV-YYYY-MM-XXX
+  const generateInvoiceNumber = async (issueDateStr: string) => {
+    const issueDate = issueDateStr ? new Date(issueDateStr) : new Date();
+    const year = issueDate.getFullYear();
+    const month = String(issueDate.getMonth() + 1).padStart(2, '0');
+    const prefix = `INV-${year}-${month}-`;
+
+    try {
+      const { data, error } = await (supabase as any)
+        .from('invoices')
+        .select('invoice_number')
+        .like('invoice_number', `${prefix}%`);
+
+      if (error) {
+        console.error('Error fetching existing invoice numbers:', error);
+        const fallbackSuffix = Date.now().toString().slice(-4);
+        return `${prefix}${fallbackSuffix}`;
+      }
+
+      let nextSequence = 1;
+
+      if (data && data.length > 0) {
+        const numbers = (data as any[])
+          .map((row) => (row.invoice_number || '').replace(prefix, ''))
+          .map((suffix) => parseInt(suffix, 10))
+          .filter((n) => !Number.isNaN(n));
+
+        if (numbers.length > 0) {
+          nextSequence = Math.max(...numbers) + 1;
+        }
+      }
+
+      const sequenceStr = String(nextSequence).padStart(3, '0');
+      return `${prefix}${sequenceStr}`;
+    } catch (e) {
+      console.error('Unexpected error generating invoice number:', e);
+      const fallbackSuffix = Date.now().toString().slice(-4);
+      return `${prefix}${fallbackSuffix}`;
+    }
+  };
+
+  // Auto-generate invoice number on initial load / when issue date changes
+  useEffect(() => {
+    const ensureInvoiceNumber = async () => {
+      if (!formData.invoice_number && formData.issue_date) {
+        const generated = await generateInvoiceNumber(formData.issue_date);
+        setFormData((prev) => ({
+          ...prev,
+          invoice_number: generated,
+        }));
+      }
+    };
+
+    void ensureInvoiceNumber();
+  }, [formData.issue_date, formData.invoice_number]);
+
   // Calculate VAT breakdown
   const calculateVAT = () => {
     const amount = parseFloat(formData.amount) || 0;
@@ -98,12 +154,22 @@ export default function NewInvoicePage() {
       const vatRate = parseFloat(formData.vat_rate) || 21;
       const { subtotal, vatAmount, totalAmount } = vatBreakdown;
 
+      // Ensure we have an invoice number (auto-generate if missing)
+      let invoiceNumber = formData.invoice_number;
+      if (!invoiceNumber) {
+        invoiceNumber = await generateInvoiceNumber(formData.issue_date);
+        setFormData((prev) => ({
+          ...prev,
+          invoice_number: invoiceNumber,
+        }));
+      }
+
       // Generate customer number if not exists
       const customerNumber = clientData.customer_number || `2025-${String(Math.floor(Math.random() * 900) + 100)}`;
       
       // Generate PDF with proper address structure
       const pdfBlob = await generateInvoicePDF({
-        invoiceNumber: formData.invoice_number,
+        invoiceNumber,
         customerNumber: customerNumber,
         issueDate: formData.issue_date,
         dueDate: formData.due_date,
@@ -126,7 +192,7 @@ export default function NewInvoicePage() {
       });
 
       // Upload PDF to storage
-      const pdfFileName = `${formData.invoice_number}.pdf`;
+      const pdfFileName = `${invoiceNumber}.pdf`;
       const pdfPath = `${params.id}/invoices/${pdfFileName}`;
 
       const { error: uploadError } = await supabase.storage
@@ -148,7 +214,7 @@ export default function NewInvoicePage() {
         .insert({
           client_id: params.id as string,
           project_id: formData.project_id || null,
-          invoice_number: formData.invoice_number,
+          invoice_number: invoiceNumber,
           amount: totalAmount,
           currency: 'EUR',
           status: 'pending',
@@ -194,7 +260,7 @@ export default function NewInvoicePage() {
         client_id: params.id as string,
         user_id: session.user.id,
         action_type: 'invoice_created',
-        description: `Invoice ${formData.invoice_number} created for €${totalAmount.toFixed(2)} (incl. VAT)`,
+        description: `Invoice ${invoiceNumber} created for €${totalAmount.toFixed(2)} (incl. VAT)`,
       } as any);
 
       setLoading(false);
@@ -247,7 +313,7 @@ export default function NewInvoicePage() {
               required
               value={formData.invoice_number}
               onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
-              placeholder="e.g., INV-2024-001"
+              placeholder="e.g., INV-2026-02-001 (auto-generated)"
               className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none transition-colors"
             />
           </div>
