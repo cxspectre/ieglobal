@@ -141,7 +141,7 @@ export default function ClientMessagesPage() {
   const currentProject = projects.find(p => p.id === selectedProjectId);
 
   return (
-    <div className="max-w-5xl mx-auto flex flex-col h-full">
+    <div className="max-w-5xl mx-auto flex flex-col h-full pt-12 lg:pt-16">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-navy-900 mb-2">Messages</h1>
         <p className="text-slate-600 text-sm">Communicate with your IE Global team</p>

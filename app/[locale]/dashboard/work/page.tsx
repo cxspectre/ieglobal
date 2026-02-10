@@ -204,7 +204,7 @@ export default function WorkPage() {
   };
 
   return (
-    <div>
+    <div className="pt-12 lg:pt-16">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-navy-900">Case Studies</h1>

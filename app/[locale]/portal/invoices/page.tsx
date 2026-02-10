@@ -80,8 +80,17 @@ export default function ClientInvoicesPage() {
     }
   };
 
+  const getEmotionalLabel = (status: string) => {
+    switch (status) {
+      case 'paid': return 'Invoice issued — project delivery complete';
+      case 'overdue': return 'Invoice issued — payment overdue';
+      case 'pending': return 'Invoice issued — payment due';
+      default: return 'Invoice issued — payment due';
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pt-12 lg:pt-16">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-navy-900 mb-2">Invoices</h1>
         <p className="text-slate-600 text-sm">View and download your invoices</p>
@@ -108,7 +117,11 @@ export default function ClientInvoicesPage() {
             return (
               <div
                 key={invoice.id}
-                className="rounded-2xl bg-white border border-slate-200/80 shadow-sm overflow-hidden hover:border-slate-300 hover:shadow-md transition-all"
+                className={`rounded-2xl border shadow-sm overflow-hidden transition-all ${
+                  invoice.status === 'paid'
+                    ? 'bg-emerald-50/50 border-emerald-200 hover:border-emerald-300 hover:shadow-md'
+                    : 'bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-md'
+                }`}
               >
                 <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                   <div className="flex-1 min-w-0">
@@ -118,6 +131,7 @@ export default function ClientInvoicesPage() {
                         {invoice.status.toUpperCase()}
                       </span>
                     </div>
+                    <p className="text-sm font-medium text-slate-700 mb-2">{getEmotionalLabel(invoice.status)}</p>
                     {invoice.description && (
                       <p className="text-slate-600 text-sm mb-3 line-clamp-2">{invoice.description}</p>
                     )}

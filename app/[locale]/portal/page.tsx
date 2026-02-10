@@ -16,6 +16,16 @@ type Project = {
   expected_completion_date: string | null;
 };
 
+type Invoice = {
+  id: string;
+  project_id: string | null;
+  invoice_number: string;
+  amount: number;
+  status: string;
+  due_date: string;
+  paid_date: string | null;
+};
+
 type Activity = {
   id: string;
   description: string;
@@ -26,6 +36,8 @@ export default function PortalPage() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [blockedProjectIds, setBlockedProjectIds] = useState<Set<string>>(new Set());
   const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
   const router = useRouter();
   const supabase = createBrowserClient();
@@ -58,20 +70,18 @@ export default function PortalPage() {
       setUser({ ...session.user, profile });
 
       if (profile.client_id) {
-        const { data: projectsData } = await (supabase as any)
-          .from('projects')
-          .select('*')
-          .eq('client_id', profile.client_id)
-          .order('created_at', { ascending: false });
-        if (projectsData) setProjects(projectsData);
+        const [projectsRes, invoicesRes, blockedRes, activityRes] = await Promise.all([
+          (supabase as any).from('projects').select('*').eq('client_id', profile.client_id).order('created_at', { ascending: false }),
+          supabase.from('invoices').select('id, project_id, invoice_number, amount, status, due_date, paid_date').eq('client_id', profile.client_id).order('issue_date', { ascending: false }),
+          (supabase as any).from('milestones').select('project_id').eq('status', 'blocked'),
+          (supabase as any).from('activities').select('*').eq('client_id', profile.client_id).order('created_at', { ascending: false }).limit(5),
+        ]);
 
-        const { data: activityData } = await (supabase as any)
-          .from('activities')
-          .select('*')
-          .eq('client_id', profile.client_id)
-          .order('created_at', { ascending: false })
-          .limit(5);
-        if (activityData) setRecentActivity(activityData);
+        if (projectsRes.data) setProjects(projectsRes.data);
+        if (invoicesRes.data) setInvoices(invoicesRes.data as Invoice[]);
+        const blocked = new Set<string>((blockedRes.data || []).map((m: { project_id: string }) => m.project_id).filter(Boolean));
+        setBlockedProjectIds(blocked);
+        if (activityRes.data) setRecentActivity(activityRes.data);
       }
 
       setLoading(false);
@@ -161,44 +171,82 @@ export default function PortalPage() {
             >
               <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Your projects</h2>
               <div className="space-y-4">
-                {projects.map((project) => (
-                  <div
-                    key={project.id}
-                    className="p-5 rounded-xl border border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50 transition-colors"
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                {projects.map((project) => {
+                  const isCompleted = project.progress_percentage >= 100 || project.status === 'completed';
+                  const isSlowed = project.status === 'on_hold' || blockedProjectIds.has(project.id);
+                  const projectInvoices = invoices.filter((i) => i.project_id === project.id);
+                  const hasPendingInvoice = projectInvoices.some((i) => ['pending', 'overdue'].includes(i.status));
+                  const hasPaidInvoice = projectInvoices.some((i) => i.status === 'paid');
+
+                  return (
+                    <div
+                      key={project.id}
+                      className="p-5 rounded-xl border border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50 transition-colors"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-navy-900">{project.name}</h3>
+                          {project.description && (
+                            <p className="text-slate-600 text-sm mt-1">{project.description}</p>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`px-2 py-1 text-[10px] font-semibold rounded border ${
+                            isSlowed ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          }`}>
+                            Project pace: {isSlowed ? 'Slowed (waiting on client)' : 'On track'}
+                          </span>
+                          <span className={`px-3 py-1.5 text-xs font-semibold rounded-lg border ${statusStyle(project.status)}`}>
+                            {project.status.replace('_', ' ')}
+                          </span>
+                        </div>
+                      </div>
+                      {(project.start_date || project.expected_completion_date) && (
+                        <div className="flex flex-wrap gap-4 text-xs text-slate-500 mb-3">
+                          {project.start_date && <span>Started: {new Date(project.start_date).toLocaleDateString()}</span>}
+                          {project.expected_completion_date && (
+                            <span>Expected: {new Date(project.expected_completion_date).toLocaleDateString()}</span>
+                          )}
+                        </div>
+                      )}
                       <div>
-                        <h3 className="text-lg font-bold text-navy-900">{project.name}</h3>
-                        {project.description && (
-                          <p className="text-slate-600 text-sm mt-1">{project.description}</p>
-                        )}
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-slate-600">Progress</span>
+                          <span className="text-lg font-bold text-navy-900">{project.progress_percentage}%</span>
+                        </div>
+                        <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-signal-red rounded-full transition-all duration-500"
+                            style={{ width: `${project.progress_percentage}%` }}
+                          />
+                        </div>
                       </div>
-                      <span className={`px-3 py-1.5 text-xs font-semibold rounded-lg border ${statusStyle(project.status)}`}>
-                        {project.status.replace('_', ' ')}
-                      </span>
+
+                      {/* Next steps — when project hits 100%, transition instead of dead end */}
+                      {isCompleted && (
+                        <div className="mt-4 pt-4 border-t border-slate-100 rounded-xl bg-slate-50/80 p-4">
+                          <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">Next steps</p>
+                          {hasPaidInvoice ? (
+                            <p className="text-sm text-slate-700 mb-2">Project delivered — feedback closes the loop.</p>
+                          ) : hasPendingInvoice ? (
+                            <p className="text-sm text-slate-700 mb-2">Project delivered — invoice issued, payment due to close out.</p>
+                          ) : (
+                            <p className="text-sm text-slate-700 mb-2">Project delivered — invoice will follow shortly.</p>
+                          )}
+                          <Link
+                            href="/portal/invoices"
+                            className="inline-flex items-center gap-2 text-sm font-semibold text-signal-red hover:underline"
+                          >
+                            View invoices
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </Link>
+                        </div>
+                      )}
                     </div>
-                    {(project.start_date || project.expected_completion_date) && (
-                      <div className="flex flex-wrap gap-4 text-xs text-slate-500 mb-3">
-                        {project.start_date && <span>Started: {new Date(project.start_date).toLocaleDateString()}</span>}
-                        {project.expected_completion_date && (
-                          <span>Expected: {new Date(project.expected_completion_date).toLocaleDateString()}</span>
-                        )}
-                      </div>
-                    )}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-slate-600">Progress</span>
-                        <span className="text-lg font-bold text-navy-900">{project.progress_percentage}%</span>
-                      </div>
-                      <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-signal-red rounded-full transition-all duration-500"
-                          style={{ width: `${project.progress_percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           )}

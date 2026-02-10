@@ -489,7 +489,7 @@ export default function CommandCenterPage() {
                 </div>
                 <div className="p-3 bg-off-white rounded-lg">
                   <p className="text-xs text-slate-600 mb-1 uppercase tracking-wide font-semibold">VAT</p>
-                  <p className="font-mono font-semibold text-navy-900">NL737599054B02</p>
+                  <p className="font-mono font-semibold text-navy-900">NL005254766B14</p>
                 </div>
                 <div className="p-3 bg-off-white rounded-lg">
                   <p className="text-xs text-slate-600 mb-1 uppercase tracking-wide font-semibold">Email</p>
@@ -663,7 +663,7 @@ export default function CommandCenterPage() {
               </div>
               <div className="p-4 bg-off-white rounded-lg">
                 <p className="text-xs text-slate-600 mb-2 uppercase tracking-wide font-semibold">BTW (VAT)</p>
-                <p className="text-lg font-bold text-navy-900 font-mono">NL737599054B02</p>
+                <p className="text-lg font-bold text-navy-900 font-mono">NL005254766B14</p>
               </div>
             </div>
           </div>

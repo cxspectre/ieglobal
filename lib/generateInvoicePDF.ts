@@ -273,7 +273,7 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Blob> {
   const footerColWidth = contentWidth / 4;
   const cols = [
     { title: 'IE GLOBAL', lines: ['Oder 20 Box 66193', '2491DC Den Haag', 'Netherlands'], x: marginLeft },
-    { title: 'LEGAL', lines: ['KvK: 97185515', 'BTW: NL737599054B02'], x: marginLeft + footerColWidth },
+    { title: 'LEGAL', lines: ['KvK: 97185515', 'BTW: NL005254766B14'], x: marginLeft + footerColWidth },
     { title: 'CONTACT', lines: ['Cassian Drefke', '+31 6 27 20 71 08', 'cdrefke@ie-global.net'], x: marginLeft + footerColWidth * 2 },
     { title: 'BANK', lines: ['BUNQ · IE Global', 'IBAN: NL50 BUNQ 2152 5367 38', 'BIC: BUNQNL2A'], x: marginLeft + footerColWidth * 3 },
   ];

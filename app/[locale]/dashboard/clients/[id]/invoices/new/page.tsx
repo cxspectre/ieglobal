@@ -210,7 +210,7 @@ export default function NewInvoicePage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto pt-12 lg:pt-16">
       {/* Header */}
       <div className="mb-8">
         <Link

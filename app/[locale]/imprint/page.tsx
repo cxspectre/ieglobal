@@ -63,7 +63,7 @@ export default function ImprintPage() {
                 </div>
                 <div className="flex items-start gap-4">
                   <span className="font-semibold text-navy-900 min-w-[200px]">VAT Number:</span>
-                  <span className="text-slate-700 font-mono">NL737599054B02</span>
+                  <span className="text-slate-700 font-mono">NL005254766B14</span>
                 </div>
               </div>
             </div>

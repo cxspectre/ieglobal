@@ -448,7 +448,7 @@ export async function generateServiceOverviewPDF(): Promise<Blob> {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
     doc.text('IE GLOBAL | ODER 20 Box 66193, 2491DC Den Haag, Netherlands', marginLeft, footerStartY + 6);
-    doc.text('KvK: 97185515 | BTW: NL737599054B02', marginLeft, footerStartY + 11);
+    doc.text('KvK: 97185515 | BTW: NL005254766B14', marginLeft, footerStartY + 11);
     doc.text('Contact: Cassian Drefke | +31 6 27 20 71 08 | cdrefke@ie-global.net', marginLeft, footerStartY + 16);
     
     // Page number

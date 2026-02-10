@@ -8,7 +8,7 @@ export const IE_GLOBAL = {
   name: 'IE Global',
   address: 'Oder 20 Box 66193, 2491DC Den Haag, Netherlands',
   kvk: '97185515',
-  btw: 'NL737599054B02',
+  btw: 'NL005254766B14',
   contact: 'Cassian Drefke',
   phone: '+31 6 27 20 71 08',
   email: 'cdrefke@ie-global.net',

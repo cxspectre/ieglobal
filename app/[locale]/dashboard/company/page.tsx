@@ -74,7 +74,7 @@ export default function CompanyPage() {
               </div>
               <div className="p-4 rounded-xl bg-slate-50">
                 <p className="text-xs text-slate-500 mb-1">VAT</p>
-                <p className="font-bold text-navy-900 font-mono">NL737599054B02</p>
+                <p className="font-bold text-navy-900 font-mono">NL005254766B14</p>
               </div>
             </div>
           </motion.div>

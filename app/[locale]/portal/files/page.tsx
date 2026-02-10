@@ -101,7 +101,7 @@ export default function ClientFilesPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto pt-12 lg:pt-16">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-navy-900 mb-2">Files</h1>
         <p className="text-slate-600 text-sm">Shared documents from your IE Global team</p>

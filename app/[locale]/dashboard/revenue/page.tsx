@@ -195,7 +195,7 @@ export default function RevenuePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto pt-12 lg:pt-16">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-navy-900 mb-2">Revenue Insights</h1>

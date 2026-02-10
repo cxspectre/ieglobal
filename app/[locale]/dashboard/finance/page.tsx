@@ -539,7 +539,7 @@ export default function FinancePage() {
   const thisMonthRevenue = monthlyData[monthlyData.length - 1]?.revenue || 0;
 
   return (
-    <div className="max-w-[1600px] mx-auto">
+    <div className="max-w-[1600px] mx-auto pt-12 lg:pt-16">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
