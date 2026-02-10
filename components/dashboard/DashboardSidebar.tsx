@@ -5,11 +5,44 @@ import { Link, usePathname } from '@/i18n/navigation';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
-const mainNavSections = [
+type UserRole = 'admin' | 'employee' | 'partner' | 'client';
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  exactMatch?: boolean;
+  adminOnly?: boolean;
+  roles?: UserRole[];
+};
+
+type NavSection = {
+  label: string | null;
+  items: NavItem[];
+};
+
+const mainNavSections: NavSection[] = [
   { label: null, items: [{ href: '/dashboard', label: 'Overview', icon: HomeIcon, exactMatch: true }] },
-  { label: 'Work', items: [{ href: '/dashboard/clients', label: 'Clients', icon: UsersIcon, exactMatch: false }, { href: '/dashboard/projects', label: 'Projects', icon: FolderIcon, exactMatch: false }, { href: '/dashboard/work', label: 'Case Studies', icon: BriefcaseIcon, exactMatch: false }, { href: '/dashboard/agreements', label: 'Agreements', icon: DocumentIcon, exactMatch: false }] },
+  {
+    label: 'Work',
+    items: [
+      { href: '/dashboard/clients', label: 'Clients', icon: UsersIcon, exactMatch: false },
+      { href: '/dashboard/projects', label: 'Projects', icon: FolderIcon, exactMatch: false },
+      { href: '/dashboard/work', label: 'Case Studies', icon: BriefcaseIcon, exactMatch: false },
+      { href: '/dashboard/agreements', label: 'Agreements', icon: DocumentIcon, exactMatch: false },
+      // Only admins & partners should see the potential clients section
+      { href: '/dashboard/potential-clients', label: 'Potential Clients', icon: TargetIcon, exactMatch: false, roles: ['admin', 'partner'] },
+    ],
+  },
   { label: 'People', items: [{ href: '/dashboard/team', label: 'Team', icon: UsersIcon, exactMatch: false }] },
-  { label: 'Finance', items: [{ href: '/dashboard/invoices', label: 'Invoices', icon: DocumentIcon, exactMatch: false, adminOnly: true }, { href: '/dashboard/revenue', label: 'Revenue', icon: ChartIcon, exactMatch: false, adminOnly: true }, { href: '/dashboard/finance', label: 'Finance', icon: BankIcon, exactMatch: false, adminOnly: true }] },
+  {
+    label: 'Finance',
+    items: [
+      { href: '/dashboard/invoices', label: 'Invoices', icon: DocumentIcon, exactMatch: false, adminOnly: true },
+      { href: '/dashboard/revenue', label: 'Revenue', icon: ChartIcon, exactMatch: false, adminOnly: true },
+      { href: '/dashboard/finance', label: 'Finance', icon: BankIcon, exactMatch: false, adminOnly: true },
+    ],
+  },
 ];
 
 const orgNavItems = [
@@ -66,6 +99,13 @@ function BankIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+function TargetIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6a6 6 0 106 6 6.007 6.007 0 00-6-6zm0 0V3m0 3a6 6 0 016 6h3M12 10a2 2 0 102 2 2.003 2.003 0 00-2-2z" />
+    </svg>
+  );
+}
 function BuildingIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -112,7 +152,7 @@ function XIcon({ className }: { className?: string }) {
 
 type DashboardSidebarProps = {
   userName?: string;
-  userRole?: 'admin' | 'employee' | 'partner' | 'client';
+  userRole?: UserRole;
   onLogout: () => void;
 };
 
@@ -125,9 +165,17 @@ export default function DashboardSidebar({ userName, userRole, onLogout }: Dashb
     if (item.exactMatch) return path === item.href || path === item.href + '/';
     return path === item.href || path.startsWith(item.href + '/');
   };
-  const filterItem = (item: { adminOnly?: boolean }) => !item.adminOnly || userRole === 'admin';
+  const filterItem = (item: { adminOnly?: boolean; roles?: UserRole[] }) => {
+    if (item.roles && userRole) {
+      return item.roles.includes(userRole);
+    }
+    if (item.adminOnly) {
+      return userRole === 'admin';
+    }
+    return true;
+  };
 
-  const renderNavItem = (item: { href: string; label: string; icon: React.ComponentType<{ className?: string }>; exactMatch?: boolean; adminOnly?: boolean }) => {
+  const renderNavItem = (item: NavItem) => {
     if (!filterItem(item)) return null;
     const active = isActive(item);
     const Icon = item.icon;
