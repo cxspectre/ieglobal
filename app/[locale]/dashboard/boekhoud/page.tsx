@@ -74,6 +74,7 @@ export default function BoekhoudPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showTransactionsModal, setShowTransactionsModal] = useState(false);
+  const [filedPeriods, setFiledPeriods] = useState<Set<string>>(new Set());
 
   const [reviewForm, setReviewForm] = useState({
     type: 'sales_invoice' as BoekhoudType,
@@ -204,14 +205,51 @@ export default function BoekhoudPage() {
     const missingTotals = approvedDocsRaw.filter(
       (doc) => doc.total_incl_vat == null
     ).length;
+    const blocking = missingDates + missingTotals > 0 || reviewDocs.length > 0;
+    const needsAttention = missingInvoiceNumber > 0;
+    const allGood = !blocking && !needsAttention;
 
     return {
       needsReview: reviewDocs.length,
       missingInvoiceNumber,
       missingDates,
       missingTotals,
+      severity: allGood ? 'green' as const : (blocking ? 'red' as const : 'orange' as const),
     };
   }, [approvedDocsRaw, reviewDocs]);
+
+  const isFiled = filedPeriods.has(periodLabel);
+  const toggleFiled = () => {
+    setFiledPeriods((prev) => {
+      const next = new Set(prev);
+      if (next.has(periodLabel)) next.delete(periodLabel);
+      else next.add(periodLabel);
+      return next;
+    });
+  };
+
+  const navigatePeriod = (dir: -1 | 1) => {
+    if (dir === -1) {
+      if (quarter === 1) {
+        setQuarter(4);
+        setYear(year - 1);
+      } else setQuarter(quarter - 1);
+    } else {
+      if (quarter === 4) {
+        setQuarter(1);
+        setYear(year + 1);
+      } else setQuarter(quarter + 1);
+    }
+  };
+
+  const vatByRateWithPct = useMemo(() => {
+    const totalVat = vatByRate.reduce((s, e) => s + e.vat, 0);
+    if (totalVat === 0) return [];
+    return vatByRate.map((e) => ({
+      ...e,
+      pct: Math.round((e.vat / totalVat) * 100),
+    }));
+  }, [vatByRate]);
 
   const loadDocuments = async () => {
     setLoading(true);
@@ -471,35 +509,28 @@ export default function BoekhoudPage() {
 
   return (
     <div className="max-w-[1600px] mx-auto pt-12 lg:pt-16 pb-16 px-4 lg:px-6">
-      {/* Hero header */}
+      {/* Hero — confident, decisive */}
       <div className="mb-8">
-        <div className="rounded-2xl bg-gradient-to-r from-navy-900 to-navy-800 text-white p-6 lg:p-8 shadow-md border border-white/10">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-white/60 font-semibold mb-1">
-                Admin · Finance
-              </p>
-              <h1 className="text-3xl lg:text-4xl font-bold mb-1">Boekhoud (VAT overview)</h1>
-              <p className="text-sm lg:text-base text-white/80 max-w-xl">
-                Turn a pile of invoices, receipts and bank PDFs into a clean quarterly VAT overview
-                and export pack for your accountant.
-              </p>
-            </div>
-            <div className="flex items-end gap-4">
-              <div className="px-4 py-3 rounded-xl bg-black/10 border border-white/10">
-                <p className="text-[11px] font-semibold text-white/70 uppercase tracking-wide mb-1">
-                  Current period
-                </p>
-                <p className="text-lg font-semibold">{periodLabel}</p>
-                <p className="text-xs text-white/60 mt-1">
-                  Basis:&nbsp;
-                  <span className="font-semibold">
-                    {basis === 'invoice' ? 'Invoice date' : 'Booked on'}
-                  </span>
-                </p>
-              </div>
-            </div>
+        <div className="rounded-2xl bg-gradient-to-r from-navy-900 to-navy-800 text-white p-6 lg:p-8 shadow-md border border-white/10 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.18em] text-white/60 font-semibold mb-1">
+              Admin · Finance
+            </p>
+            <h1 className="text-3xl lg:text-4xl font-bold mb-2">Boekhoud</h1>
+            <p className="text-base text-white/90 max-w-2xl font-medium">
+              Your quarterly VAT position — calculated, verified, export-ready.
+            </p>
           </div>
+          <button
+            type="button"
+            onClick={exportCsv}
+            className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/20 transition-colors"
+          >
+            Export CSV
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -510,180 +541,244 @@ export default function BoekhoudPage() {
         </div>
       )}
 
-      {/* Period filters + summary */}
-      <div className="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase mb-2">VAT period</p>
-          <div className="flex gap-3 items-center mb-2">
-            <select
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none"
-            >
-              {[year, year - 1, year - 2].map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-            <select
-              value={quarter}
-              onChange={(e) => setQuarter(Number(e.target.value))}
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 outline-none"
-            >
-              <option value={1}>Q1 (Jan–Mar)</option>
-              <option value={2}>Q2 (Apr–Jun)</option>
-              <option value={3}>Q3 (Jul–Sep)</option>
-              <option value={4}>Q4 (Oct–Dec)</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase">
-              Basis
-            </span>
+      {/* VAT POSITION — the boss */}
+      <div className="mb-8 rounded-2xl bg-navy-900 text-white p-6 lg:p-8 shadow-xl">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-white/60 mb-1">
+          VAT position — {periodLabel}
+        </p>
+        <p
+          className={`text-4xl lg:text-5xl font-extrabold tracking-tight ${
+            vatSummary.netVatDue > 0
+              ? 'text-amber-400'
+              : vatSummary.netVatDue < 0
+                ? 'text-emerald-400'
+                : 'text-white'
+          }`}
+        >
+          €{Math.abs(vatSummary.netVatDue).toFixed(2)}{' '}
+          <span className="text-xl lg:text-2xl font-semibold text-white/80">
+            {vatSummary.netVatDue > 0 ? 'payable' : vatSummary.netVatDue < 0 ? 'reclaim' : 'neutral'}
+          </span>
+        </p>
+        <p className="mt-2 text-sm text-white/70">
+          Everything else below supports this number.
+        </p>
+      </div>
+
+      {/* Period + export — outlined card */}
+      <div className="mb-8 rounded-xl border-2 border-slate-200 bg-white p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => setBasis('invoice')}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
-                basis === 'invoice'
-                  ? 'bg-navy-900 text-white border-navy-900'
-                  : 'bg-white text-slate-600 border-slate-200'
-              }`}
+              onClick={() => navigatePeriod(-1)}
+              className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold"
+              aria-label="Previous period"
             >
-              Invoice date
+              ‹
             </button>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 border border-slate-200">
+              <span className="font-bold text-navy-900">{periodLabel}</span>
+              <button
+                type="button"
+                onClick={toggleFiled}
+                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                  isFiled ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'
+                }`}
+              >
+                {isFiled ? 'Filed' : 'Not filed'}
+              </button>
+            </div>
             <button
               type="button"
-              onClick={() => setBasis('booked')}
-              className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
-                basis === 'booked'
-                  ? 'bg-navy-900 text-white border-navy-900'
-                  : 'bg-white text-slate-600 border-slate-200'
-              }`}
+              onClick={() => navigatePeriod(1)}
+              className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold"
+              aria-label="Next period"
             >
-              Booked on
+              ›
             </button>
           </div>
-          <p className="mt-3 text-sm text-slate-600">
-            Current view: <span className="font-semibold text-navy-900">{periodLabel}</span>
-          </p>
-          <button
-            onClick={exportCsv}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-navy-900 text-sm font-semibold text-navy-900 hover:bg-navy-900 hover:text-white transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 16V4m0 12l-3-3m3 3l3-3M4 20h16"
-              />
-            </svg>
-            Export CSV
-          </button>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Revenue (excl. VAT)</p>
-          <p className="text-2xl font-bold text-emerald-700">
-            €{vatSummary.revenueExclVat.toFixed(2)}
-          </p>
-          <p className="mt-3 text-xs text-slate-500">
-            VAT collected: <span className="font-semibold text-navy-900">€{vatSummary.vatCollected.toFixed(2)}</span>
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Expenses (excl. VAT)</p>
-          <p className="text-2xl font-bold text-red-700">
-            €{vatSummary.expensesExclVat.toFixed(2)}
-          </p>
-          <p className="mt-2 text-xs text-slate-500">
-            VAT paid: <span className="font-semibold text-navy-900">€{vatSummary.vatPaid.toFixed(2)}</span>
-          </p>
-          <p className="mt-2 text-xs text-slate-500">
-            Net VAT due:{' '}
-            <span
-              className={`font-semibold ${
-                vatSummary.netVatDue >= 0 ? 'text-navy-900' : 'text-emerald-700'
-              }`}
+          <div className="flex items-center gap-3">
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setBasis('invoice')}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold ${
+                  basis === 'invoice' ? 'bg-navy-900 text-white' : 'bg-slate-100 text-slate-600'
+                }`}
+              >
+                Invoice date
+              </button>
+              <button
+                type="button"
+                onClick={() => setBasis('booked')}
+                className={`px-3 py-1.5 rounded-full text-xs font-bold ${
+                  basis === 'booked' ? 'bg-navy-900 text-white' : 'bg-slate-100 text-slate-600'
+                }`}
+              >
+                Booked on
+              </button>
+            </div>
+            <button
+              onClick={exportCsv}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-navy-900 text-sm font-bold text-navy-900 hover:bg-navy-900 hover:text-white transition-colors"
             >
-              €{vatSummary.netVatDue.toFixed(2)}
-            </span>
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase mb-2">Data health</p>
-          <ul className="text-xs text-slate-600 space-y-1">
-            <li>
-              <span className="font-semibold text-amber-700">
-                {dataHealth.needsReview} in review
-              </span>{' '}
-              waiting to be approved
-            </li>
-            <li>
-              <span className="font-semibold">
-                {dataHealth.missingInvoiceNumber}
-              </span>{' '}
-              approved docs missing invoice number
-            </li>
-            <li>
-              <span className="font-semibold">
-                {dataHealth.missingDates}
-              </span>{' '}
-              approved docs missing invoice date
-            </li>
-            <li>
-              <span className="font-semibold">
-                {dataHealth.missingTotals}
-              </span>{' '}
-              approved docs missing total incl. VAT
-            </li>
-          </ul>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16V4m0 12l-3-3m3 3l3-3M4 20h16" />
+              </svg>
+              Export CSV
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* VAT rate breakdown */}
-      {vatByRate.length > 0 && (
-        <div className="mb-8 bg-white rounded-xl border border-slate-200 p-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase mb-2">VAT by rate</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {vatByRate.map((entry) => (
-              <div key={entry.rate} className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <p className="text-xs font-semibold text-slate-600 mb-1">
-                  {entry.rate}% rate
-                </p>
-                <p className="text-xs text-slate-500">Base</p>
-                <p className="text-sm font-semibold text-navy-900">
-                  €{entry.base.toFixed(2)}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">VAT</p>
-                <p className="text-sm font-semibold text-navy-900">
-                  €{entry.vat.toFixed(2)}
-                </p>
+      {/* Subordinate evidence — Revenue & Expenses, bolder typography */}
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+            Revenue excl. VAT
+          </p>
+          <p className="text-3xl font-extrabold text-emerald-700">
+            €{vatSummary.revenueExclVat.toFixed(2)}
+          </p>
+          <p className="mt-2 text-sm font-bold text-navy-900">
+            VAT collected €{vatSummary.vatCollected.toFixed(2)}
+          </p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Output VAT</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+            Expenses excl. VAT
+          </p>
+          <p className="text-3xl font-extrabold text-red-700">
+            €{vatSummary.expensesExclVat.toFixed(2)}
+          </p>
+          <p className="mt-2 text-sm font-bold text-navy-900">
+            VAT paid €{vatSummary.vatPaid.toFixed(2)}
+          </p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Input VAT</p>
+        </div>
+      </div>
+
+      {/* Bookkeeping Health — status card with severity */}
+      <div
+        className={`mb-8 rounded-xl border-2 p-5 ${
+          dataHealth.severity === 'green'
+            ? 'bg-emerald-50/50 border-emerald-200'
+            : dataHealth.severity === 'red'
+              ? 'bg-red-50/50 border-red-200'
+              : 'bg-amber-50/50 border-amber-200'
+        }`}
+      >
+        <div className="flex items-center gap-3 mb-3">
+          <span
+            className={`inline-flex w-3 h-3 rounded-full ${
+              dataHealth.severity === 'green'
+                ? 'bg-emerald-500'
+                : dataHealth.severity === 'red'
+                  ? 'bg-red-500'
+                  : 'bg-amber-500'
+            }`}
+          />
+          <h3 className="font-bold text-navy-900">Bookkeeping Health</h3>
+          <span
+            className={`text-[10px] font-bold uppercase ${
+              dataHealth.severity === 'green'
+                ? 'text-emerald-700'
+                : dataHealth.severity === 'red'
+                  ? 'text-red-700'
+                  : 'text-amber-700'
+            }`}
+          >
+            {dataHealth.severity === 'green' ? 'All good' : dataHealth.severity === 'red' ? 'Blocking VAT accuracy' : 'Needs attention'}
+          </span>
+        </div>
+        <ul className="text-sm text-slate-700 space-y-1">
+          {dataHealth.severity === 'green' ? (
+            <>
+              <li className="flex items-center gap-2">
+                <span className="text-emerald-500">✓</span> No documents pending review
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-emerald-500">✓</span> {approvedDocs.length} document{approvedDocs.length === 1 ? '' : 's'} booked in {periodLabel}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-emerald-500">✓</span> No approved docs missing invoice number
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                <span className="font-bold">{dataHealth.needsReview}</span> in review
+              </li>
+              <li>
+                <span className="font-bold">{dataHealth.missingInvoiceNumber}</span> approved docs missing invoice number
+              </li>
+              <li>
+                <span className="font-bold">{dataHealth.missingDates}</span> missing invoice date
+              </li>
+              <li>
+                <span className="font-bold">{dataHealth.missingTotals}</span> missing total incl. VAT
+              </li>
+            </>
+          )}
+        </ul>
+      </div>
+
+      {/* VAT by rate — horizontal bars + % (breakdown, not footer) */}
+      <div className="mb-8 rounded-xl border-2 border-slate-200 bg-white p-5">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-3">
+          VAT breakdown by rate
+        </p>
+        {vatByRateWithPct.length > 0 ? (
+          <div className="space-y-4">
+            {vatByRateWithPct.map((entry) => (
+              <div key={entry.rate}>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="font-bold text-navy-900">{entry.rate}%</span>
+                  <span className="font-bold text-navy-900">
+                    €{entry.base.toFixed(2)} base · €{entry.vat.toFixed(2)} VAT <span className="text-slate-500 font-normal">({entry.pct}% of total)</span>
+                  </span>
+                </div>
+                <div className="h-3 rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-navy-700"
+                    style={{ width: `${Math.max(entry.pct, 5)}%` }}
+                  />
+                </div>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-sm text-slate-500">No VAT by rate yet. Approve documents with amounts to see the breakdown.</p>
+        )}
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Upload card */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5">
-          <h2 className="text-lg font-bold text-navy-900 mb-1">Upload & ingest</h2>
-          <p className="text-sm text-slate-600 mb-3">
-            Drop in PDFs or images for sales invoices, purchase invoices, receipts and bank
-            statements.
-          </p>
-          <ul className="text-xs text-slate-500 mb-4 space-y-1">
-            <li>• Files go to the review queue as “needs review”</li>
-            <li>• Only approved docs show up in VAT totals</li>
-          </ul>
+      {/* Document pipeline — Upload → Review → Approved → Included in VAT */}
+      <div className="mb-6">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-3">Document pipeline</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 font-bold text-navy-900 text-sm">1</span>
+          <span className="font-bold text-navy-900">Upload</span>
+          <span className="text-slate-400">→</span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 font-bold text-navy-900 text-sm">2</span>
+          <span className="font-bold text-navy-900">Review</span>
+          <span className="text-slate-400">→</span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 font-bold text-navy-900 text-sm">3</span>
+          <span className="font-bold text-navy-900">Approved</span>
+          <span className="text-slate-400">→</span>
+          <span className="font-bold text-emerald-700">Included in VAT</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-5">
+          <h2 className="text-lg font-bold text-navy-900 mb-1">1. Upload</h2>
+          <p className="text-xs text-slate-600 mb-4">Files go to the review queue; only approved docs count toward VAT.</p>
           <button
             type="button"
             onClick={() => setShowUploadModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-signal-red text-white text-sm font-bold hover:bg-signal-red/90"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -701,23 +796,19 @@ export default function BoekhoudPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h2 className="text-lg font-bold text-navy-900">Review queue</h2>
+              <h2 className="text-lg font-bold text-navy-900">2. Review</h2>
               <p className="text-xs text-slate-600">
-                Sanity-check extraction before it hits your VAT view.
+                Enter dates, invoice numbers, and categories before approving.
               </p>
             </div>
             <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
               {reviewDocs.length} to review
             </span>
           </div>
-          <ul className="text-xs text-slate-500 mb-4 space-y-1">
-            <li>• Approve to include in VAT totals</li>
-            <li>• Reject to keep noisy docs out of your books</li>
-          </ul>
           <button
             type="button"
             onClick={() => setShowReviewModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-900 text-white text-sm font-bold hover:bg-slate-800"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -735,7 +826,7 @@ export default function BoekhoudPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-5">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-lg font-bold text-navy-900">Approved documents</h2>
+              <h2 className="text-lg font-bold text-navy-900">3. Approved → Included in VAT</h2>
               <p className="text-xs text-slate-600">
                 These rows power your VAT view for {periodLabel}.
               </p>
@@ -1157,7 +1248,7 @@ export default function BoekhoudPage() {
                       </label>
                     </div>
                   ) : (
-                    <>
+                    <label htmlFor="boekhoud-file-input" className="cursor-pointer flex flex-col items-center">
                       <svg
                         className="w-10 h-10 text-slate-400 mb-2"
                         fill="none"
@@ -1172,16 +1263,9 @@ export default function BoekhoudPage() {
                         />
                       </svg>
                       <p className="text-sm font-medium text-slate-700">
-                        {isDragging ? 'Drop files here' : 'Drag & drop PDFs or images here'}
+                        {isDragging ? 'Drop files here' : 'Drag PDFs or images here, or click to browse.'}
                       </p>
-                      <p className="text-xs text-slate-500 mt-1">or</p>
-                      <label
-                        htmlFor="boekhoud-file-input"
-                        className="mt-1 text-xs font-semibold text-signal-red hover:underline cursor-pointer"
-                      >
-                        browse to select
-                      </label>
-                    </>
+                    </label>
                   )}
                 </div>
               </div>
@@ -1200,7 +1284,7 @@ export default function BoekhoudPage() {
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-signal-red text-white text-sm font-semibold hover:bg-signal-red/90 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-signal-red text-white text-sm font-bold hover:bg-signal-red/90 disabled:opacity-50"
                 >
                   {uploading ? (
                     <>

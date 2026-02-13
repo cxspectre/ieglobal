@@ -139,14 +139,11 @@ export async function POST(req: NextRequest) {
     const arrayBuf = await pdfRes.arrayBuffer();
     const buffer = Buffer.from(arrayBuf);
 
-    // Lazy import so this stays server-only
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const pdfParse = (await import('pdf-parse')).default as (
-      data: Buffer,
-    ) => Promise<{ text: string }>;
-
-    const parsed = await pdfParse(buffer);
-    const base = extractFromText(parsed.text);
+    const { PDFParse } = await import('pdf-parse');
+    const parser = new PDFParse({ data: buffer });
+    const textResult = await parser.getText();
+    await parser.destroy();
+    const base = extractFromText(textResult.text);
 
     if (base.totalInclOriginal && base.currencyOriginal) {
       const fx = await convertToEur(
