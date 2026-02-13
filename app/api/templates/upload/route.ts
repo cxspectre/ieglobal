@@ -56,16 +56,41 @@ export async function POST(request: NextRequest) {
     const zip = new AdmZip(buffer);
     const entries = zip.getEntries();
 
-    const uploaded: string[] = [];
+    // Normalize entry names and find index.html root
+    const normalizedEntries: { path: string; content: Buffer }[] = [];
+    let stripPrefix = '';
+
     for (const entry of entries) {
       if (entry.isDirectory) continue;
-      let entryPath = entry.entryName.replace(/\\/g, '/').replace(/^[^/]+\//, '').replace(/\/+/g, '/');
-      if (!entryPath) continue;
-      const ext = getExt(entryPath);
+      const rawPath = entry.entryName.replace(/\\/g, '/').replace(/\/+/g, '/');
+      const ext = getExt(rawPath);
       if (!ALLOWED_EXTENSIONS.has(ext)) continue;
 
+      normalizedEntries.push({ path: rawPath, content: Buffer.from(entry.getData()) });
+    }
+
+    // Find index.html or index.htm to determine the root folder to strip
+    const indexEntry = normalizedEntries.find(
+      (e) => e.path.endsWith('/index.html') || e.path.endsWith('/index.htm') || e.path === 'index.html' || e.path === 'index.htm'
+    );
+    if (indexEntry) {
+      const idx = indexEntry.path.lastIndexOf('/');
+      stripPrefix = idx >= 0 ? indexEntry.path.slice(0, idx + 1) : '';
+    } else {
+      // No index file: strip first path segment (e.g. dist/, build/)
+      const first = normalizedEntries[0];
+      if (first) {
+        const idx = first.path.indexOf('/');
+        stripPrefix = idx >= 0 ? first.path.slice(0, idx + 1) : '';
+      }
+    }
+
+    const uploaded: string[] = [];
+    for (const { path: rawPath, content } of normalizedEntries) {
+      const entryPath = stripPrefix ? rawPath.replace(stripPrefix, '') : rawPath;
+      if (!entryPath || entryPath.startsWith('/')) continue;
+
       const storagePath = `${safeSlug}/${entryPath}`;
-      const content = entry.getData();
       const { error } = await supabase.storage
         .from('website-templates')
         .upload(storagePath, content, { upsert: true });

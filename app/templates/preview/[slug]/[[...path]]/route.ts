@@ -60,13 +60,26 @@ export async function GET(
       return new NextResponse('Template not found', { status: 404 });
     }
 
-    const { data: fileData, error } = await supabase.storage
+    let fileData: Blob | null = null;
+    let downloadError: { message: string } | null = null;
+    ({ data: fileData, error: downloadError } = await supabase.storage
       .from('website-templates')
-      .download(storagePath);
+      .download(storagePath));
 
-    if (error || !fileData) {
+    // Fallback to index.htm if index.html not found
+    if ((downloadError || !fileData) && filePath === 'index.html') {
+      const { data: altData, error: altError } = await supabase.storage
+        .from('website-templates')
+        .download(`${slug}/index.htm`);
+      if (!altError && altData) {
+        fileData = altData;
+        downloadError = null;
+      }
+    }
+
+    if (downloadError || !fileData) {
       if (filePath === 'index.html') {
-        return new NextResponse('Template has no index.html. Upload template files in the admin.', { status: 404 });
+        return new NextResponse('Template has no index.html. Upload a zip with your built site (index.html at root or in dist/build).', { status: 404 });
       }
       return new NextResponse('Not found', { status: 404 });
     }
