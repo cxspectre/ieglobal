@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import AdmZip from 'adm-zip';
+import type { Database } from '@/lib/supabase/client';
 
 const TEMPLATE_BASE_DOMAIN = process.env.NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN || 'templates.ie-global.net';
 
@@ -16,8 +18,29 @@ function getExt(path: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const authHeader = request.headers.get('authorization');
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+    let supabase;
+    let user: { id: string } | null = null;
+
+    if (bearerToken) {
+      supabase = createClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        { global: { headers: { Authorization: `Bearer ${bearerToken}` } } }
+      );
+      const { data: { user: u } } = await supabase.auth.getUser();
+      user = u;
+    }
+
+    if (!user) {
+      const serverClient = await createServerSupabaseClient();
+      const { data: { user: u } } = await serverClient.auth.getUser();
+      user = u;
+      supabase = serverClient;
+    }
+
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

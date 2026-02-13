@@ -225,6 +225,7 @@ export default function TemplatesPage() {
       const res = await fetch('/api/templates/upload', {
         method: 'POST',
         credentials: 'include',
+        headers: { Authorization: `Bearer ${session.access_token}` },
         body: formData,
       });
 
@@ -236,6 +237,8 @@ export default function TemplatesPage() {
         setZipFile(null);
         setAddStep(3);
         await loadTemplates();
+        setIsModalOpen(false);
+        setAddStep(1);
       }
     } catch {
       setError('Upload failed');
