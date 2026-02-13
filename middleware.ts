@@ -45,6 +45,11 @@ export default function middleware(request: NextRequest) {
     }
   }
 
+  // Main site: skip i18n for static assets (logo, images, etc.) so Next.js serves them from public
+  if (url.pathname.includes('.')) {
+    return NextResponse.next();
+  }
+
   return intlMiddleware(request);
 }
 
