@@ -1,8 +1,17 @@
-import { createServerSupabaseClient } from './supabase/server';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from './supabase/client';
+
+function getTemplatesSupabase() {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 export type WebsiteTemplate = {
   id: string;
   name: string;
+  slug: string | null;
   description: string | null;
   category: string;
   template_url: string;
@@ -13,10 +22,10 @@ export type WebsiteTemplate = {
 };
 
 export async function getPublishedTemplates(): Promise<WebsiteTemplate[]> {
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await (supabase as any)
+  const supabase = getTemplatesSupabase();
+  const { data, error } = await supabase
     .from('website_templates')
-    .select('id, name, description, category, template_url, thumbnail_url, sort_order')
+    .select('id, name, slug, description, category, template_url, thumbnail_url, sort_order')
     .eq('published', true)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: false });
@@ -26,4 +35,17 @@ export async function getPublishedTemplates(): Promise<WebsiteTemplate[]> {
     return [];
   }
   return data ?? [];
+}
+
+export async function getTemplateBySlug(slug: string): Promise<WebsiteTemplate | null> {
+  const supabase = getTemplatesSupabase();
+  const { data, error } = await supabase
+    .from('website_templates')
+    .select('id, name, slug, description, category, template_url, thumbnail_url, sort_order')
+    .eq('published', true)
+    .eq('slug', slug)
+    .single();
+
+  if (error || !data) return null;
+  return data;
 }

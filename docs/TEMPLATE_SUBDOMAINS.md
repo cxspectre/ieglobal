@@ -1,46 +1,46 @@
-# Template subdomains (slug.ie-global.net)
+# Template subdomains (slug.templates.ie-global.net)
 
-Templates are served at branded subdomains like `consulting.ie-global.net`.
+Templates are served at branded subdomains like `aura-ai.templates.ie-global.net`.
 
-## DNS setup (Cloudflare or any DNS host)
+## Subdomain delegation (one-time setup)
 
-Your domain is managed in **Cloudflare** (or your DNS provider)—add the records there. Vercel only needs the domain added so it accepts the traffic.
+Vercel **does not support wildcard domains with external DNS**. To get automatic wildcards without manual DNS per template, we delegate only the `templates` subdomain to Vercel via NS records. Cloudflare keeps the main domain; Vercel manages `*.templates.ie-global.net`.
 
-### 1. Add domain in Vercel
+### 1. Add NS records in Cloudflare
 
-Project Settings → Domains → Add `*.ie-global.net`. Vercel will show the target to use.
+Cloudflare → DNS → Records → Add record (add both):
 
-### 2. Add CNAME in Cloudflare
+| Type | Name      | Content              | Proxy   |
+|------|-----------|----------------------|---------|
+| NS   | `templates` | `ns1.vercel-dns.com` | N/A     |
+| NS   | `templates` | `ns2.vercel-dns.com` | N/A     |
 
-In Cloudflare → DNS → Records:
+### 2. Add domains in Vercel
 
-| Type  | Name | Target                    | Proxy          |
-|-------|------|---------------------------|----------------|
-| CNAME | `*`  | `cname.vercel-dns.com`    | DNS only (grey)|
+Project Settings → Domains → Add:
 
-Use the exact target Vercel shows for `*.ie-global.net`.
+1. `templates.ie-global.net`
+2. `*.templates.ie-global.net` (wildcard)
 
-**Proxy:** Turn the cloud off (grey) for this record so Vercel can manage SSL.
-
-**Note:** `www` and `dashboard` may have their own records. The wildcard `*` applies to subdomains not explicitly defined.
+Vercel will verify via the NS records. Once configured, all subdomains (e.g. `aura-ai.templates.ie-global.net`) work automatically with no per-template DNS changes.
 
 ## Environment
 
-Optional in `.env.local`:
+In Vercel (and optionally `.env.local`):
 
 ```
-NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN=ie-global.net
+NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN=templates.ie-global.net
 ```
 
-Defaults to `ie-global.net` if not set.
+Defaults to `templates.ie-global.net` if not set.
 
 ## Flow
 
-1. **Admin:** Add template with slug (e.g. `consulting`), upload zip of built site
+1. **Admin:** Add template with slug (e.g. `aura-ai`), upload zip of built site
 2. **Storage:** Files stored in Supabase `website-templates` bucket at `{slug}/index.html`, `{slug}/style.css`, etc.
-3. **Request:** `consulting.ie-global.net/` → middleware rewrites to `/templates/preview/consulting/`
+3. **Request:** `aura-ai.templates.ie-global.net/` → middleware rewrites to `/templates/preview/aura-ai/`
 4. **Route:** Fetches from storage, injects `<base href>` for relative paths, serves content
 
 ## Local testing
 
-Visit `http://localhost:3000/templates/preview/consulting` (no subdomain needed) to test a template.
+Visit `http://localhost:3000/templates/preview/aura-ai` (no subdomain needed) to test a template.

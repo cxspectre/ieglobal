@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/lib/supabase/client';
 
-const TEMPLATE_BASE_DOMAIN = process.env.NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN || 'ie-global.net';
+const TEMPLATE_BASE_DOMAIN = process.env.NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN || 'templates.ie-global.net';
+
+function getSupabase() {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 const MIME_TYPES: Record<string, string> = {
   '.html': 'text/html',
@@ -39,9 +47,9 @@ export async function GET(
       : 'index.html';
     const storagePath = `${slug}/${filePath}`;
 
-    const supabase = await createServerSupabaseClient();
+    const supabase = getSupabase();
 
-    const { data: template } = await (supabase as any)
+    const { data: template } = await supabase
       .from('website_templates')
       .select('id')
       .eq('slug', slug)

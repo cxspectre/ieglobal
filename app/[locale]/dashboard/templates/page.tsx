@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { motion } from 'framer-motion';
 
-const TEMPLATE_BASE_DOMAIN = process.env.NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN || 'ie-global.net';
+const TEMPLATE_BASE_DOMAIN = process.env.NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN || 'templates.ie-global.net';
 
 const TEMPLATE_CATEGORIES = [
   'Corporate',
@@ -282,7 +282,7 @@ export default function TemplatesPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-slate-500 font-semibold mb-1">Work · Content</p>
         <h1 className="text-3xl lg:text-4xl font-bold text-navy-900">Website Templates</h1>
         <p className="text-slate-600 mt-2 max-w-2xl">
-          Add templates and upload a zip of your built site. Each template gets a branded subdomain: <code className="text-sm bg-slate-100 px-1 rounded">slug.ie-global.net</code>
+          Add templates and upload a zip of your built site. Each template gets a branded subdomain: <code className="text-sm bg-slate-100 px-1 rounded">slug.templates.ie-global.net</code>
         </p>
       </div>
 

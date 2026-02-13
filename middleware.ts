@@ -8,7 +8,7 @@ const intlMiddleware = createMiddleware(routing);
 const TEMPLATE_EXCLUDED_SUBDOMAINS = ['www', 'dashboard', 'api'];
 
 function isTemplateSubdomain(host: string): string | null {
-  const baseDomain = process.env.NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN || 'ie-global.net';
+  const baseDomain = process.env.NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN || 'templates.ie-global.net';
   if (host === baseDomain || !host.endsWith(`.${baseDomain}`)) return null;
   const subdomain = host.split('.')[0];
   if (!subdomain || TEMPLATE_EXCLUDED_SUBDOMAINS.includes(subdomain)) return null;
@@ -24,7 +24,7 @@ export default function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Template subdomain (e.g. consulting.ie-global.net) → serve template preview
+  // Template subdomain (e.g. aura-ai.templates.ie-global.net) → serve template preview
   const templateSlug = isTemplateSubdomain(host);
   if (templateSlug) {
     const pathname = url.pathname === '/' ? '' : url.pathname;

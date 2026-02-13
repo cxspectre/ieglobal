@@ -23,6 +23,7 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhY
 RESEND_API_KEY=re_U499yp9i_939objuKWYtn4AZYkeUEY1tK
 
 NEXT_PUBLIC_SITE_URL=https://ie-global.net
+NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN=templates.ie-global.net
 ```
 
 **Important:** Check ALL environments (Production, Preview, Development)

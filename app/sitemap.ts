@@ -1,8 +1,14 @@
 import { MetadataRoute } from 'next';
 import { getInsights } from '@/lib/mdx';
 import { getAllCaseStudies } from '@/lib/case-studies';
+import { getPublishedTemplates } from '@/lib/website-templates';
 
 const baseUrl = 'https://ie-global.net';
+
+function safeDate(value: string | Date | null | undefined): Date {
+  const d = value ? new Date(value) : new Date();
+  return Number.isNaN(d.getTime()) ? new Date() : d;
+}
 
 const serviceSlugs = [
   'strategy-and-direction',
@@ -17,9 +23,10 @@ const serviceSlugs = [
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [caseStudies, insights] = await Promise.all([
+  const [caseStudies, insights, templates] = await Promise.all([
     getAllCaseStudies(),
     Promise.resolve(getInsights()),
+    getPublishedTemplates(),
   ]);
 
   // Static pages - high priority
@@ -49,7 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Case study pages
   const caseStudyPages: MetadataRoute.Sitemap = caseStudies.map((study) => ({
     url: `${baseUrl}/case-studies/${study.slug}`,
-    lastModified: new Date(study.date),
+    lastModified: safeDate(study.date),
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }));
@@ -57,11 +64,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Insight pages
   const insightPages: MetadataRoute.Sitemap = insights.map((insight) => ({
     url: `${baseUrl}/insights/${insight.slug}`,
-    lastModified: new Date(insight.date),
+    lastModified: safeDate(insight.date),
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }));
 
-  return [...staticPages, ...servicePages, ...caseStudyPages, ...insightPages];
+  // Template detail pages
+  const templatePages: MetadataRoute.Sitemap = templates
+    .filter((t) => t.slug)
+    .map((t) => ({
+      url: `${baseUrl}/templates/${t.slug}`,
+      lastModified: safeDate(t.created_at),
+      changeFrequency: 'monthly' as const,
+      priority: 0.7,
+    }));
+
+  return [...staticPages, ...servicePages, ...caseStudyPages, ...insightPages, ...templatePages];
 }
 
