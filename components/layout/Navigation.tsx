@@ -193,6 +193,12 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
               >
                 {t('work')}
               </Link>
+              <Link
+                href="/templates"
+                className={cn("text-sm font-medium transition-all duration-200", textColor)}
+              >
+                {t('templates')}
+              </Link>
 
               {/* Services Mega Menu */}
               <div
@@ -405,6 +411,13 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {t('work')}
+                </Link>
+                <Link
+                  href="/templates"
+                  className="block py-3 text-navy-900 hover:text-signal-red font-medium text-lg border-b border-gray-100"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {t('templates')}
                 </Link>
 
                 <div className="space-y-3 border-b border-gray-100 pb-4">

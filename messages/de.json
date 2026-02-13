@@ -1,6 +1,7 @@
 {
   "nav": {
     "work": "Arbeit",
+    "templates": "Vorlagen",
     "services": "Leistungen",
     "viewAllServices": "Alle Leistungen",
     "approach": "Vorgehen",
@@ -16,6 +17,7 @@
     "theTeam": "Das Team",
     "approach": "Vorgehen",
     "work": "Arbeit",
+    "templates": "Vorlagen",
     "services": "Leistungen",
     "careers": "Karriere",
     "contact": "Kontakt",

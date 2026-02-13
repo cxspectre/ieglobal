@@ -1,6 +1,7 @@
 {
   "nav": {
     "work": "Work",
+    "templates": "Templates",
     "services": "Services",
     "viewAllServices": "View All Services",
     "approach": "Approach",
@@ -16,6 +17,7 @@
     "theTeam": "The Team",
     "approach": "Approach",
     "work": "Work",
+    "templates": "Templates",
     "services": "Services",
     "careers": "Careers",
     "contact": "Contact",

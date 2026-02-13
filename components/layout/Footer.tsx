@@ -11,6 +11,7 @@ export default function Footer() {
     { key: 'theTeam', href: '/the-team' },
     { key: 'approach', href: '/approach' },
     { key: 'work', href: '/case-studies' },
+    { key: 'templates', href: '/templates' },
     { key: 'services', href: '/services' },
     { key: 'careers', href: '/careers' },
     { key: 'contact', href: '/contact' },
