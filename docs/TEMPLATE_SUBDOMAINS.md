@@ -44,3 +44,18 @@ Defaults to `templates.ie-global.net` if not set.
 ## Local testing
 
 Visit `http://localhost:3000/templates/preview/aura-ai` (no subdomain needed) to test a template.
+
+## Troubleshooting
+
+### Subdomain shows main IE Global site instead of template
+
+1. **Verify domains in Vercel:** Project → Settings → Domains. You must add:
+   - `templates.ie-global.net`
+   - `*.templates.ie-global.net`
+   Without these, requests to `auraai.templates.ie-global.net` may not reach the correct project.
+
+2. **Redeploy after adding env vars:** If you added `NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN`, redeploy for it to take effect.
+
+3. **Test direct URL:** Visit `https://ie-global.net/templates/preview/auraai`. If the template loads, the preview route works; the issue is subdomain routing. If you see "Template not found", check the template slug in the DB and storage.
+
+4. **Debug headers:** Visit `https://auraai.templates.ie-global.net/api/debug-host` to see what host headers Vercel passes. If `host` or `xForwardedHost` shows `auraai.templates.ie-global.net`, the middleware should detect it.

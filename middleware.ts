@@ -8,16 +8,22 @@ const intlMiddleware = createMiddleware(routing);
 const TEMPLATE_EXCLUDED_SUBDOMAINS = ['www', 'dashboard', 'api'];
 
 function isTemplateSubdomain(host: string): string | null {
-  const baseDomain = process.env.NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN || 'templates.ie-global.net';
-  if (host === baseDomain || !host.endsWith(`.${baseDomain}`)) return null;
-  const subdomain = host.split('.')[0];
+  const baseDomain = (process.env.NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN || 'templates.ie-global.net').toLowerCase();
+  const h = host.toLowerCase();
+  if (h === baseDomain || !h.endsWith(`.${baseDomain}`)) return null;
+  const subdomain = h.split('.')[0];
   if (!subdomain || TEMPLATE_EXCLUDED_SUBDOMAINS.includes(subdomain)) return null;
   return subdomain;
 }
 
 export default function middleware(request: NextRequest) {
-  const rawHost = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
-  const host = rawHost.split(':')[0];
+  // Vercel sets x-forwarded-host to the original requested host; host may be the internal host
+  const rawHost =
+    request.headers.get('x-forwarded-host') ||
+    request.headers.get('x-real-host') ||
+    request.headers.get('host') ||
+    '';
+  const host = rawHost.split(':')[0].toLowerCase().trim();
   const url = request.nextUrl.clone();
 
   // Template preview route - bypass i18n (no locale prefix)
@@ -25,7 +31,7 @@ export default function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Template subdomain (e.g. aura-ai.templates.ie-global.net) → serve template preview
+  // Template subdomain (e.g. auraai.templates.ie-global.net) → serve template preview
   const templateSlug = isTemplateSubdomain(host);
   if (templateSlug) {
     const pathname = url.pathname === '/' ? '' : url.pathname;
