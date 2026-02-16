@@ -16,7 +16,8 @@ function isTemplateSubdomain(host: string): string | null {
 }
 
 export default function middleware(request: NextRequest) {
-  const host = request.headers.get('host') || '';
+  const rawHost = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
+  const host = rawHost.split(':')[0];
   const url = request.nextUrl.clone();
 
   // Template preview route - bypass i18n (no locale prefix)

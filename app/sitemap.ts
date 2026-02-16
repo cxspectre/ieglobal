@@ -5,9 +5,9 @@ import { getPublishedTemplates } from '@/lib/website-templates';
 
 const baseUrl = 'https://ie-global.net';
 
-function safeDate(value: string | Date | null | undefined): Date {
+function toSafeISO(value: string | Date | null | undefined): string {
   const d = value ? new Date(value) : new Date();
-  return Number.isNaN(d.getTime()) ? new Date() : d;
+  return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
 }
 
 const serviceSlugs = [
@@ -56,7 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Case study pages
   const caseStudyPages: MetadataRoute.Sitemap = caseStudies.map((study) => ({
     url: `${baseUrl}/case-studies/${study.slug}`,
-    lastModified: safeDate(study.date),
+    lastModified: toSafeISO(study.date),
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }));
@@ -64,7 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Insight pages
   const insightPages: MetadataRoute.Sitemap = insights.map((insight) => ({
     url: `${baseUrl}/insights/${insight.slug}`,
-    lastModified: safeDate(insight.date),
+    lastModified: toSafeISO(insight.date),
     changeFrequency: 'monthly' as const,
     priority: 0.7,
   }));
@@ -74,7 +74,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((t) => t.slug)
     .map((t) => ({
       url: `${baseUrl}/templates/${t.slug}`,
-      lastModified: safeDate(t.created_at),
+      lastModified: toSafeISO(t.created_at),
       changeFrequency: 'monthly' as const,
       priority: 0.7,
     }));

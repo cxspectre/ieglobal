@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { motion } from 'framer-motion';
@@ -56,6 +56,7 @@ export default function TemplatesPage() {
   const [thumbnailUrl, setThumbnailUrl] = useState('');
   const [published, setPublished] = useState(true);
   const [zipFile, setZipFile] = useState<File | null>(null);
+  const [folderFiles, setFolderFiles] = useState<{ file: File; path: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,6 +64,76 @@ export default function TemplatesPage() {
   const [uploadTargetSlug, setUploadTargetSlug] = useState<string | null>(null);
   const [isDraggingZip, setIsDraggingZip] = useState(false);
   const [addStep, setAddStep] = useState<1 | 2 | 3>(1);
+  const folderInputAddRef = useRef<HTMLInputElement | null>(null);
+  const folderInputEditRef = useRef<HTMLInputElement | null>(null);
+
+  const setFolderInputAttrs = (node: HTMLInputElement | null) => {
+    if (node) {
+      node.setAttribute('webkitdirectory', '');
+      node.setAttribute('directory', '');
+      node.setAttribute('mozdirectory', '');
+    }
+  };
+
+  const ALLOWED_EXT = new Set(['html', 'htm', 'css', 'js', 'mjs', 'json', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ico', 'woff', 'woff2', 'ttf', 'eot', 'xml', 'map']);
+  const getExt = (p: string) => {
+    const i = p.lastIndexOf('.');
+    return i >= 0 ? p.slice(i + 1).toLowerCase() : '';
+  };
+
+  const pickFolder = async (): Promise<{ file: File; path: string }[] | null> => {
+    if (typeof window !== 'undefined' && 'showDirectoryPicker' in window) {
+      try {
+        const dirHandle = await (window as Window & { showDirectoryPicker?: () => Promise<FileSystemDirectoryHandle> }).showDirectoryPicker!();
+        const out: { file: File; path: string }[] = [];
+        const skipDirs = new Set(['node_modules', '__MACOSX', '.git']);
+        const walk = async (handle: FileSystemDirectoryHandle, prefix: string) => {
+          for await (const [, entry] of (handle as unknown as { entries: () => AsyncIterable<[string, FileSystemHandle]> }).entries()) {
+            if (entry.kind === 'directory' && skipDirs.has(entry.name)) continue;
+            const relPath = prefix ? `${prefix}/${entry.name}` : entry.name;
+            if (entry.kind === 'file') {
+              if (entry.name.startsWith('._')) continue;
+              const ext = getExt(entry.name);
+              if (ALLOWED_EXT.has(ext)) {
+                const file = await (entry as FileSystemFileHandle).getFile();
+                out.push({ file, path: relPath });
+              }
+            } else if (entry.kind === 'directory') {
+              await walk(entry as unknown as FileSystemDirectoryHandle, relPath);
+            }
+          }
+        };
+        await walk(dirHandle, '');
+        return out;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  };
+
+  const handleSelectFolder = async () => {
+    const picked = await pickFolder();
+    if (picked?.length) {
+      setFolderFiles(picked);
+      setZipFile(null);
+    } else if (folderInputAddRef.current || folderInputEditRef.current) {
+      (folderInputAddRef.current || folderInputEditRef.current)?.click();
+    }
+  };
+
+  const handleFolderInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files?.length) {
+      const items = Array.from(files).map((f) => ({
+        file: f,
+        path: (f as File & { webkitRelativePath?: string }).webkitRelativePath || f.name,
+      }));
+      setFolderFiles(items);
+      setZipFile(null);
+    }
+    e.target.value = '';
+  };
 
   const router = useRouter();
   const supabase = createBrowserClient();
@@ -125,6 +196,7 @@ export default function TemplatesPage() {
     setThumbnailUrl('');
     setPublished(true);
     setZipFile(null);
+    setFolderFiles([]);
     setUploadTargetSlug(null);
     setAddStep(1);
     setIsModalOpen(true);
@@ -139,6 +211,7 @@ export default function TemplatesPage() {
     setThumbnailUrl(t.thumbnail_url || '');
     setPublished(t.published);
     setZipFile(null);
+    setFolderFiles([]);
     setUploadTargetSlug(null);
     setAddStep(1);
     setIsModalOpen(true);
@@ -179,8 +252,9 @@ export default function TemplatesPage() {
         else {
           setSuccess('Template updated.');
           setUploadTargetSlug(safeSlug);
-          if (zipFile) {
-            await doUpload(safeSlug, zipFile);
+          const hasFiles = zipFile || folderFiles.length > 0;
+          if (hasFiles) {
+            await doUpload(safeSlug, zipFile || folderFiles);
           } else {
             await loadTemplates();
             setIsModalOpen(false);
@@ -195,8 +269,9 @@ export default function TemplatesPage() {
         else {
           setSuccess('Template created.');
           setUploadTargetSlug(safeSlug);
-          if (zipFile) {
-            await doUpload(safeSlug, zipFile);
+          const hasFiles = zipFile || folderFiles.length > 0;
+          if (hasFiles) {
+            await doUpload(safeSlug, zipFile || folderFiles);
           } else {
             setAddStep(3);
             setSuccess('Template saved. Add files later via Edit.');
@@ -211,7 +286,7 @@ export default function TemplatesPage() {
     }
   };
 
-  const doUpload = async (targetSlug: string, file: File) => {
+  const doUpload = async (targetSlug: string, fileOrFiles: File | { file: File; path: string }[]) => {
     setUploading(true);
     setError(null);
     try {
@@ -220,7 +295,15 @@ export default function TemplatesPage() {
 
       const formData = new FormData();
       formData.set('slug', targetSlug);
-      formData.set('file', file);
+      if (Array.isArray(fileOrFiles)) {
+        for (const item of fileOrFiles) {
+          const f = item.file;
+          const path = item.path;
+          formData.append('files', f, path);
+        }
+      } else {
+        formData.set('file', fileOrFiles);
+      }
 
       const res = await fetch('/api/templates/upload', {
         method: 'POST',
@@ -235,6 +318,7 @@ export default function TemplatesPage() {
       } else {
         setSuccess(`Uploaded ${json.uploaded} files. Template live at ${json.templateUrl}`);
         setZipFile(null);
+        setFolderFiles([]);
         setAddStep(3);
         await loadTemplates();
         setIsModalOpen(false);
@@ -247,9 +331,11 @@ export default function TemplatesPage() {
     }
   };
 
-  const handleUploadZip = async () => {
-    if (!uploadTargetSlug || !zipFile) return;
-    await doUpload(uploadTargetSlug, zipFile);
+  const handleUploadFiles = async () => {
+    if (!uploadTargetSlug) return;
+    const hasFiles = zipFile || folderFiles.length > 0;
+    if (!hasFiles) return;
+    await doUpload(uploadTargetSlug, zipFile || folderFiles);
   };
 
   const handleDelete = async (id: string) => {
@@ -285,7 +371,7 @@ export default function TemplatesPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-slate-500 font-semibold mb-1">Work · Content</p>
         <h1 className="text-3xl lg:text-4xl font-bold text-navy-900">Website Templates</h1>
         <p className="text-slate-600 mt-2 max-w-2xl">
-          Add templates and upload a zip of your built site. Each template gets a branded subdomain: <code className="text-sm bg-slate-100 px-1 rounded">slug.templates.ie-global.net</code>
+          Add templates and upload a .zip or folder with your built site. Each template gets a branded subdomain: <code className="text-sm bg-slate-100 px-1 rounded">slug.templates.ie-global.net</code>
         </p>
       </div>
 
@@ -325,7 +411,7 @@ export default function TemplatesPage() {
               </svg>
             </div>
             <p className="font-semibold text-navy-900 mb-1">No templates yet</p>
-            <p className="text-sm text-slate-600 mb-4">Add a template, then upload a zip of your built website files.</p>
+            <p className="text-sm text-slate-600 mb-4">Add a template, then upload a .zip or folder with your built website files.</p>
             <button
               type="button"
               onClick={openAdd}
@@ -426,7 +512,7 @@ export default function TemplatesPage() {
                     {addStep === 1 ? 'Step 1 — Upload template files' : addStep === 2 ? 'Step 2 — Add template details' : 'Done'}
                   </h2>
                   <p className="text-sm text-slate-600 mt-1">
-                    {addStep === 1 && 'Upload a zip of your built website (index.html, CSS, JS, images).'}
+                    {addStep === 1 && 'Upload a .zip or select a folder with your built website (index.html, CSS, JS, images).'}
                     {addStep === 2 && 'Name, slug, and category — these appear on the public templates page.'}
                     {addStep === 3 && 'Your template is ready.'}
                   </p>
@@ -449,8 +535,17 @@ export default function TemplatesPage() {
                         e.preventDefault();
                         e.stopPropagation();
                         setIsDraggingZip(false);
-                        const file = e.dataTransfer.files?.[0];
-                        if (file?.name.toLowerCase().endsWith('.zip')) setZipFile(file);
+                        const files = e.dataTransfer.files;
+                        if (files?.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
+                          setZipFile(files[0]);
+                          setFolderFiles([]);
+                        } else if (files?.length && (files[0] as File & { webkitRelativePath?: string }).webkitRelativePath) {
+                          setFolderFiles(Array.from(files).map((f) => ({
+                            file: f,
+                            path: (f as File & { webkitRelativePath?: string }).webkitRelativePath || f.name,
+                          })));
+                          setZipFile(null);
+                        }
                       }}
                       className={`relative w-full min-h-[180px] flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors cursor-pointer ${
                         isDraggingZip
@@ -463,7 +558,25 @@ export default function TemplatesPage() {
                         id="template-zip-input"
                         type="file"
                         accept=".zip"
-                        onChange={(e) => setZipFile(e.target.files?.[0] || null)}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) {
+                            setZipFile(f);
+                            setFolderFiles([]);
+                          }
+                          e.target.value = '';
+                        }}
+                        className="sr-only"
+                      />
+                      <input
+                        ref={(el) => {
+                          folderInputAddRef.current = el;
+                          setFolderInputAttrs(el);
+                        }}
+                        id="template-folder-input"
+                        type="file"
+                        multiple
+                        onChange={handleFolderInputChange}
                         className="sr-only"
                       />
                       {zipFile ? (
@@ -485,16 +598,52 @@ export default function TemplatesPage() {
                             Choose different file
                           </button>
                         </div>
+                      ) : folderFiles.length > 0 ? (
+                        <div className="text-center p-4">
+                          <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
+                            <svg className="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                          <p className="text-sm font-semibold text-navy-900">{folderFiles.length} files selected</p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {folderFiles[0]?.path?.split('/')[0] || 'Folder'} · Ready to upload
+                          </p>
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setFolderFiles([]); }}
+                            className="mt-3 text-xs font-semibold text-signal-red hover:underline"
+                          >
+                            Choose different folder
+                          </button>
+                        </div>
                       ) : (
                         <>
                           <svg className="w-12 h-12 text-slate-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                           </svg>
                           <p className="text-base font-medium text-slate-700">
-                            {isDraggingZip ? 'Drop zip here' : 'Drag & drop your .zip file'}
+                            {isDraggingZip ? 'Drop files here' : 'Drag & drop .zip or folder'}
                           </p>
                           <p className="text-sm text-slate-500 mt-1">or click to browse</p>
-                          <p className="text-xs text-slate-400 mt-2">index.html, CSS, JS, images — root or dist folder is fine</p>
+                          <div className="flex gap-3 mt-2">
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); document.getElementById('template-zip-input')?.click(); }}
+                              className="text-xs font-semibold text-signal-red hover:underline"
+                            >
+                              Upload .zip
+                            </button>
+                            <span className="text-slate-300">|</span>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); handleSelectFolder(); }}
+                              className="text-xs font-semibold text-signal-red hover:underline"
+                            >
+                              Select folder
+                            </button>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-2">Folder picker works best in Chrome/Edge. In Safari, use .zip or drag & drop.</p>
                         </>
                       )}
                     </div>
@@ -508,8 +657,8 @@ export default function TemplatesPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => zipFile && setAddStep(2)}
-                        disabled={!zipFile}
+                        onClick={() => (zipFile || folderFiles.length > 0) && setAddStep(2)}
+                        disabled={!zipFile && folderFiles.length === 0}
                         className="px-4 py-2.5 rounded-lg bg-signal-red text-white text-sm font-bold hover:bg-signal-red/90 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Next →
@@ -522,7 +671,9 @@ export default function TemplatesPage() {
                   <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div className="flex items-center gap-2 p-3 rounded-lg bg-slate-50 border border-slate-200 mb-4">
                       <span className="text-sm font-medium text-slate-600">Uploaded:</span>
-                      <span className="text-sm font-semibold text-navy-900">{zipFile?.name}</span>
+                      <span className="text-sm font-semibold text-navy-900">
+                        {zipFile ? zipFile.name : folderFiles.length > 0 ? `${folderFiles.length} files from folder` : ''}
+                      </span>
                       <button
                         type="button"
                         onClick={() => setAddStep(1)}
@@ -651,6 +802,7 @@ export default function TemplatesPage() {
                           setSuccess(null);
                           setAddStep(1);
                           setZipFile(null);
+                          setFolderFiles([]);
                           setUploadTargetSlug(null);
                           loadTemplates();
                         }}
@@ -711,7 +863,7 @@ export default function TemplatesPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Template files (zip)</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Template files</label>
                     <div
                       onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDraggingZip(true); }}
                       onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDraggingZip(false); }}
@@ -719,8 +871,17 @@ export default function TemplatesPage() {
                         e.preventDefault();
                         e.stopPropagation();
                         setIsDraggingZip(false);
-                        const file = e.dataTransfer.files?.[0];
-                        if (file?.name.toLowerCase().endsWith('.zip')) setZipFile(file);
+                        const files = e.dataTransfer.files;
+                        if (files?.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
+                          setZipFile(files[0]);
+                          setFolderFiles([]);
+                        } else if (files?.length && (files[0] as File & { webkitRelativePath?: string }).webkitRelativePath) {
+                          setFolderFiles(Array.from(files).map((f) => ({
+                            file: f,
+                            path: (f as File & { webkitRelativePath?: string }).webkitRelativePath || f.name,
+                          })));
+                          setZipFile(null);
+                        }
                       }}
                       className={`relative w-full min-h-[100px] flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors cursor-pointer ${
                         isDraggingZip ? 'border-signal-red bg-signal-red/5' : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
@@ -731,13 +892,33 @@ export default function TemplatesPage() {
                         id="template-zip-edit"
                         type="file"
                         accept=".zip"
-                        onChange={(e) => setZipFile(e.target.files?.[0] || null)}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) {
+                            setZipFile(f);
+                            setFolderFiles([]);
+                          }
+                          e.target.value = '';
+                        }}
+                        className="sr-only"
+                      />
+                      <input
+                        ref={(el) => {
+                          folderInputEditRef.current = el;
+                          setFolderInputAttrs(el);
+                        }}
+                        id="template-folder-edit"
+                        type="file"
+                        multiple
+                        onChange={handleFolderInputChange}
                         className="sr-only"
                       />
                       {zipFile ? (
                         <p className="text-sm font-semibold text-navy-900">{zipFile.name} — will replace existing files</p>
+                      ) : folderFiles.length > 0 ? (
+                        <p className="text-sm font-semibold text-navy-900">{folderFiles.length} files — will replace existing</p>
                       ) : (
-                        <p className="text-sm text-slate-600">Drag & drop or click to upload new .zip (optional)</p>
+                        <p className="text-sm text-slate-600">Drag & drop .zip, or <button type="button" onClick={(ev) => { ev.stopPropagation(); handleSelectFolder(); }} className="text-signal-red font-semibold hover:underline">select folder</button> (optional)</p>
                       )}
                     </div>
                   </div>

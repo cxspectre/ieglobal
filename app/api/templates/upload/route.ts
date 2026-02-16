@@ -8,13 +8,42 @@ const TEMPLATE_BASE_DOMAIN = process.env.NEXT_PUBLIC_TEMPLATE_BASE_DOMAIN || 'te
 
 const ALLOWED_EXTENSIONS = new Set([
   'html', 'htm', 'css', 'js', 'mjs', 'json', 'png', 'jpg', 'jpeg', 'gif', 'webp',
-  'svg', 'ico', 'woff', 'woff2', 'ttf', 'eot', 'xml', 'txt', 'map',
+  'svg', 'ico', 'woff', 'woff2', 'ttf', 'eot', 'xml', 'map',
 ]);
+
+const SKIP_PATH_PATTERNS = ['/node_modules/', '/__MACOSX/', '/.git/', '/.DS_Store'];
+
+function shouldSkipPath(path: string): boolean {
+  const p = path.replace(/\\/g, '/');
+  return SKIP_PATH_PATTERNS.some((pat) => p.includes(pat)) || p.includes('/._');
+}
 
 function getExt(path: string): string {
   const i = path.lastIndexOf('.');
   return i >= 0 ? path.slice(i + 1).toLowerCase() : '';
 }
+
+const MIME_TYPES: Record<string, string> = {
+  html: 'text/html',
+  htm: 'text/html',
+  css: 'text/css',
+  js: 'application/javascript',
+  mjs: 'application/javascript',
+  json: 'application/json',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+  ico: 'image/x-icon',
+  woff: 'font/woff',
+  woff2: 'font/woff2',
+  ttf: 'font/ttf',
+  eot: 'application/vnd.ms-fontobject',
+  xml: 'application/xml',
+  map: 'application/json',
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,7 +86,8 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const slug = formData.get('slug') as string;
-    const file = formData.get('file') as File;
+    const zipFile = formData.get('file') as File | null;
+    const folderFiles = formData.getAll('files') as File[];
 
     if (!slug?.trim()) {
       return NextResponse.json({ error: 'slug is required' }, { status: 400 });
@@ -67,29 +97,44 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid slug' }, { status: 400 });
     }
 
-    if (!file || !(file instanceof File)) {
-      return NextResponse.json({ error: 'file (zip) is required' }, { status: 400 });
-    }
-    if (!file.name.endsWith('.zip')) {
-      return NextResponse.json({ error: 'File must be a .zip' }, { status: 400 });
-    }
-
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const zip = new AdmZip(buffer);
-    const entries = zip.getEntries();
-
-    // Normalize entry names and find index.html root
-    const normalizedEntries: { path: string; content: Buffer }[] = [];
+    let normalizedEntries: { path: string; content: Buffer }[] = [];
     let stripPrefix = '';
 
-    for (const entry of entries) {
-      if (entry.isDirectory) continue;
-      const rawPath = entry.entryName.replace(/\\/g, '/').replace(/\/+/g, '/');
-      const ext = getExt(rawPath);
-      if (!ALLOWED_EXTENSIONS.has(ext)) continue;
+    if (zipFile && zipFile instanceof File && zipFile.name.toLowerCase().endsWith('.zip')) {
+      // Zip upload
+      const arrayBuffer = await zipFile.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      const zip = new AdmZip(buffer);
+      const entries = zip.getEntries();
 
-      normalizedEntries.push({ path: rawPath, content: Buffer.from(entry.getData()) });
+      for (const entry of entries) {
+        if (entry.isDirectory) continue;
+        const rawPath = entry.entryName.replace(/\\/g, '/').replace(/\/+/g, '/');
+        if (shouldSkipPath(rawPath)) continue;
+        const ext = getExt(rawPath);
+        if (!ALLOWED_EXTENSIONS.has(ext)) continue;
+
+        normalizedEntries.push({ path: rawPath, content: Buffer.from(entry.getData()) });
+      }
+    } else if (folderFiles && folderFiles.length > 0 && folderFiles.every((f) => f instanceof File)) {
+      // Folder upload (multiple files)
+      const rawEntries: { path: string; content: Buffer }[] = [];
+      for (const file of folderFiles) {
+        const f = file as File;
+        const rawPath = (f.webkitRelativePath || f.name || '').replace(/\\/g, '/').replace(/\/+/g, '/');
+        if (!rawPath || shouldSkipPath(rawPath)) continue;
+        const ext = getExt(rawPath);
+        if (!ALLOWED_EXTENSIONS.has(ext)) continue;
+
+        const arrayBuffer = await f.arrayBuffer();
+        rawEntries.push({ path: rawPath, content: Buffer.from(arrayBuffer) });
+      }
+      normalizedEntries = rawEntries;
+    } else {
+      return NextResponse.json(
+        { error: 'Upload a .zip file or select a folder with your built site (index.html, CSS, JS, images).' },
+        { status: 400 }
+      );
     }
 
     // Find index.html or index.htm to determine the root folder to strip
@@ -100,7 +145,6 @@ export async function POST(request: NextRequest) {
       const idx = indexEntry.path.lastIndexOf('/');
       stripPrefix = idx >= 0 ? indexEntry.path.slice(0, idx + 1) : '';
     } else {
-      // No index file: strip first path segment (e.g. dist/, build/)
       const first = normalizedEntries[0];
       if (first) {
         const idx = first.path.indexOf('/');
@@ -108,21 +152,44 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (normalizedEntries.length === 0) {
+      return NextResponse.json(
+        { error: 'No valid files. Include index.html and assets (html, css, js, png, etc.).' },
+        { status: 400 }
+      );
+    }
+
+    // Use service role for storage upload (we've verified user is admin/employee)
+    const storageClient = createClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
     const uploaded: string[] = [];
+    let lastError: { message: string } | null = null;
     for (const { path: rawPath, content } of normalizedEntries) {
       const entryPath = stripPrefix ? rawPath.replace(stripPrefix, '') : rawPath;
       if (!entryPath || entryPath.startsWith('/')) continue;
 
       const storagePath = `${safeSlug}/${entryPath}`;
-      const { error } = await supabase.storage
+      const contentType = MIME_TYPES[getExt(entryPath)] || 'application/octet-stream';
+      const { error } = await storageClient.storage
         .from('website-templates')
-        .upload(storagePath, content, { upsert: true });
+        .upload(storagePath, content, { upsert: true, contentType });
 
       if (error) {
         console.error('Upload error:', storagePath, error);
+        lastError = error;
         continue;
       }
       uploaded.push(entryPath);
+    }
+
+    if (uploaded.length === 0 && lastError) {
+      return NextResponse.json(
+        { error: `Upload failed: ${lastError.message}` },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
