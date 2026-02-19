@@ -30,6 +30,11 @@ type WebsiteTemplate = {
   category: string;
   template_url: string;
   thumbnail_url: string | null;
+  gallery_urls?: string[] | null;
+  long_description?: string | null;
+  features?: string[] | null;
+  author?: string | null;
+  page_names?: string[] | null;
   sort_order: number;
   published: boolean;
   created_at: string;
@@ -54,6 +59,13 @@ export default function TemplatesPage() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
   const [thumbnailUrl, setThumbnailUrl] = useState('');
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [longDescription, setLongDescription] = useState('');
+  const [featuresText, setFeaturesText] = useState('');
+  const [author, setAuthor] = useState('');
+  const [pageNamesText, setPageNamesText] = useState('');
   const [published, setPublished] = useState(true);
   const [zipFile, setZipFile] = useState<File | null>(null);
   const [folderFiles, setFolderFiles] = useState<{ file: File; path: string }[]>([]);
@@ -194,6 +206,13 @@ export default function TemplatesPage() {
     setDescription('');
     setCategory('');
     setThumbnailUrl('');
+    setThumbnailFile(null);
+    setGalleryUrls([]);
+    setGalleryFiles([]);
+    setLongDescription('');
+    setFeaturesText('');
+    setAuthor('');
+    setPageNamesText('');
     setPublished(true);
     setZipFile(null);
     setFolderFiles([]);
@@ -209,6 +228,13 @@ export default function TemplatesPage() {
     setDescription(t.description || '');
     setCategory(t.category);
     setThumbnailUrl(t.thumbnail_url || '');
+    setThumbnailFile(null);
+    setGalleryUrls(Array.isArray(t.gallery_urls) ? t.gallery_urls : []);
+    setGalleryFiles([]);
+    setLongDescription(t.long_description || '');
+    setFeaturesText(Array.isArray(t.features) ? t.features.join('\n') : '');
+    setAuthor(t.author || '');
+    setPageNamesText(Array.isArray(t.page_names) ? t.page_names.join('\n') : '');
     setPublished(t.published);
     setZipFile(null);
     setFolderFiles([]);
@@ -231,6 +257,62 @@ export default function TemplatesPage() {
     setError(null);
 
     try {
+      let finalThumbnailUrl = thumbnailUrl.trim() || null;
+      if (thumbnailFile) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('Session expired. Please sign in again.');
+          setSubmitting(false);
+          return;
+        }
+        const fd = new FormData();
+        fd.set('slug', safeSlug);
+        fd.set('file', thumbnailFile);
+        const res = await fetch('/api/templates/thumbnail', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { Authorization: `Bearer ${session.access_token}` },
+          body: fd,
+        });
+        const json = await res.json();
+        if (!res.ok) {
+          setError(json.error || 'Thumbnail upload failed');
+          setSubmitting(false);
+          return;
+        }
+        finalThumbnailUrl = json.url;
+      }
+
+      let finalGalleryUrls: string[] = [...galleryUrls];
+      if (galleryFiles.length > 0) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const fd = new FormData();
+          fd.set('slug', safeSlug);
+          galleryFiles.forEach((f) => fd.append('files', f));
+          const res = await fetch('/api/templates/gallery', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { Authorization: `Bearer ${session.access_token}` },
+            body: fd,
+          });
+          const json = await res.json();
+          if (res.ok && Array.isArray(json.urls)) {
+            finalGalleryUrls = [...galleryUrls, ...json.urls];
+          }
+        }
+      }
+
+      const featuresArr = featuresText
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      const pageNamesArr = pageNamesText
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
       const templateUrl = `https://${safeSlug}.${TEMPLATE_BASE_DOMAIN}`;
       const payload = {
         name: name.trim(),
@@ -238,7 +320,12 @@ export default function TemplatesPage() {
         description: description.trim() || null,
         category: category.trim(),
         template_url: templateUrl,
-        thumbnail_url: thumbnailUrl.trim() || null,
+        thumbnail_url: finalThumbnailUrl,
+        gallery_urls: finalGalleryUrls.length > 0 ? finalGalleryUrls : null,
+        long_description: longDescription.trim() || null,
+        features: featuresArr.length > 0 ? featuresArr : null,
+        author: author.trim() || null,
+        page_names: pageNamesArr.length > 0 ? pageNamesArr : null,
         published,
       };
 
@@ -718,15 +805,36 @@ export default function TemplatesPage() {
                       ))}
                     </select>
                   </div>
-              <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Thumbnail URL</label>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Thumbnail</label>
                     <input
-                      type="url"
-                      value={thumbnailUrl}
-                      onChange={(e) => setThumbnailUrl(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
-                      placeholder="https://..."
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) {
+                          setThumbnailFile(f);
+                          setThumbnailUrl('');
+                        }
+                        e.target.value = '';
+                      }}
+                      className="w-full px-3 py-2 border border-slate-200 text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-signal-red file:text-white file:text-sm file:font-semibold hover:file:bg-signal-red/90 file:cursor-pointer focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
                     />
+                    {(thumbnailFile || thumbnailUrl) && (
+                      <div className="mt-2 w-24 h-16 border border-slate-200 overflow-hidden bg-slate-50">
+                        {thumbnailFile ? (
+                          <img
+                            src={URL.createObjectURL(thumbnailFile)}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                            onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                          />
+                        ) : (
+                          <img src={thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                        )}
+                      </div>
+                    )}
+                    <p className="mt-1 text-xs text-slate-500">PNG, JPG, WebP, GIF. Max 5MB.</p>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-1">Description</label>
@@ -737,6 +845,90 @@ export default function TemplatesPage() {
                       className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none resize-none"
                       placeholder="Brief description of the template..."
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Gallery images</label>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      multiple
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length) setGalleryFiles((prev) => [...prev, ...files]);
+                        e.target.value = '';
+                      }}
+                      className="w-full px-3 py-2 border border-slate-200 text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-signal-red file:text-white file:text-sm file:font-semibold hover:file:bg-signal-red/90 file:cursor-pointer focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
+                    />
+                    {(galleryUrls.length > 0 || galleryFiles.length > 0) && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {galleryUrls.map((url, i) => (
+                          <div key={url} className="w-16 h-12 border border-slate-200 overflow-hidden bg-slate-50 relative">
+                            <img src={url} alt="" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => setGalleryUrls((p) => p.filter((_, j) => j !== i))}
+                              className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs leading-none flex items-center justify-center"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                        {galleryFiles.map((f, i) => (
+                          <div key={`${f.name}-${i}`} className="w-16 h-12 border border-slate-200 overflow-hidden bg-slate-50 relative">
+                            <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)} />
+                            <button
+                              type="button"
+                              onClick={() => setGalleryFiles((p) => p.filter((_, j) => j !== i))}
+                              className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs leading-none flex items-center justify-center"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <p className="mt-1 text-xs text-slate-500">Multiple images for showcase. Max 10, 5MB each.</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Long description (Markdown)</label>
+                    <textarea
+                      value={longDescription}
+                      onChange={(e) => setLongDescription(e.target.value)}
+                      rows={8}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none resize-y font-mono"
+                      placeholder="Full description, headings, bullet points. Supports **bold**, *italic*, ## headings, - bullets..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Features (one per line)</label>
+                    <textarea
+                      value={featuresText}
+                      onChange={(e) => setFeaturesText(e.target.value)}
+                      rows={4}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none resize-none font-mono"
+                      placeholder="Modern Design\nFully Responsive\nSEO Optimized"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Author</label>
+                    <input
+                      type="text"
+                      value={author}
+                      onChange={(e) => setAuthor(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
+                      placeholder="e.g. IE Global"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Page names (one per line)</label>
+                    <textarea
+                      value={pageNamesText}
+                      onChange={(e) => setPageNamesText(e.target.value)}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none resize-none font-mono"
+                      placeholder="Home\nAbout\nBlog\nContact"
+                    />
+                    <p className="mt-1 text-xs text-slate-500">Pages included in the template (shown in sidebar)</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <input
@@ -923,14 +1115,78 @@ export default function TemplatesPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Thumbnail URL</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Thumbnail</label>
                     <input
-                      type="url"
-                      value={thumbnailUrl}
-                      onChange={(e) => setThumbnailUrl(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
-                      placeholder="https://..."
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) {
+                          setThumbnailFile(f);
+                          setThumbnailUrl('');
+                        }
+                        e.target.value = '';
+                      }}
+                      className="w-full px-3 py-2 border border-slate-200 text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-signal-red file:text-white file:text-sm file:font-semibold hover:file:bg-signal-red/90 file:cursor-pointer focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
                     />
+                    {(thumbnailFile || thumbnailUrl) && (
+                      <div className="mt-2 w-24 h-16 border border-slate-200 overflow-hidden bg-slate-50">
+                        {thumbnailFile ? (
+                          <img
+                            src={URL.createObjectURL(thumbnailFile)}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                            onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)}
+                          />
+                        ) : (
+                          <img src={thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                        )}
+                      </div>
+                    )}
+                    <p className="mt-1 text-xs text-slate-500">PNG, JPG, WebP, GIF. Max 5MB.</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Gallery images</label>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      multiple
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length) setGalleryFiles((prev) => [...prev, ...files]);
+                        e.target.value = '';
+                      }}
+                      className="w-full px-3 py-2 border border-slate-200 text-sm file:mr-4 file:py-2 file:px-4 file:border-0 file:bg-signal-red file:text-white file:text-sm file:font-semibold hover:file:bg-signal-red/90 file:cursor-pointer focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
+                    />
+                    {(galleryUrls.length > 0 || galleryFiles.length > 0) && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {galleryUrls.map((url, i) => (
+                          <div key={url} className="w-16 h-12 border border-slate-200 overflow-hidden bg-slate-50 relative">
+                            <img src={url} alt="" className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => setGalleryUrls((p) => p.filter((_, j) => j !== i))}
+                              className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs leading-none flex items-center justify-center"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                        {galleryFiles.map((f, i) => (
+                          <div key={`${f.name}-${i}`} className="w-16 h-12 border border-slate-200 overflow-hidden bg-slate-50 relative">
+                            <img src={URL.createObjectURL(f)} alt="" className="w-full h-full object-cover" onLoad={(e) => URL.revokeObjectURL((e.target as HTMLImageElement).src)} />
+                            <button
+                              type="button"
+                              onClick={() => setGalleryFiles((p) => p.filter((_, j) => j !== i))}
+                              className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs leading-none flex items-center justify-center"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <p className="mt-1 text-xs text-slate-500">Multiple images for showcase. Max 10, 5MB each.</p>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-1">Description</label>
@@ -940,6 +1196,46 @@ export default function TemplatesPage() {
                       rows={3}
                       className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none resize-none"
                       placeholder="Brief description of the template..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Long description (Markdown)</label>
+                    <textarea
+                      value={longDescription}
+                      onChange={(e) => setLongDescription(e.target.value)}
+                      rows={8}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none resize-y font-mono"
+                      placeholder="Full description, headings, bullet points..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Features (one per line)</label>
+                    <textarea
+                      value={featuresText}
+                      onChange={(e) => setFeaturesText(e.target.value)}
+                      rows={4}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none resize-none font-mono"
+                      placeholder="Modern Design\nFully Responsive"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Author</label>
+                    <input
+                      type="text"
+                      value={author}
+                      onChange={(e) => setAuthor(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none"
+                      placeholder="e.g. IE Global"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Page names (one per line)</label>
+                    <textarea
+                      value={pageNamesText}
+                      onChange={(e) => setPageNamesText(e.target.value)}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-signal-red/20 focus:border-signal-red outline-none resize-none font-mono"
+                      placeholder="Home\nAbout\nBlog\nContact"
                     />
                   </div>
                   <div className="flex items-center gap-2">

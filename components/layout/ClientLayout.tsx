@@ -23,12 +23,13 @@ export default function ClientLayout({ children, locale }: ClientLayoutProps) {
 
   // Pages without nav/footer (portal pages) — pathname may include locale prefix e.g. /en/dashboard
   // Also hide when on dashboard subdomain (URL may show / but content is rewritten to /dashboard)
-  const noLayoutPages = ['/login', '/dashboard', '/portal', '/reset-password', '/auth', '/upload'];
+  const noLayoutPages = ['/login', '/dashboard', '/portal', '/reset-password', '/auth', '/upload', '/showcase'];
   const hideLayout = isDashboardHost || noLayoutPages.some(path => pathname?.includes(path));
 
-  // Pages without dark heroes (always use white navbar) — pathname may be /privacy or /en/privacy
+  // Pages without dark heroes (always use white navbar with dark text)
+  const isTemplateDetail = pathname?.match(/\/templates\/[^/]+/);
   const whiteBackgroundPages = ['/privacy', '/terms', '/imprint'];
-  const isWhiteBackgroundPage = whiteBackgroundPages.some(p => pathname?.endsWith(p) || pathname === p);
+  const isWhiteBackgroundPage = whiteBackgroundPages.some(p => pathname?.endsWith(p) || pathname === p) || !!isTemplateDetail;
 
   useEffect(() => {
     const handleScroll = () => {

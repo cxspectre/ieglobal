@@ -16,6 +16,11 @@ export type WebsiteTemplate = {
   category: string;
   template_url: string;
   thumbnail_url: string | null;
+  gallery_urls: string[] | null;
+  long_description: string | null;
+  features: string[] | null;
+  author: string | null;
+  page_names: string[] | null;
   sort_order: number;
   published: boolean;
   created_at?: string;
@@ -25,7 +30,7 @@ export async function getPublishedTemplates(): Promise<WebsiteTemplate[]> {
   const supabase = getTemplatesSupabase();
   const { data, error } = await supabase
     .from('website_templates')
-    .select('id, name, slug, description, category, template_url, thumbnail_url, sort_order, created_at')
+    .select('id, name, slug, description, category, template_url, thumbnail_url, gallery_urls, long_description, features, author, page_names, sort_order, created_at')
     .eq('published', true)
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: false });
@@ -41,7 +46,7 @@ export async function getTemplateBySlug(slug: string): Promise<WebsiteTemplate |
   const supabase = getTemplatesSupabase();
   const { data, error } = await supabase
     .from('website_templates')
-    .select('id, name, slug, description, category, template_url, thumbnail_url, sort_order, created_at')
+    .select('id, name, slug, description, category, template_url, thumbnail_url, gallery_urls, long_description, features, author, page_names, sort_order, created_at')
     .eq('published', true)
     .eq('slug', slug)
     .single();

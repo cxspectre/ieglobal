@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Hero from '@/components/ui/Hero';
 import { getPublishedTemplates } from '@/lib/website-templates';
-import { TemplateGrid } from '@/components/templates/TemplateGrid';
+import { TemplatesSection } from '@/components/templates/TemplatesSection';
 
 export const metadata: Metadata = {
   title: 'Website Templates – IE Global',
@@ -49,7 +49,7 @@ export default async function TemplatesPage() {
               </a>
             </div>
           ) : (
-            <TemplateGrid templates={templates} />
+            <TemplatesSection templates={templates} />
           )}
         </div>
       </section>
