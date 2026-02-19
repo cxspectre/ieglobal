@@ -44,9 +44,10 @@ export default function DashboardShowcasePage() {
         .select('*')
         .order('sort_order', { ascending: true });
       if (error) throw error;
+      const rows = (data ?? []) as ShowcaseRow[];
       const byOrder: Record<number, ShowcaseRow | Partial<ShowcaseRow>> = {};
       SLOTS.forEach((n) => {
-        byOrder[n] = (data?.find((r) => r.sort_order === n) as ShowcaseRow | undefined) ?? { ...emptySlot(n) };
+        byOrder[n] = rows.find((r) => r.sort_order === n) ?? { ...emptySlot(n) };
       });
       setItems(byOrder);
     } catch {
@@ -83,12 +84,10 @@ export default function DashboardShowcasePage() {
       };
       const id = (row as ShowcaseRow).id;
       if (id) {
-        const { error } = await supabase.from('showcase').update(payload).eq('id', id);
+        const { error } = await (supabase as any).from('showcase').update(payload).eq('id', id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('showcase').upsert(payload, {
-          onConflict: 'sort_order',
-        });
+        const { error } = await (supabase as any).from('showcase').upsert(payload, { onConflict: 'sort_order' });
         if (error) throw error;
       }
       setMessage({ type: 'success', text: `Slot ${order} saved.` });

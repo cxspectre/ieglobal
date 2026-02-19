@@ -53,6 +53,19 @@ export type Database = {
         Insert: Omit<Database['public']['Tables']['projects']['Row'], 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Database['public']['Tables']['projects']['Insert']>;
       };
+      showcase: {
+        Row: {
+          id: string;
+          sort_order: number;
+          project_url: string;
+          description: string | null;
+          industry_type: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['showcase']['Row'], 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Database['public']['Tables']['showcase']['Insert']>;
+      };
     };
   };
 };
