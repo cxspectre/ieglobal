@@ -59,7 +59,10 @@ export async function GET(
       .single();
 
     if (!template) {
-      return new NextResponse('Template not found', { status: 404 });
+      return new NextResponse(
+        'Template not found. Add this template in the dashboard first (Dashboard → Templates → Add template) with the same slug as in the URL, then upload your .zip or dist folder.',
+        { status: 404, headers: { 'Content-Type': 'text/plain' } }
+      );
     }
 
     let fileData: Blob | null = null;

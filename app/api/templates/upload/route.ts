@@ -192,11 +192,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Ensure a website_templates row exists so the preview route can serve the template
+    const templateUrl = `https://${safeSlug}.${TEMPLATE_BASE_DOMAIN}`;
+    const { data: existingRow } = await (storageClient as any)
+      .from('website_templates')
+      .select('id')
+      .eq('slug', safeSlug)
+      .maybeSingle();
+    if (!existingRow) {
+      const nameFromSlug = safeSlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+      await (storageClient as any)
+        .from('website_templates')
+        .insert({
+          name: nameFromSlug,
+          slug: safeSlug,
+          category: 'Other',
+          template_url: templateUrl,
+          published: true,
+          created_by: user?.id ?? null,
+        });
+    }
+
     return NextResponse.json({
       slug: safeSlug,
       uploaded: uploaded.length,
       files: uploaded,
-      templateUrl: `https://${safeSlug}.${TEMPLATE_BASE_DOMAIN}`,
+      templateUrl,
     });
   } catch (err) {
     console.error('Template upload error:', err);
