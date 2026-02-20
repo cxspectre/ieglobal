@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [bgImageError, setBgImageError] = useState(false);
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -70,14 +71,17 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Branding with Background Image */}
-      <div className="hidden lg:flex lg:w-1/2 p-12 flex-col justify-between relative overflow-hidden">
-        <Image
-          src="/pexels-bibekghosh-14553701.jpg"
-          alt=""
-          fill
-          className="object-cover"
-          priority
-        />
+      <div className="hidden lg:flex lg:w-1/2 p-12 flex-col justify-between relative overflow-hidden bg-navy-900">
+        {!bgImageError && (
+          <Image
+            src="/pexels-bibekghosh-14553701.jpg"
+            alt=""
+            fill
+            className="object-cover"
+            priority
+            onError={() => setBgImageError(true)}
+          />
+        )}
         <div className="absolute inset-0 bg-navy-900/75" />
         <div className="relative z-10">
           <Logo width={150} height={50} href="/" className="h-12 w-auto" invert />

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -45,7 +44,8 @@ export function Logo({ width = 150, height = 50, className, href = '/', invert }
   const content = imgError ? (
     <LogoSvg className={className} invert={invert} compact={compact} />
   ) : (
-    <Image
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
       src="/logo.png"
       alt="IE Global"
       width={width}

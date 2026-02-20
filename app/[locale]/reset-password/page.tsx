@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
+import { Logo } from '@/components/ui/Logo';
 
 export default function ResetPasswordPage() {
   const [mode, setMode] = useState<'request' | 'set-password' | 'checking'>('request');
@@ -160,15 +160,7 @@ export default function ResetPasswordPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 p-12 flex-col justify-between relative overflow-hidden">
         <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "url('/grid-pattern.svg')" }} />
         <div className="relative z-10">
-          <Link href="/">
-            <Image
-              src="/logo.png"
-              alt="IE Global"
-              width={150}
-              height={50}
-              className="h-12 w-auto brightness-0 invert"
-            />
-          </Link>
+          <Logo href="/" width={150} height={50} className="h-12 w-auto" invert />
         </div>
         <div className="relative z-10">
           <h1 className="text-4xl font-bold text-white mb-6">
@@ -185,13 +177,7 @@ export default function ResetPasswordPage() {
       <div className="flex-1 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
-            <Image
-              src="/logo.png"
-              alt="IE Global"
-              width={120}
-              height={40}
-              className="h-10 w-auto mx-auto"
-            />
+            <Logo href="/" width={120} height={40} className="h-10 w-auto mx-auto" />
           </div>
 
           {isRequestMode ? (

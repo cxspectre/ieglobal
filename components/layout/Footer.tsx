@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
+import { Logo } from '@/components/ui/Logo';
 
 export default function Footer() {
   const t = useTranslations('footer');
@@ -29,15 +29,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand Column */}
           <div>
-            <Link href="/" className="inline-block mb-6 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-signal-red">
-              <Image
-                src="/logo.png"
-                alt="IE Global – Digital Systems & Engineering"
-                width={150}
-                height={50}
-                className="h-12 w-auto brightness-0 invert"
-              />
-            </Link>
+            <Logo
+              href="/"
+              width={150}
+              height={50}
+              className="h-12 w-auto mb-6 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-signal-red"
+              invert
+            />
             <p className="text-gray-300 leading-relaxed mb-6">
               {t('tagline')}
             </p>

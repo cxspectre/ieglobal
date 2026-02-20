@@ -8,6 +8,7 @@ import { useLocale } from 'next-intl';
 import { Link, useRouter, usePathname } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
+import { Logo } from '@/components/ui/Logo';
 
 /** Login URL: on main site (ie-global.net, www.ie-global.net) → dashboard.ie-global.net; on localhost/dashboard subdomain → /login */
 function getLoginUrl(): string {
@@ -174,16 +175,12 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
             </button>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-signal-red">
-              <Image
-                src="/logo.png"
-                alt="IE Global"
-                width={180}
-                height={60}
-                className="h-14 w-auto transition-opacity duration-500 hover:opacity-80"
-                priority
-              />
-            </Link>
+            <Logo
+              href="/"
+              width={180}
+              height={60}
+              className="h-14 w-auto transition-opacity duration-500 hover:opacity-80"
+            />
 
             {/* Navigation Items (Left-aligned) */}
             <div className="hidden lg:flex items-center space-x-8">
@@ -387,13 +384,7 @@ export default function Navigation({ isHeroVisible = false, heroIsDark = true }:
             >
               <div className="p-8 space-y-6">
                 <div className="flex items-center justify-between mb-8">
-                  <Image
-                    src="/logo.png"
-                    alt="IE Global"
-                    width={150}
-                    height={50}
-                    className="h-12 w-auto"
-                  />
+                  <Logo href="/" width={150} height={50} className="h-12 w-auto" />
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="p-2 hover:bg-gray-100 rounded-full transition-colors"

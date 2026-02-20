@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Image from 'next/image';
+import { Logo } from '@/components/ui/Logo';
 
 type Client = {
   id: string;
@@ -238,12 +238,11 @@ export default function ClientUploadPage() {
       <div className="bg-gradient-to-r from-navy-900 to-navy-800 text-white py-8 px-4 shadow-lg">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-4 mb-4">
-            <Image 
-              src="/logo.png" 
-              alt="IE Global" 
-              width={48} 
+            <Logo
+              width={48}
               height={48}
-              className="rounded-lg"
+              className="h-12 w-auto"
+              invert
             />
             <div>
               <h1 className="text-3xl font-bold">Document Upload Portal</h1>
