@@ -103,10 +103,10 @@ export default function LoginPage() {
         </div>
         <div className="relative z-10">
           <h1 className="text-4xl font-bold text-white mb-6">
-            Welcome to IE Global Portal
+            Welcome to the IE Dashboard
           </h1>
           <p className="text-xl text-gray-200 leading-relaxed">
-            Your project workspace. Track progress, view milestones, and communicate with your team—all in one place.
+            One place for projects, files, and messages—whether you’re a client or on the IE team.
           </p>
         </div>
       </div>
