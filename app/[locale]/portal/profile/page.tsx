@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 
 type Profile = {
@@ -27,7 +27,11 @@ export default function ProfilePage() {
   const [saveLoading, setSaveLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState('');
+  const [identities, setIdentities] = useState<{ id: string; provider: string }[]>([]);
+  const [linkLoading, setLinkLoading] = useState(false);
+  const [unlinkLoading, setUnlinkLoading] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createBrowserClient();
 
   useEffect(() => {
@@ -115,6 +119,44 @@ export default function ProfilePage() {
       alert('Failed to save profile: ' + err.message);
     }
     setSaveLoading(false);
+  };
+
+  const handleLinkMicrosoft = async () => {
+    setLinkLoading(true);
+    setPasswordMessage('');
+    try {
+      const redirectTo = typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(pathname || '/en/portal/profile')}`
+        : undefined;
+      const { error: linkError } = await supabase.auth.linkIdentity({
+        provider: 'azure',
+        options: { redirectTo },
+      });
+      if (linkError) throw linkError;
+    } catch (err: any) {
+      const msg = err.message || '';
+      const isManualLinkingDisabled = /manual linking is disabled/i.test(msg);
+      setPasswordMessage(
+        isManualLinkingDisabled
+          ? 'Linking is disabled in your Supabase project. Enable it in Dashboard → Authentication → Settings → "Enable manual linking".'
+          : msg || 'Could not connect Microsoft account'
+      );
+      setLinkLoading(false);
+    }
+  };
+
+  const handleUnlinkMicrosoft = async () => {
+    const id = identities.find((i) => i.provider === 'azure')?.id;
+    if (!id) return;
+    setUnlinkLoading(id);
+    try {
+      const { error } = await supabase.auth.unlinkIdentity({ identityId: id });
+      if (error) throw error;
+      setIdentities((prev) => prev.filter((i) => i.id !== id));
+    } catch (err: any) {
+      setPasswordMessage(err.message || 'Could not disconnect Microsoft account');
+    }
+    setUnlinkLoading(null);
   };
 
   const requestPasswordReset = async () => {
@@ -354,6 +396,43 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      <div className="rounded-2xl bg-white p-6 lg:p-8 shadow-sm border border-slate-200/80 mb-6">
+        <h2 className="text-xl font-bold text-navy-900 mb-4">Connected accounts</h2>
+        <p className="text-sm text-slate-600 mb-6">
+          Link your Microsoft account to sign in without a password.
+        </p>
+        <div className="flex items-center justify-between gap-4 py-3 border-b border-slate-100 last:border-0">
+          <span className="flex items-center gap-2 text-navy-900 font-medium">
+            <svg className="w-5 h-5" viewBox="0 0 23 23" fill="currentColor">
+              <path d="M1 1h10v10H1zM12 1h10v10H12zM1 12h10v10H1zM12 12h10v10H12z" fillOpacity=".9" />
+            </svg>
+            Microsoft
+          </span>
+          {identities.some((i) => i.provider === 'azure') ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-green-600 font-medium">Connected</span>
+              <button
+                type="button"
+                onClick={handleUnlinkMicrosoft}
+                disabled={unlinkLoading !== null}
+                className="text-sm font-medium text-slate-500 hover:text-signal-red disabled:opacity-50"
+              >
+                {unlinkLoading ? 'Disconnecting...' : 'Disconnect'}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleLinkMicrosoft}
+              disabled={linkLoading}
+              className="px-4 py-2 text-sm font-semibold text-signal-red hover:bg-signal-red/10 rounded-xl disabled:opacity-50"
+            >
+              {linkLoading ? 'Redirecting...' : 'Connect'}
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="rounded-2xl bg-white p-6 lg:p-8 shadow-sm border border-slate-200/80">
         <h2 className="text-xl font-bold text-navy-900 mb-4">Password</h2>
         <p className="text-sm text-slate-600 mb-6">
@@ -368,7 +447,7 @@ export default function ProfilePage() {
         </button>
         {passwordMessage && (
           <div className={`mt-4 p-4 rounded-xl ${
-            passwordMessage.includes('Failed') 
+            passwordMessage.includes('Failed') || passwordMessage.includes('Could not')
               ? 'bg-red-50 border border-red-200 text-red-800' 
               : 'bg-green-50 border border-green-200 text-green-800'
           }`}>

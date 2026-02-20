@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { motion } from 'framer-motion';
 
@@ -38,7 +38,11 @@ export default function ProfilePage() {
   const [saveLoading, setSaveLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState('');
+  const [identities, setIdentities] = useState<{ id: string; provider: string }[]>([]);
+  const [linkLoading, setLinkLoading] = useState(false);
+  const [unlinkLoading, setUnlinkLoading] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createBrowserClient();
 
   useEffect(() => {
@@ -78,6 +82,8 @@ export default function ProfilePage() {
           address_country: data.address_country || '',
           bio: data.bio || '',
         });
+        const { data: ids } = await supabase.auth.getUserIdentities();
+        setIdentities((ids ?? []).map((i: { id: string; provider: string }) => ({ id: i.id, provider: i.provider })));
         // Load profile documents
         const { data: docs } = await (supabase as any)
           .from('profile_documents')
@@ -161,6 +167,45 @@ export default function ProfilePage() {
     if (b < 1024) return b + ' B';
     if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
     return (b / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const handleLinkMicrosoft = async () => {
+    setLinkLoading(true);
+    setPasswordMessage('');
+    try {
+      const redirectTo = typeof window !== 'undefined'
+        ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(pathname || '/en/dashboard/profile')}`
+        : undefined;
+      const { error: linkError } = await supabase.auth.linkIdentity({
+        provider: 'azure',
+        options: { redirectTo },
+      });
+      if (linkError) throw linkError;
+      // Redirect happens; if we're still here, something went wrong
+    } catch (err: any) {
+      const msg = err.message || '';
+      const isManualLinkingDisabled = /manual linking is disabled/i.test(msg);
+      setPasswordMessage(
+        isManualLinkingDisabled
+          ? 'Linking is disabled in your Supabase project. Enable it in Dashboard → Authentication → Settings → "Enable manual linking".'
+          : msg || 'Could not connect Microsoft account'
+      );
+      setLinkLoading(false);
+    }
+  };
+
+  const handleUnlinkMicrosoft = async () => {
+    const id = identities.find((i) => i.provider === 'azure')?.id;
+    if (!id) return;
+    setUnlinkLoading(id);
+    try {
+      const { error } = await supabase.auth.unlinkIdentity({ identityId: id });
+      if (error) throw error;
+      setIdentities((prev) => prev.filter((i) => i.id !== id));
+    } catch (err: any) {
+      setPasswordMessage(err.message || 'Could not disconnect Microsoft account');
+    }
+    setUnlinkLoading(null);
   };
 
   const requestPasswordReset = async () => {
@@ -428,6 +473,42 @@ export default function ProfilePage() {
                   </p>
                 </div>
                 <div className="pt-4 border-t border-slate-100">
+                  <p className="text-xs text-slate-500 mb-2">Connected accounts</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="flex items-center gap-2 text-sm text-navy-900">
+                        <svg className="w-4 h-4" viewBox="0 0 23 23" fill="currentColor">
+                          <path d="M1 1h10v10H1zM12 1h10v10H12zM1 12h10v10H1zM12 12h10v10H12z" fillOpacity=".9" />
+                        </svg>
+                        Microsoft
+                      </span>
+                      {identities.some((i) => i.provider === 'azure') ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-green-600 font-medium">Connected</span>
+                          <button
+                            type="button"
+                            onClick={handleUnlinkMicrosoft}
+                            disabled={unlinkLoading !== null}
+                            className="text-xs font-medium text-slate-500 hover:text-signal-red disabled:opacity-50"
+                          >
+                            {unlinkLoading ? 'Disconnecting...' : 'Disconnect'}
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleLinkMicrosoft}
+                          disabled={linkLoading}
+                          className="px-3 py-1.5 text-sm font-medium text-signal-red hover:bg-signal-red/10 rounded-lg disabled:opacity-50"
+                        >
+                          {linkLoading ? 'Redirecting...' : 'Connect'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-2">Link your Microsoft account to sign in without a password.</p>
+                </div>
+                <div className="pt-4 border-t border-slate-100">
                   <p className="text-xs text-slate-500 mb-2">Password</p>
                   <button
                     onClick={requestPasswordReset}
@@ -437,7 +518,7 @@ export default function ProfilePage() {
                     {passwordLoading ? 'Sending...' : 'Reset password'}
                   </button>
                   {passwordMessage && (
-                    <p className={`mt-3 text-sm ${passwordMessage.includes('Failed') ? 'text-red-600' : 'text-green-600'}`}>
+                    <p className={`mt-3 text-sm ${passwordMessage.includes('Failed') || passwordMessage.includes('Could not') ? 'text-red-600' : 'text-green-600'}`}>
                       {passwordMessage}
                     </p>
                   )}

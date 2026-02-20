@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/navigation';
 import { Logo } from '@/components/ui/Logo';
@@ -34,8 +34,36 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [bgImageError, setBgImageError] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const err = searchParams.get('error');
+    if (err === 'oauth_failed') setError('Microsoft sign-in failed. Please try again or use email and password.');
+    else if (err === 'session') setError('Could not create session. Please try again.');
+    else if (err === 'invalid_link') setError('Invalid or expired link. Please try again.');
+    else if (err === 'no_profile') setError('Your account is not set up for the dashboard yet. Please contact hello@ie-global.net.');
+  }, [searchParams]);
+
+  const handleMicrosoftLogin = async () => {
+    setError('');
+    setOauthLoading(true);
+    try {
+      const supabase = createBrowserClient();
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'azure',
+        options: {
+          redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
+        },
+      });
+      if (oauthError) throw oauthError;
+    } catch (err: any) {
+      setError(err.message || 'Could not start Microsoft sign-in');
+      setOauthLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,7 +201,7 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || oauthLoading}
                 className="w-full px-8 py-4 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -186,6 +214,39 @@ export default function LoginPage() {
                   </span>
                 ) : (
                   'Sign In'
+                )}
+              </button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-white px-4 text-slate-500">or</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleMicrosoftLogin}
+                disabled={loading || oauthLoading}
+                className="w-full px-8 py-3 flex items-center justify-center gap-3 rounded-lg border-2 border-gray-300 bg-white text-navy-900 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {oauthLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Redirecting...
+                  </span>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" viewBox="0 0 23 23" fill="currentColor">
+                      <path d="M1 1h10v10H1zM12 1h10v10H12zM1 12h10v10H1zM12 12h10v10H12z" fillOpacity=".9"/>
+                    </svg>
+                    Sign in with Microsoft
+                  </>
                 )}
               </button>
             </form>
