@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
+const MAIN_SITE_LOGO = 'https://ie-global.net/logo.png';
+
 type LogoProps = {
   width?: number;
   height?: number;
@@ -38,20 +40,29 @@ function LogoSvg({
 }
 
 export function Logo({ width = 150, height = 50, className, href = '/', invert }: LogoProps) {
+  const [logoSrc, setLogoSrc] = useState('/logo.png');
   const [imgError, setImgError] = useState(false);
   const compact = width <= 50;
+
+  const handleImgError = () => {
+    if (logoSrc === '/logo.png') {
+      setLogoSrc(MAIN_SITE_LOGO);
+    } else {
+      setImgError(true);
+    }
+  };
 
   const content = imgError ? (
     <LogoSvg className={className} invert={invert} compact={compact} />
   ) : (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/logo.png"
+      src={logoSrc}
       alt="IE Global"
       width={width}
       height={height}
       className={cn('h-auto w-auto', invert && 'brightness-0 invert', className)}
-      onError={() => setImgError(true)}
+      onError={handleImgError}
     />
   );
 

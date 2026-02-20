@@ -3,9 +3,31 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
-import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
 import { Logo } from '@/components/ui/Logo';
+
+const HERO_URL = '/pexels-bibekghosh-14553701.jpg';
+const HERO_FALLBACK_URL = 'https://ie-global.net/pexels-bibekghosh-14553701.jpg';
+
+function LoginBackgroundImage({ onError }: { onError: () => void }) {
+  const [src, setSrc] = useState(HERO_URL);
+  const handleError = () => {
+    if (src === HERO_URL) {
+      setSrc(HERO_FALLBACK_URL);
+    } else {
+      onError();
+    }
+  };
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt=""
+      className="absolute inset-0 w-full h-full object-cover"
+      onError={handleError}
+    />
+  );
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -73,14 +95,7 @@ export default function LoginPage() {
       {/* Left Side - Branding with Background Image */}
       <div className="hidden lg:flex lg:w-1/2 p-12 flex-col justify-between relative overflow-hidden bg-navy-900">
         {!bgImageError && (
-          <Image
-            src="/pexels-bibekghosh-14553701.jpg"
-            alt=""
-            fill
-            className="object-cover"
-            priority
-            onError={() => setBgImageError(true)}
-          />
+          <LoginBackgroundImage onError={() => setBgImageError(true)} />
         )}
         <div className="absolute inset-0 bg-navy-900/75" />
         <div className="relative z-10">
@@ -103,21 +118,21 @@ export default function LoginPage() {
             <Logo width={120} height={40} href="/" className="h-10 w-auto mx-auto" />
           </div>
 
-          <div className="bg-white p-8 md:p-10 !rounded-none shadow-lg border border-gray-200">
-            <h2 className="!font-serif text-3xl font-bold text-navy-900 mb-2">Sign In</h2>
-            <p className="font-sans text-slate-700 mb-8">
+          <div className="bg-white p-8 md:p-10 rounded-xl shadow-lg border border-gray-100">
+            <h2 className="text-3xl font-bold text-navy-900 mb-2">Sign In</h2>
+            <p className="text-slate-700 mb-8">
               Access your project dashboard
             </p>
 
             <form onSubmit={handleLogin} className="space-y-6">
               {error && (
-                <div className="p-4 bg-red-50 border border-red-200 text-red-900 text-sm !rounded-none">
+                <div className="p-4 bg-red-50 border border-red-200 text-red-900 text-sm rounded-lg">
                   {error}
                 </div>
               )}
 
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-navy-900 mb-2 font-sans">
+                <label htmlFor="email" className="block text-sm font-semibold text-navy-900 mb-2">
                   Email
                 </label>
                 <input
@@ -125,7 +140,7 @@ export default function LoginPage() {
                   id="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 !rounded-none focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none text-navy-900 transition-all duration-200 font-sans"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none text-navy-900 transition-all duration-200"
                   placeholder="you@company.com"
                   required
                   disabled={loading}
@@ -134,7 +149,7 @@ export default function LoginPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label htmlFor="password" className="block text-sm font-semibold text-navy-900 font-sans">
+                  <label htmlFor="password" className="block text-sm font-semibold text-navy-900">
                     Password
                   </label>
                   <Link
@@ -149,7 +164,7 @@ export default function LoginPage() {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-300 !rounded-none focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none text-navy-900 transition-all duration-200 font-sans"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none text-navy-900 transition-all duration-200"
                   placeholder="••••••••"
                   required
                   disabled={loading}
@@ -159,7 +174,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-8 py-4 bg-signal-red text-white font-semibold !rounded-none hover:bg-signal-red/90 hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-sans"
+                className="w-full px-8 py-4 bg-signal-red text-white font-semibold rounded-lg hover:bg-signal-red/90 hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
