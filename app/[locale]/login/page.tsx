@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import { Link } from '@/i18n/navigation';
@@ -29,7 +29,7 @@ function LoginBackgroundImage({ onError }: { onError: () => void }) {
   );
 }
 
-export default function LoginPage() {
+function LoginPageContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -272,3 +272,21 @@ export default function LoginPage() {
   );
 }
 
+function LoginPageFallback() {
+  return (
+    <div className="min-h-screen flex">
+      <div className="hidden lg:flex lg:w-1/2 bg-navy-900" />
+      <div className="flex-1 flex items-center justify-center p-8 bg-off-white">
+        <div className="w-12 h-12 border-2 border-signal-red border-t-transparent rounded-full animate-spin" />
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginPageFallback />}>
+      <LoginPageContent />
+    </Suspense>
+  );
+}

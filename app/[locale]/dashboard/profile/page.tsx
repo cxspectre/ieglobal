@@ -82,8 +82,8 @@ export default function ProfilePage() {
           address_country: data.address_country || '',
           bio: data.bio || '',
         });
-        const { data } = await supabase.auth.getUserIdentities();
-        const list = (data as { identities?: { id: string; provider: string }[] })?.identities ?? [];
+        const { data: idData } = await supabase.auth.getUserIdentities();
+        const list = ((idData as unknown) as { identities?: { id: string; provider: string }[] } | null)?.identities ?? [];
         setIdentities(list.map((i) => ({ id: i.id, provider: i.provider })));
         // Load profile documents
         const { data: docs } = await (supabase as any)
@@ -196,13 +196,13 @@ export default function ProfilePage() {
   };
 
   const handleUnlinkMicrosoft = async () => {
-    const id = identities.find((i) => i.provider === 'azure')?.id;
-    if (!id) return;
-    setUnlinkLoading(id);
+    const identity = identities.find((i) => i.provider === 'azure');
+    if (!identity) return;
+    setUnlinkLoading(identity.id);
     try {
-      const { error } = await supabase.auth.unlinkIdentity({ identityId: id });
+      const { error } = await (supabase.auth as any).unlinkIdentity(identity);
       if (error) throw error;
-      setIdentities((prev) => prev.filter((i) => i.id !== id));
+      setIdentities((prev) => prev.filter((i) => i.id !== identity.id));
     } catch (err: any) {
       setPasswordMessage(err.message || 'Could not disconnect Microsoft account');
     }
