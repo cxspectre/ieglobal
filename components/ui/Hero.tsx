@@ -19,6 +19,10 @@ type HeroProps = {
     href: string;
   };
   backgroundPattern?: 'gradient' | 'mesh' | 'none';
+  /** Optional background image (path from public, e.g. /pexels-xxx.jpg). Use with imageOverlay for text contrast. */
+  backgroundImage?: string;
+  /** Overlay over background image (e.g. bg-black/60). Defaults to bg-black/50 when backgroundImage is set. */
+  imageOverlay?: string;
   className?: string;
 };
 
@@ -30,6 +34,8 @@ export default function Hero({
   primaryCTA,
   secondaryCTA,
   backgroundPattern = 'gradient',
+  backgroundImage,
+  imageOverlay,
   className,
 }: HeroProps) {
   const containerVariants = {
@@ -70,10 +76,19 @@ export default function Hero({
     <section
       className={cn(
         'relative overflow-hidden text-white',
-        getBackgroundClass(),
+        !backgroundImage && getBackgroundClass(),
         className
       )}
     >
+      {backgroundImage && (
+        <>
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${backgroundImage})` }}
+          />
+          <div className={cn('absolute inset-0', imageOverlay ?? 'bg-black/50')} />
+        </>
+      )}
       {/* Background Pattern Overlay */}
       <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "url('/grid-pattern.svg')" }} />
 

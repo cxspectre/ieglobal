@@ -25,7 +25,8 @@ export default async function TemplatesPage() {
         eyebrow="Templates"
         title="Website templates to inspire"
         subtitle="Browse our collection of modern, responsive designs. Click any template to read more and open it in a new tab."
-        backgroundPattern="gradient"
+        backgroundImage="/pexels-bibekghosh-14553701.jpg"
+        imageOverlay="bg-black/55"
       />
 
       <section className="section bg-white">
