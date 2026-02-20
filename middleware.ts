@@ -42,6 +42,10 @@ export default function middleware(request: NextRequest) {
   // Dashboard subdomain: rewrite to /en/ paths so dashboard is served at dashboard.ie-global.net
   if (host.startsWith('dashboard.')) {
     const pathname = url.pathname;
+    // Let static assets (logo, images, etc.) be served from public/ — do not rewrite
+    if (pathname.includes('.')) {
+      return NextResponse.next();
+    }
     if (pathname === '/' || pathname === '') {
       url.pathname = '/en/dashboard';
       return NextResponse.rewrite(url);
