@@ -9,6 +9,9 @@ type Props = {
   params: Promise<{ locale: string; slug: string }>;
 };
 
+// Revalidate so new templates and updates appear
+export const revalidate = 60;
+
 export async function generateStaticParams() {
   const templates = await getPublishedTemplates();
   return templates

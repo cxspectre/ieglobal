@@ -59,10 +59,18 @@ export async function GET(
       .single();
 
     if (!template) {
-      return new NextResponse(
-        'Template not found. Add this template in the dashboard first (Dashboard → Templates → Add template) with the same slug as in the URL, then upload your .zip or dist folder.',
-        { status: 404, headers: { 'Content-Type': 'text/plain' } }
-      );
+      const msg = [
+        `Template not found for slug: "${slug}".`,
+        '',
+        'You do NOT need to change your index.html or any template files.',
+        'In the dashboard: go to Templates > Add template.',
+        `In the "Slug" field, enter exactly: ${slug}`,
+        'Then upload your .zip or the dist folder (no changes to files needed).',
+      ].join('\n');
+      return new NextResponse(msg, {
+        status: 404,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      });
     }
 
     let fileData: Blob | null = null;

@@ -3,6 +3,9 @@ import Hero from '@/components/ui/Hero';
 import { getPublishedTemplates } from '@/lib/website-templates';
 import { TemplatesSection } from '@/components/templates/TemplatesSection';
 
+// Revalidate so new/updated published templates appear (not just build-time snapshot)
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: 'Website Templates – IE Global',
   description: 'Browse our collection of website templates. Modern, responsive designs ready to inspire your next project. Click to explore and open in a new tab.',

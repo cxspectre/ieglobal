@@ -476,6 +476,11 @@ export default function TemplatesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <p className="text-sm text-slate-600">
           {templates.filter((t) => t.published).length} published · {templates.length} total
+          {templates.length > 0 && (
+            <span className="block text-xs text-slate-500 mt-0.5">
+              Only published templates appear on the public Templates page.
+            </span>
+          )}
         </p>
         <button
           type="button"
