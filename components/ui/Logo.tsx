@@ -1,0 +1,66 @@
+'use client';
+
+import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+
+type LogoProps = {
+  width?: number;
+  height?: number;
+  className?: string;
+  href?: string;
+  /** Use white/inverted style (e.g. on dark sidebar) */
+  invert?: boolean;
+};
+
+function LogoSvg({
+  className,
+  invert,
+  compact,
+}: {
+  className?: string;
+  invert?: boolean;
+  compact?: boolean;
+}) {
+  return (
+    <span
+      className={cn(
+        'font-bold tracking-tight text-navy-900',
+        invert && 'text-white',
+        compact ? 'text-sm' : 'text-lg',
+        className
+      )}
+      aria-hidden
+    >
+      {compact ? 'IE' : 'IE Global'}
+    </span>
+  );
+}
+
+export function Logo({ width = 150, height = 50, className, href = '/', invert }: LogoProps) {
+  const [imgError, setImgError] = useState(false);
+  const compact = width <= 50;
+
+  const content = imgError ? (
+    <LogoSvg className={className} invert={invert} compact={compact} />
+  ) : (
+    <Image
+      src="/logo.png"
+      alt="IE Global"
+      width={width}
+      height={height}
+      className={cn('h-auto w-auto', invert && 'brightness-0 invert', className)}
+      onError={() => setImgError(true)}
+    />
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className="inline-flex items-center">
+        {content}
+      </Link>
+    );
+  }
+  return <span className="inline-flex items-center">{content}</span>;
+}

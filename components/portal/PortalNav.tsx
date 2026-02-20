@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { Logo } from '@/components/ui/Logo';
 
 type PortalNavProps = {
   userType: 'employee' | 'client';
@@ -39,13 +39,7 @@ export default function PortalNav({ userType, userName, userRole, onLogout }: Po
           {/* Logo */}
           <div className="flex items-center gap-8">
             <Link href={baseHref} className="flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="IE Global"
-                width={120}
-                height={40}
-                className="h-8 w-auto"
-              />
+              <Logo width={120} height={40} href="" className="h-8 w-auto" />
               <span className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
                 {userType === 'employee' ? 'Dashboard' : 'Portal'}
               </span>

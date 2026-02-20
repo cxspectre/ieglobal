@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 import { Link } from '@/i18n/navigation';
+import { Logo } from '@/components/ui/Logo';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -71,7 +72,7 @@ export default function LoginPage() {
       {/* Left Side - Branding with Background Image */}
       <div className="hidden lg:flex lg:w-1/2 p-12 flex-col justify-between relative overflow-hidden">
         <Image
-          src="/pexels-themob000-28428592.jpg"
+          src="/pexels-bibekghosh-14553701.jpg"
           alt=""
           fill
           className="object-cover"
@@ -79,15 +80,7 @@ export default function LoginPage() {
         />
         <div className="absolute inset-0 bg-navy-900/75" />
         <div className="relative z-10">
-          <Link href="/">
-            <Image
-              src="/logo.png"
-              alt="IE Global"
-              width={150}
-              height={50}
-              className="h-12 w-auto brightness-0 invert"
-            />
-          </Link>
+          <Logo width={150} height={50} href="/" className="h-12 w-auto" invert />
         </div>
         <div className="relative z-10">
           <h1 className="text-4xl font-bold text-white mb-6">
@@ -103,13 +96,7 @@ export default function LoginPage() {
       <div className="flex-1 flex items-center justify-center p-8 bg-off-white">
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
-            <Image
-              src="/logo.png"
-              alt="IE Global"
-              width={120}
-              height={40}
-              className="h-10 w-auto mx-auto"
-            />
+            <Logo width={120} height={40} href="/" className="h-10 w-auto mx-auto" />
           </div>
 
           <div className="bg-white p-8 md:p-10 rounded-xl shadow-lg border border-gray-100">

@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { Link, usePathname } from '@/i18n/navigation';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { Logo } from '@/components/ui/Logo';
 
 const portalNavItems = [
   { href: '/portal', label: 'Overview', icon: HomeIcon, exactMatch: true },
@@ -96,7 +96,7 @@ export default function PortalSidebar({ userName, onLogout }: PortalSidebarProps
     <div className="flex flex-col h-full">
       <div className="p-6 border-b border-white/10">
         <Link href="/portal" className="flex items-center gap-3" onClick={() => setMobileOpen(false)}>
-          <Image src="/logo.png" alt="IE Global" width={36} height={36} className="h-9 w-auto brightness-0 invert" />
+          <Logo width={36} height={36} href="" invert className="h-9 w-auto shrink-0" />
           <div>
             <span className="block font-semibold text-white text-sm">IE Global</span>
             <span className="block text-xs text-white/60 uppercase tracking-wider">Portal</span>
