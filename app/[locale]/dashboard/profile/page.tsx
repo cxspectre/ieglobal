@@ -82,8 +82,9 @@ export default function ProfilePage() {
           address_country: data.address_country || '',
           bio: data.bio || '',
         });
-        const { data: ids } = await supabase.auth.getUserIdentities();
-        setIdentities((ids ?? []).map((i: { id: string; provider: string }) => ({ id: i.id, provider: i.provider })));
+        const { data } = await supabase.auth.getUserIdentities();
+        const list = (data as { identities?: { id: string; provider: string }[] })?.identities ?? [];
+        setIdentities(list.map((i) => ({ id: i.id, provider: i.provider })));
         // Load profile documents
         const { data: docs } = await (supabase as any)
           .from('profile_documents')
