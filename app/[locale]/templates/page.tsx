@@ -7,20 +7,49 @@ import { TemplatesSection } from '@/components/templates/TemplatesSection';
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: 'Website Templates – IE Global',
-  description: 'Browse our collection of website templates. Modern, responsive designs ready to inspire your next project. Click to explore and open in a new tab.',
+  title: 'Website Templates | Free & Responsive Designs – IE Global',
+  description:
+    'Discover our website templates: free, responsive designs for landing pages, portfolios, and business sites. Browse modern templates and find the right one for your project.',
+  keywords: ['website templates', 'free website templates', 'responsive templates', 'landing page templates', 'portfolio templates', 'business website templates'],
   openGraph: {
-    title: 'Website Templates – IE Global',
+    title: 'Website Templates | Free & Responsive Designs – IE Global',
+    description: 'Discover our website templates: free, responsive designs for landing pages, portfolios, and business sites.',
     url: 'https://ie-global.net/templates',
+    siteName: 'IE Global',
+    type: 'website',
+    images: [{ url: 'https://ie-global.net/pexels-bibekghosh-14553701.jpg', width: 1200, height: 630, alt: 'Website templates' }],
   },
   alternates: { canonical: 'https://ie-global.net/templates' },
+  robots: { index: true, follow: true },
 };
 
 export default async function TemplatesPage() {
   const templates = await getPublishedTemplates();
 
+  const itemListJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Website Templates – IE Global',
+    description: 'Free, responsive website templates for landing pages, portfolios, and business websites.',
+    url: 'https://ie-global.net/templates',
+    numberOfItems: templates.length,
+    itemListElement: templates
+      .filter((t) => t.slug)
+      .map((t, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `https://ie-global.net/templates/${t.slug}`,
+        name: t.name,
+        description: t.description ?? undefined,
+      })),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
       <Hero
         eyebrow="Templates"
         title="Website templates to inspire"
@@ -29,8 +58,14 @@ export default async function TemplatesPage() {
         imageOverlay="bg-black/55"
       />
 
-      <section className="section bg-white">
+      <section className="section bg-white" aria-labelledby="templates-heading">
         <div className="container-wide">
+          <h2 id="templates-heading" className="sr-only">
+            Browse website templates
+          </h2>
+          <p className="text-slate-600 max-w-2xl mb-10 text-lg">
+            Our website templates are free to explore and built for performance: responsive layouts, clean code, and ready for your content. Find landing page templates, portfolio templates, and business website templates across different industries.
+          </p>
           {templates.length === 0 ? (
             <div className="text-center py-20">
               <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-6">

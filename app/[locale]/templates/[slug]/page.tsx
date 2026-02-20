@@ -19,6 +19,8 @@ export async function generateStaticParams() {
     .map((t) => ({ slug: t.slug! }));
 }
 
+const BASE = 'https://ie-global.net';
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const template = await getTemplateBySlug(slug);
@@ -27,13 +29,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Template Not Found' };
   }
 
+  const title = `${template.name} – Website Template | IE Global`;
+  const description =
+    template.description ??
+    `${template.name} – responsive website template. ${template.category} design. Explore and use this template for your next project.`;
+
   return {
-    title: `${template.name} – Website Template`,
-    description: template.description ?? `Explore the ${template.name} website template.`,
+    title,
+    description,
+    keywords: [
+      template.name,
+      'website template',
+      template.category,
+      'responsive template',
+      'free website template',
+    ].filter(Boolean),
     openGraph: {
       title: `${template.name} – IE Global Templates`,
-      description: template.description ?? undefined,
+      description,
+      url: `${BASE}/templates/${slug}`,
+      siteName: 'IE Global',
+      type: 'website',
+      images: template.thumbnail_url
+        ? [{ url: template.thumbnail_url, width: 1200, height: 630, alt: template.name }]
+        : undefined,
     },
+    alternates: { canonical: `${BASE}/templates/${slug}` },
+    robots: { index: true, follow: true },
   };
 }
 
@@ -56,13 +78,31 @@ export default async function TemplateDetailPage({ params }: Props) {
   const features = Array.isArray(template.features) ? template.features : [];
   const pageNames = Array.isArray(template.page_names) ? template.page_names : [];
 
+  const creativeWorkJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: template.name,
+    description: template.description ?? `${template.name} website template – ${template.category}.`,
+    url: `${BASE}/templates/${slug}`,
+    image: template.thumbnail_url ?? undefined,
+    author: template.author ? { '@type': 'Organization', name: template.author } : undefined,
+    genre: template.category,
+    keywords: [template.name, 'website template', template.category].filter(Boolean).join(', '),
+  };
+
   return (
-    <TemplateDetailContent
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(creativeWorkJsonLd) }}
+      />
+      <TemplateDetailContent
       template={template}
       allImages={allImages}
       longDescriptionHtml={longDescriptionHtml}
       features={features}
-      pageNames={pageNames}
-    />
+        pageNames={pageNames}
+      />
+    </>
   );
 }
