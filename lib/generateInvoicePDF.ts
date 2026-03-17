@@ -16,6 +16,7 @@ type InvoiceData = {
   };
   clientKvK?: string;
   clientVAT?: string;
+  preparedByName?: string;
   subtotal: number;
   vatRate: number;
   vatAmount: number;
@@ -159,7 +160,8 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Blob> {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
-  doc.text('Cassian Drefke', metaValueX, metaY, { align: 'right' });
+  const preparedByName = data.preparedByName || 'Cassian Drefke';
+  doc.text(preparedByName, metaValueX, metaY, { align: 'right' });
   metaY += lineHeight - 1;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);

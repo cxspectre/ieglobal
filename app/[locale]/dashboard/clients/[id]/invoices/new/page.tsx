@@ -10,12 +10,15 @@ export default function NewInvoicePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [clientData, setClientData] = useState<any>(null);
+  const [preparers, setPreparers] = useState<{ id: string; full_name: string; email: string | null; role: string }[]>([]);
+  const [selectedPreparerId, setSelectedPreparerId] = useState<string>('');
   const params = useParams();
   const router = useRouter();
   const supabase = createBrowserClient();
 
   useEffect(() => {
     loadClient();
+    loadPreparers();
   }, []);
 
   const loadClient = async () => {
@@ -26,6 +29,36 @@ export default function NewInvoicePage() {
       .single();
     
     if (data) setClientData(data);
+  };
+
+  const loadPreparers = async () => {
+    try {
+      const [{ data: sessionData }, { data, error }] = await Promise.all([
+        supabase.auth.getSession(),
+        (supabase as any)
+          .from('profiles')
+          .select('id, full_name, email, role')
+          .in('role', ['admin', 'employee', 'partner'])
+          .order('full_name'),
+      ]);
+
+      if (error) {
+        console.error('Error loading preparers:', error);
+        return;
+      }
+
+      const rows = (data as any[]) || [];
+      setPreparers(rows);
+
+      const sessionUserId = sessionData?.session?.user?.id as string | undefined;
+      if (sessionUserId && rows.some((p) => p.id === sessionUserId)) {
+        setSelectedPreparerId(sessionUserId);
+      } else if (rows.length > 0) {
+        setSelectedPreparerId(rows[0].id);
+      }
+    } catch (err) {
+      console.error('Error loading preparers:', err);
+    }
   };
 
   const [formData, setFormData] = useState({
@@ -166,6 +199,9 @@ export default function NewInvoicePage() {
         }));
       }
 
+      // Resolve \"prepared by\" user
+      const selectedPreparer = preparers.find((p) => p.id === selectedPreparerId) || null;
+
       // Generate customer number if not exists
       const customerNumber = clientData.customer_number || `2025-${String(Math.floor(Math.random() * 900) + 100)}`;
       
@@ -191,6 +227,7 @@ export default function NewInvoicePage() {
         totalAmount: totalAmount,
         currency: 'EUR',
         description: formData.description || 'Professional Services',
+        preparedByName: selectedPreparer?.full_name || 'Cassian Drefke',
       });
 
       // Upload PDF to storage
@@ -385,6 +422,37 @@ export default function NewInvoicePage() {
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none transition-colors"
               />
             </div>
+          </div>
+
+          {/* Prepared by */}
+          <div>
+            <label className="block text-sm font-semibold text-navy-900 mb-2">
+              Prepared by <span className="text-signal-red">*</span>
+            </label>
+            {preparers.length > 0 ? (
+              <select
+                value={selectedPreparerId}
+                onChange={(e) => setSelectedPreparerId(e.target.value)}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:border-signal-red focus:ring-2 focus:ring-signal-red/20 focus:outline-none transition-colors bg-white"
+                required
+              >
+                {preparers.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.full_name} {p.role !== 'admin' && p.role !== 'employee' ? `(${p.role})` : ''}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value="Cassian Drefke"
+                readOnly
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-600"
+              />
+            )}
+            <p className="mt-1 text-xs text-slate-500">
+              This name appears in the \"Prepared by\" line on the invoice PDF.
+            </p>
           </div>
 
           {/* VAT Breakdown Preview */}
