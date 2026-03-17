@@ -94,10 +94,11 @@ export default function NewInvoicePage() {
     void ensureInvoiceNumber();
   }, [formData.issue_date, formData.invoice_number]);
 
-  // Calculate VAT breakdown
+  // Calculate VAT breakdown (VAT rate can be 0%)
   const calculateVAT = () => {
     const amount = parseFloat(formData.amount) || 0;
-    const vatRate = parseFloat(formData.vat_rate) || 21;
+    const parsed = parseFloat(formData.vat_rate);
+    const vatRate = (formData.vat_rate === '' || Number.isNaN(parsed)) ? 21 : parsed;
     const subtotal = amount / (1 + vatRate / 100);
     const vatAmount = amount - subtotal;
     const totalAmount = amount;
@@ -151,7 +152,8 @@ export default function NewInvoicePage() {
 
       if (!clientData) throw new Error('Client data not loaded');
 
-      const vatRate = parseFloat(formData.vat_rate) || 21;
+      const parsed = parseFloat(formData.vat_rate);
+      const vatRate = (formData.vat_rate === '' || Number.isNaN(parsed)) ? 21 : parsed;
       const { subtotal, vatAmount, totalAmount } = vatBreakdown;
 
       // Ensure we have an invoice number (auto-generate if missing)
