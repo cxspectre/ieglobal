@@ -7,18 +7,11 @@ import { motion } from 'framer-motion';
 
 const founders = [
   {
-    name: { first: 'Cassian', last: 'Drefke' },
-    role: 'Founder',
-    email: 'cdrefke@ie-global.net',
-    image: '/IMG_0342.jpg',
-    imagePosition: '50% 35%', // center face in circular crop
-  },
-  {
-    name: { first: 'Wessel', last: 'Gederblom' },
+    name: { first: 'Wessel', last: 'Gelderblom' },
     role: 'Co-Founder',
     email: 'wgelderblom@ie-global.net',
     image: '/7e204664-ee6f-4b20-853e-476fc98fc899.jpg',
-    imagePosition: '50% 35%', // center face in circular crop
+    imagePosition: '50% 35%',
   },
 ];
 

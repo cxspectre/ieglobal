@@ -46,7 +46,7 @@ export async function POST(request: Request) {
         notice_days: formData.notice_days || '30',
         cure_days: formData.cure_days || '10',
         governing_law: formData.governing_law || 'Netherlands',
-        notice_email: formData.notice_email || 'cdrefke@ie-global.net',
+        notice_email: formData.notice_email || 'info@ie-global.net',
       };
       const pdfBlob = await generateAgreementPDF('partnership', pData);
       const buffer = await pdfBlob.arrayBuffer();

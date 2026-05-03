@@ -9,9 +9,8 @@ export const IE_GLOBAL = {
   address: 'Oder 20 Box 66193, 2491DC Den Haag, Netherlands',
   kvk: '97185515',
   btw: 'NL005254766B14',
-  contact: 'Cassian Drefke',
   phone: '+31 6 27 20 71 08',
-  email: 'cdrefke@ie-global.net',
+  email: 'info@ie-global.net',
   iban: 'NL50 BUNQ 2152 5367 38',
   bic: 'BUNQNL2A',
 };
@@ -85,7 +84,7 @@ export function fillTemplate(text: string, data: AgreementFormData): string {
 // NDA
 export const NDA_TEXT = {
   title: 'Non-Disclosure Agreement (NDA)',
-  parties: `1. IE Global (Service Provider)\n   ${IE_GLOBAL.address}\n   KvK: ${IE_GLOBAL.kvk} | BTW: ${IE_GLOBAL.btw}\n   Contact: ${IE_GLOBAL.contact} | ${IE_GLOBAL.email}\n\n2. {{company_name}} (Client)\n   Contact: {{client_contact}} | Tel: {{client_phone}}\n   Address: {{client_address}}\n   Email: {{client_email}}\n   KvK: {{client_kvk}} | BTW: {{client_vat}}`,
+  parties: `1. IE Global (Service Provider)\n   ${IE_GLOBAL.address}\n   KvK: ${IE_GLOBAL.kvk} | BTW: ${IE_GLOBAL.btw}\n   Contact: ${IE_GLOBAL.email}\n\n2. {{company_name}} (Client)\n   Contact: {{client_contact}} | Tel: {{client_phone}}\n   Address: {{client_address}}\n   Email: {{client_email}}\n   KvK: {{client_kvk}} | BTW: {{client_vat}}`,
   purpose: 'The parties wish to explore a business opportunity involving {{work_types}} and will need to disclose certain confidential information to each other for the purpose of evaluating and potentially pursuing this opportunity.',
   sections: [
     { title: '1. Definition of Confidential Information', content: 'Confidential Information includes all information disclosed by either party, whether in writing, orally, or by any other means, including but not limited to: technical data, trade secrets, know-how, research, product plans, products, services, customers, customer lists, markets, software, developments, inventions, processes, formulas, technology, designs, drawings, engineering, hardware configuration information, marketing, finances, or other business information.' },

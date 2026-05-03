@@ -7,7 +7,7 @@ import { Link } from '@/i18n/navigation';
 
 export const metadata: Metadata = {
   title: 'The Team – IE Global Digital Systems & Engineering',
-  description: 'IE Global is a digital systems and engineering company. Meet Cassian and Wessel—the founders who build scalable digital systems that create momentum, not friction.',
+  description: 'IE Global is a digital systems and engineering company. Meet the founder who builds scalable digital systems that create momentum, not friction.',
   openGraph: {
     title: 'The Team – IE Global Digital Systems & Engineering',
     description: 'IE Global is a digital systems and engineering company. Meet the founders who build scalable digital systems that create momentum—not friction.',
@@ -45,8 +45,8 @@ export default function TheTeamPage() {
             </h2>
             <p className="text-lg text-gray-200">
               {isDe
-                ? 'Cassian und Wessel führen IE Global. Die Menschen, die Sie kennenlernen, sind dieselben, die auch wirklich bauen – kein Outsourcing, keine Übergaben in der Kette.'
-                : 'Cassian and Wessel run IE Global. The people you meet are the people who build—no outsourcing, no handoffs.'}
+                ? 'Wessel führt IE Global. Die Menschen, die Sie kennenlernen, sind dieselben, die auch wirklich bauen – kein Outsourcing, keine Übergaben in der Kette.'
+                : 'Wessel runs IE Global. The people you meet are the people who build—no outsourcing, no handoffs.'}
             </p>
           </div>
           <MeetTheFounders variant="about" embed />

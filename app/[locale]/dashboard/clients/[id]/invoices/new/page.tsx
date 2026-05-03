@@ -227,7 +227,7 @@ export default function NewInvoicePage() {
         totalAmount: totalAmount,
         currency: 'EUR',
         description: formData.description || 'Professional Services',
-        preparedByName: selectedPreparer?.full_name || 'Cassian Drefke',
+        preparedByName: selectedPreparer?.full_name || 'IE Global',
       });
 
       // Upload PDF to storage
@@ -445,7 +445,7 @@ export default function NewInvoicePage() {
             ) : (
               <input
                 type="text"
-                value="Cassian Drefke"
+                value="IE Global"
                 readOnly
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl bg-slate-50 text-slate-600"
               />

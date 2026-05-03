@@ -160,13 +160,13 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Blob> {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(0, 0, 0);
-  const preparedByName = data.preparedByName || 'Cassian Drefke';
+  const preparedByName = data.preparedByName || 'IE Global';
   doc.text(preparedByName, metaValueX, metaY, { align: 'right' });
   metaY += lineHeight - 1;
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-  doc.text('Managing Director · cdrefke@ie-global.net', metaValueX, metaY, { align: 'right' });
+  doc.text('info@ie-global.net', metaValueX, metaY, { align: 'right' });
 
   const tableStartY = Math.max(billBottom, metaY) + 12;
 
@@ -276,7 +276,7 @@ export async function generateInvoicePDF(data: InvoiceData): Promise<Blob> {
   const cols = [
     { title: 'IE GLOBAL', lines: ['Oder 20 Box 66193', '2491DC Den Haag', 'Netherlands'], x: marginLeft },
     { title: 'LEGAL', lines: ['KvK: 97185515', 'BTW: NL005254766B14'], x: marginLeft + footerColWidth },
-    { title: 'CONTACT', lines: ['Cassian Drefke', '+31 6 27 20 71 08', 'cdrefke@ie-global.net'], x: marginLeft + footerColWidth * 2 },
+    { title: 'CONTACT', lines: ['+31 6 27 20 71 08', 'info@ie-global.net'], x: marginLeft + footerColWidth * 2 },
     { title: 'BANK', lines: ['BUNQ · IE Global', 'IBAN: NL50 BUNQ 2152 5367 38', 'BIC: BUNQNL2A'], x: marginLeft + footerColWidth * 3 },
   ];
 

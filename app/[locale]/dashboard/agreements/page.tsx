@@ -101,7 +101,7 @@ const defaultPartnerForm = {
   notice_days: '30',
   cure_days: '10',
   governing_law: 'Netherlands',
-  notice_email: 'cdrefke@ie-global.net',
+  notice_email: 'info@ie-global.net',
 };
 
 export default function AgreementsPage() {
