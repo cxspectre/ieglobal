@@ -158,7 +158,7 @@ Then add a policy so files can be read (e.g. **Policies** → **New policy** →
 - Click **"Add user"** → **"Create new user"**
 
 ### 2. Fill Details
-- **Email**: cassian.drefke@icloud.com (or your email)
+- **Email**: your admin email
 - **Password**: Create strong password
 - **Auto Confirm User**: ✓ Check this!
 - Click **"Create user"**

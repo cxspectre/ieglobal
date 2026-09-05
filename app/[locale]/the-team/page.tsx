@@ -2,15 +2,14 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { useLocale } from 'next-intl';
 import Hero from '@/components/ui/Hero';
-import MeetTheFounders from '@/components/ui/MeetTheFounders';
 import { Link } from '@/i18n/navigation';
 
 export const metadata: Metadata = {
   title: 'The Team – IE Global Digital Systems & Engineering',
-  description: 'IE Global is a digital systems and engineering company. Meet the founder who builds scalable digital systems that create momentum, not friction.',
+  description: 'IE Global is a digital systems and engineering company. A small team building scalable digital systems that create momentum, not friction.',
   openGraph: {
     title: 'The Team – IE Global Digital Systems & Engineering',
-    description: 'IE Global is a digital systems and engineering company. Meet the founders who build scalable digital systems that create momentum—not friction.',
+    description: 'IE Global is a digital systems and engineering company. A small team building scalable digital systems that create momentum—not friction.',
     url: 'https://ie-global.net/the-team',
   },
   alternates: { canonical: 'https://ie-global.net/the-team' },
@@ -30,28 +29,11 @@ export default function TheTeamPage() {
         }
         subtitle={
           isDe
-            ? 'Wir sind ein kleines Team, das digitale Systeme baut, die Schwung erzeugen – nicht Reibung. Keine anonyme Agentur. Lernen Sie die beiden Gründer kennen.'
-            : "We're a small team that builds digital systems that create momentum—not friction. No faceless agency. Meet the two founders below."
+            ? 'Wir sind ein kleines Team, das digitale Systeme baut, die Schwung erzeugen – nicht Reibung. Keine anonyme Agentur.'
+            : "We're a small team that builds digital systems that create momentum—not friction. No faceless agency."
         }
         backgroundPattern="mesh"
       />
-
-      {/* Founders — front and center */}
-      <section className="section bg-navy-900 text-white">
-        <div className="container-wide max-w-5xl">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              {isDe ? 'Die Gründer' : 'Meet the Founders'}
-            </h2>
-            <p className="text-lg text-gray-200">
-              {isDe
-                ? 'Wessel führt IE Global. Die Menschen, die Sie kennenlernen, sind dieselben, die auch wirklich bauen – kein Outsourcing, keine Übergaben in der Kette.'
-                : 'Wessel runs IE Global. The people you meet are the people who build—no outsourcing, no handoffs.'}
-            </p>
-          </div>
-          <MeetTheFounders variant="about" embed />
-        </div>
-      </section>
 
       {/* Why we exist — single column, punchy */}
       <section className="section bg-white">

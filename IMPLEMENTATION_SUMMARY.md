@@ -100,7 +100,7 @@
 
 1. **Push to GitHub:**
    ```bash
-   cd "/Users/cassiandrefke/Desktop/Redo IE"
+   cd "<path-to-project>"
    git init
    git add .
    git commit -m "Initial commit: IE Global website"

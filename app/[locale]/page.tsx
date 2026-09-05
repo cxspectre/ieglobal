@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import HeroCarousel from '@/components/ui/HeroCarousel';
 import HowWeCanHelp from '@/components/ui/HowWeCanHelp';
-import MeetTheFounders from '@/components/ui/MeetTheFounders';
 import TemplateRequestModal from '@/components/ui/TemplateRequestModal';
 import { Link } from '@/i18n/navigation';
 
@@ -172,9 +171,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Meet the Founders */}
-      <MeetTheFounders />
 
       {/* How We Can Help - Interactive Sidebar Design */}
       <HowWeCanHelp />

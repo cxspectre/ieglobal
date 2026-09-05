@@ -14,7 +14,7 @@
 
 **Option B - Supabase CLI**
 ```bash
-cd "/Users/cassiandrefke/Desktop/Redo IE"
+cd "<path-to-project>"
 supabase db push
 ```
 
