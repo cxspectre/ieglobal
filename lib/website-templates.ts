@@ -1,11 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './supabase/client';
 
+/** Anon-key client for template reads; null when Supabase env vars are absent (e.g. during build). */
 function getTemplatesSupabase() {
-  return createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anonKey) return null;
+  return createClient<Database>(url, anonKey);
 }
 
 export type WebsiteTemplate = {
@@ -28,6 +29,7 @@ export type WebsiteTemplate = {
 
 export async function getPublishedTemplates(): Promise<WebsiteTemplate[]> {
   const supabase = getTemplatesSupabase();
+  if (!supabase) return [];
   const { data, error } = await supabase
     .from('website_templates')
     .select('id, name, slug, description, category, template_url, thumbnail_url, gallery_urls, long_description, features, author, page_names, sort_order, created_at')
@@ -44,6 +46,7 @@ export async function getPublishedTemplates(): Promise<WebsiteTemplate[]> {
 
 export async function getTemplateBySlug(slug: string): Promise<WebsiteTemplate | null> {
   const supabase = getTemplatesSupabase();
+  if (!supabase) return null;
   const { data, error } = await supabase
     .from('website_templates')
     .select('id, name, slug, description, category, template_url, thumbnail_url, gallery_urls, long_description, features, author, page_names, sort_order, created_at')

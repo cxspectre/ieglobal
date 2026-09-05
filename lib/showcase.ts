@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { tryCreatePublicSupabaseClient } from '@/lib/supabase/factory';
 
 export type ShowcaseItem = {
   id: string;
@@ -12,10 +12,8 @@ export type ShowcaseItem = {
 
 /** Fetch all showcase items for the public page (ordered by sort_order 1–6). */
 export async function getShowcaseItems(): Promise<ShowcaseItem[]> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = tryCreatePublicSupabaseClient();
+  if (!supabase) return [];
   const { data, error } = await supabase
     .from('showcase')
     .select('id, sort_order, project_url, description, industry_type, created_at, updated_at')

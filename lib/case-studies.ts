@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { tryCreateServerReadClient } from '@/lib/supabase/factory';
 import { getCaseStudies as getMdxCaseStudies, getCaseStudy as getMdxCaseStudy } from '@/lib/mdx';
 import { marked } from 'marked';
 
@@ -19,10 +19,8 @@ export type CaseStudyDisplay = {
 };
 
 async function getDbCaseStudies(): Promise<CaseStudyDisplay[]> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = tryCreateServerReadClient();
+  if (!supabase) return [];
   const { data, error } = await supabase
     .from('milestones')
     .select('*')
@@ -49,10 +47,8 @@ async function getDbCaseStudies(): Promise<CaseStudyDisplay[]> {
 }
 
 async function getDbCaseStudy(slug: string): Promise<CaseStudyDisplay | null> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = tryCreateServerReadClient();
+  if (!supabase) return null;
   const { data, error } = await supabase
     .from('milestones')
     .select('*')
