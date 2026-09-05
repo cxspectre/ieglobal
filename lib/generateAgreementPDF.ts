@@ -101,7 +101,7 @@ function addSignatures(doc: jsPDF, currentY: { value: number }) {
   doc.setFont('helvetica', 'normal');
   doc.text('Signature: ________________________________________________', marginLeft, currentY.value);
   currentY.value += lineHeight + 3;
-  doc.text(`Name: ${IE_GLOBAL.contact}`, marginLeft, currentY.value);
+  doc.text('Name: ____________________________________________________', marginLeft, currentY.value);
   currentY.value += lineHeight + 3;
   doc.text('Title: Managing Director', marginLeft, currentY.value);
   currentY.value += lineHeight + 3;
@@ -142,7 +142,7 @@ function addPartnerSignatures(doc: jsPDF, currentY: { value: number }, partnerNa
   doc.setFont('helvetica', 'normal');
   doc.text('Signature: ________________________________________________', marginLeft, currentY.value);
   currentY.value += lineHeight + 3;
-  doc.text(`Name: ${IE_GLOBAL.contact}`, marginLeft, currentY.value);
+  doc.text('Name: ____________________________________________________', marginLeft, currentY.value);
   currentY.value += lineHeight + 3;
   doc.text('Title: Managing Director', marginLeft, currentY.value);
   currentY.value += lineHeight + 3;
