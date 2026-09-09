@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Veyago credit – snippet &amp; demo</title>
+<style>
+  body { margin: 0; font: 14px/1.5 system-ui, sans-serif; }
+  .demo { padding: 24px 32px; display: flex; gap: 32px; align-items: center; flex-wrap: wrap; }
+  .demo--dark { background: #0b1930; color: #9ca3af; }
+  .demo--light { background: #f8fafc; color: #475569; }
+  .demo h2 { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; opacity: .7; width: 100%; }
+  /* ===== Veyago credit styles: copy this block ===== */
+  .veyago-credit { display: inline-flex; align-items: center; gap: .5em; color: inherit; text-decoration: none; font: inherit; }
+  .veyago-credit img { width: 22px; height: 22px; border-radius: 6px; box-shadow: 0 0 0 1px rgba(255,255,255,.15); flex-shrink: 0; }
+  .veyago-credit__name { font-weight: 600; }
+  /* ===== end ===== */
+</style>
+</head>
+<body>
+
+<section class="demo demo--dark">
+  <h2>Dark footer · icon hosted on veyago.cloud</h2>
+  <!-- ===== Veyago credit markup (hosted icon): copy from here ===== -->
+  <a class="veyago-credit" href="https://www.veyago.cloud" target="_blank" rel="noopener noreferrer" aria-label="Made by Veyago Inc.">
+    <span>Made by</span>
+    <img src="https://www.veyago.cloud/assets/veyago-icon.png" alt="" width="22" height="22" loading="lazy">
+    <span class="veyago-credit__name">Veyago Inc.</span>
+  </a>
+  <!-- ===== to here ===== -->
+  <a class="veyago-credit" href="https://www.veyago.cloud" target="_blank" rel="noopener noreferrer" aria-label="Erstellt von Veyago Inc.">
+    <span>Erstellt von</span>
+    <img src="https://www.veyago.cloud/assets/veyago-icon.png" alt="" width="22" height="22" loading="lazy">
+    <span class="veyago-credit__name">Veyago Inc.</span>
+  </a>
+</section>
+
+<section class="demo demo--light">
+  <h2>Light footer · icon embedded as data URI (no external request)</h2>
+  <!-- ===== Veyago credit markup (self-contained): copy from here ===== -->
+  <a class="veyago-credit" href="https://www.veyago.cloud" target="_blank" rel="noopener noreferrer" aria-label="Made by Veyago Inc.">
+    <span>Made by</span>
+    <img src="data:image/png;base64,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" alt="" width="22" height="22">
+    <span class="veyago-credit__name">Veyago Inc.</span>
+  </a>
+  <!-- ===== to here ===== -->
+</section>
+
+</body>
+</html>
