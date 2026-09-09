@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Logo } from '@/components/ui/Logo';
+import VeyagoCredit from '@/components/ui/VeyagoCredit';
 
 export default function Footer() {
   const t = useTranslations('footer');
@@ -122,10 +123,12 @@ export default function Footer() {
             <p className="text-gray-400 text-sm">
               {t('copyright', { year: new Date().getFullYear() })}
             </p>
-            <div className="flex items-center space-x-6 text-sm text-gray-400">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-400">
               <span>{t('builtFor')}</span>
-              <span>•</span>
+              <span aria-hidden="true">•</span>
               <span>{t('designedFor')}</span>
+              <span aria-hidden="true">•</span>
+              <VeyagoCredit />
             </div>
           </div>
         </div>
