@@ -1,6 +1,7 @@
 import { tryCreateServerReadClient } from '@/lib/supabase/factory';
 import { getCaseStudies as getMdxCaseStudies, getCaseStudy as getMdxCaseStudy } from '@/lib/mdx';
 import { marked } from 'marked';
+import { normalizeStorageUrl } from '@/lib/supabase/storage-url';
 
 export type CaseStudyDisplay = {
   slug: string;
@@ -39,7 +40,7 @@ async function getDbCaseStudies(): Promise<CaseStudyDisplay[]> {
     challenge: String(row.challenge || ''),
     outcome: String(row.outcome || ''),
     metrics: Array.isArray(row.metrics) ? (row.metrics as string[]) : [],
-    coverImage: row.cover_image_url ? String(row.cover_image_url) : undefined,
+    coverImage: normalizeStorageUrl(row.cover_image_url ? String(row.cover_image_url) : null) ?? undefined,
     date: String(row.case_date || row.created_at),
     featured: Boolean(row.featured),
     content: String(row.case_content || ''),
@@ -72,7 +73,7 @@ async function getDbCaseStudy(slug: string): Promise<CaseStudyDisplay | null> {
     challenge: String(row.challenge || ''),
     outcome: String(row.outcome || ''),
     metrics: Array.isArray(row.metrics) ? (row.metrics as string[]) : [],
-    coverImage: row.cover_image_url ? String(row.cover_image_url) : undefined,
+    coverImage: normalizeStorageUrl(row.cover_image_url ? String(row.cover_image_url) : null) ?? undefined,
     date: String(row.case_date || row.created_at),
     featured: Boolean(row.featured),
     content: htmlContent,

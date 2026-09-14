@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './supabase/client';
+import { normalizeStorageUrl, normalizeStorageUrls } from './supabase/storage-url';
 
 /** Anon-key client for template reads; null when Supabase env vars are absent (e.g. during build). */
 function getTemplatesSupabase() {
@@ -27,6 +28,15 @@ export type WebsiteTemplate = {
   created_at?: string;
 };
 
+/** Rewrites image URLs stored under a retired storage host so they resolve today. */
+function withCurrentStorageHost(template: WebsiteTemplate): WebsiteTemplate {
+  return {
+    ...template,
+    thumbnail_url: normalizeStorageUrl(template.thumbnail_url),
+    gallery_urls: normalizeStorageUrls(template.gallery_urls),
+  };
+}
+
 export async function getPublishedTemplates(): Promise<WebsiteTemplate[]> {
   const supabase = getTemplatesSupabase();
   if (!supabase) return [];
@@ -41,7 +51,7 @@ export async function getPublishedTemplates(): Promise<WebsiteTemplate[]> {
     console.error('Error fetching website templates:', error);
     return [];
   }
-  return data ?? [];
+  return (data ?? []).map(withCurrentStorageHost);
 }
 
 export async function getTemplateBySlug(slug: string): Promise<WebsiteTemplate | null> {
@@ -55,5 +65,5 @@ export async function getTemplateBySlug(slug: string): Promise<WebsiteTemplate |
     .single();
 
   if (error || !data) return null;
-  return data;
+  return withCurrentStorageHost(data);
 }
